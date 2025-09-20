@@ -10,6 +10,7 @@ const app = createApp(App)
 
 // 使用Pinia状态管理插件
 app.use(createPinia())
+
 // 使用Vue Router路由插件
 app.use(router)
 
