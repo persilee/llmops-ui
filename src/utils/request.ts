@@ -11,8 +11,8 @@ const baseFetchOptions = {
 }
 
 type FetchOptionType = Omit<RequestInit, 'body'> & {
-  params?: Record<string, any>
-  body?: BodyInit | Record<string, any> | null
+  params?: Record<string, unknown>
+  body?: BodyInit | Record<string, unknown> | null
 }
 
 const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> => {
@@ -28,7 +28,14 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
 
   if (method === 'GET' && params) {
     const paramsString = Object.keys(params)
-      .map((key) => `${key}=${encodeURIComponent(params[key])}`)
+      .map((key) => {
+        const value = params[key]
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+          return `${key}=${encodeURIComponent(value)}`
+        }
+        return ''
+      })
+      .filter((item) => item)
       .join('&')
     if (urlWithPrefix.includes('?')) {
       urlWithPrefix = `${urlWithPrefix}&${paramsString}`

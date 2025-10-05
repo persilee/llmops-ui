@@ -1,4 +1,5 @@
 import BaseLayout from '@/views/layouts/BaseLayout.vue'
+import BlankLayout from '@/views/layouts/BlankLayout.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -16,6 +17,17 @@ const router = createRouter({
           path: 'home',
           name: 'home-page',
           component: () => import('@/views/pages/HomePage.vue'),
+        },
+      ],
+    },
+    {
+      path: '/',
+      component: BlankLayout,
+      children: [
+        {
+          path: 'space/apps/:app_id',
+          name: 'space-apps-detail',
+          component: () => import('@/views/space/apps/DetailView.vue'),
         },
       ],
     },
