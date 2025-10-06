@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCounterStore } from '@/stores/counter'
-import { post } from '@/utils/request'
+import { post } from '@/services/request'
 
 const counterStore = useCounterStore()
 

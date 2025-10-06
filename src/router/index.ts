@@ -1,5 +1,5 @@
-import BaseLayout from '@/views/layouts/BaseLayout.vue'
-import BlankLayout from '@/views/layouts/BlankLayout.vue'
+import BaseLayout from '@/views/layouts/base-layout.vue'
+import BlankLayout from '@/views/layouts/blank-layout.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -16,7 +16,7 @@ const router = createRouter({
         {
           path: 'home',
           name: 'home-page',
-          component: () => import('@/views/pages/HomePage.vue'),
+          component: () => import('@/views/pages/home-page.vue'),
         },
       ],
     },
@@ -25,9 +25,9 @@ const router = createRouter({
       component: BlankLayout,
       children: [
         {
-          path: 'space/apps/:app_id',
+          path: 'space/apps/:appId',
           name: 'space-apps-detail',
-          component: () => import('@/views/space/apps/DetailView.vue'),
+          component: () => import('@/views/space/apps/detail-view.vue'),
         },
       ],
     },

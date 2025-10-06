@@ -1,7 +1,51 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { Message } from '@arco-design/web-vue'
+import AppsApi from '@/services/api/apps'
+import { useRoute } from 'vue-router'
 
 const inputValue = ref('')
+interface Message {
+  id: number
+  role: string
+  content: string
+}
+const messages = ref<Message[]>([])
+const isLoading = ref(false)
+const isDisabled = computed(() => isLoading.value || inputValue.value.trim() === '')
+const route = useRoute()
+
+const clearMessages = () => {
+  messages.value = []
+}
+
+const sendMessage = async () => {
+  if (isDisabled.value) return
+
+  try {
+    isLoading.value = true
+    messages.value.push({
+      id: messages.value.length,
+      role: 'human',
+      content: inputValue.value,
+    })
+
+    const humanMsg = inputValue.value
+    inputValue.value = ''
+    const resp = await AppsApi.debugApp({
+      appId: route.params.appId as string,
+      body: { query: humanMsg },
+    })
+    const content = resp.data?.content
+    messages.value.push({
+      id: messages.value.length,
+      role: 'ai',
+      content,
+    })
+  } catch {
+    isLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -28,32 +72,49 @@ const inputValue = ref('')
           调试与预览
         </header>
         <div class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none">
-          <div class="flex flex-row gap-2 mb-6">
-            <a-avatar class="shrink-0" :size="30">小明</a-avatar>
+          <div
+            v-if="messages.length === 0"
+            class="flex flex-col justify-center items-center mt-[200px]"
+          >
+            <a-avatar class="" :size="70" shape="square">🤖</a-avatar>
+            <div class="text-2xl text-neutral-950 font-semibold text-center mt-2">聊天机器人</div>
+          </div>
+          <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.id">
+            <a-avatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</a-avatar>
+            <a-avatar v-else class="shrink-0" :size="30">🤖</a-avatar>
             <div class="flex flex-col gap-2">
-              <div class="font-semibold text-gray-700">小明</div>
+              <div class="font-semibold text-gray-700">
+                {{ message.role === 'human' ? '小明' : 'AI' }}
+              </div>
               <div
+                v-if="message.role === 'human'"
                 class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
               >
-                你好，你是谁？
+                {{ message.content }}
+              </div>
+              <div
+                v-else
+                class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
+              >
+                {{ message.content }}
               </div>
             </div>
           </div>
-          <div class="flex flex-row gap-2 mb-6">
+          <div v-show="isLoading" class="flex flex-row gap-2 mb-6">
             <a-avatar class="shrink-0" :size="30">AI</a-avatar>
             <div class="flex flex-col gap-2">
               <div class="font-semibold text-gray-700">AI</div>
               <div
                 class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
               >
-                你好！我是一个人工智能助手，可以帮助回答问题、提供信息或协助解决问题。有什么我可以帮助你的吗？
+                <a-spin />
               </div>
             </div>
           </div>
         </div>
         <div class="flex flex-col w-full flex-shrink-0">
           <div class="flex items-center px-6 gap-4">
-            <a-button class="flex-shrink-0" type="text" shape="circle">
+            <a-button class="flex-shrink-0" type="text" shape="circle" @click="clearMessages">
               <template #icon
                 ><img src="@/assets/images/icon-clear.png" class="w-4 h-4"
               /></template>
@@ -61,17 +122,23 @@ const inputValue = ref('')
             <div
               class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full"
             >
-              <input v-model="inputValue" type="text" class="flex-1 outline-0" />
+              <input
+                v-model="inputValue"
+                type="text"
+                class="flex-1 outline-0"
+                @keyup.enter="sendMessage"
+                @keyup.enter.exact="sendMessage"
+              />
               <a-button type="text" shape="circle">
                 <template #icon
                   ><img src="@/assets/images/icon-add.png" class="w-4 h-4"
                 /></template>
               </a-button>
-              <a-button type="text" shape="circle">
+              <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage">
                 <template #icon
                   ><img
                     src="@/assets/images/icon-send.png"
-                    :class="['w-4', 'h-4', { 'send-icon-active': inputValue.trim() !== '' }]"
+                    :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
                 /></template>
               </a-button>
             </div>

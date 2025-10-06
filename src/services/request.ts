@@ -1,4 +1,6 @@
 import { BASE_URL, TIME_OUT } from '@/config'
+import { HttpCode } from './http-code'
+import { Message } from '@arco-design/web-vue'
 
 const baseFetchOptions = {
   method: 'GET',
@@ -60,17 +62,17 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
     new Promise((resolve, reject) => {
       globalThis
         .fetch(urlWithPrefix, options as RequestInit)
-        .then((res) => {
-          if (res.status === 200) {
-            return res.json()
+        .then(async (res) => {
+          const data = await res.json()
+          if (data.code === HttpCode.Success) {
+            resolve(data)
           } else {
-            throw new Error(res.statusText)
+            Message.error(data.message)
+            reject(new Error(data.message))
           }
         })
-        .then((res) => {
-          resolve(res)
-        })
         .catch((err) => {
+          Message.error(err?.message)
           reject(err)
         })
     }),
@@ -81,10 +83,10 @@ export const request = <T>(url: string, options = {}) => {
   return baseFetch<T>(url, options)
 }
 
-export const get = <T>(url: string, params = {}) => {
-  return request<T>(url, { method: 'GET', params })
+export const get = <T>({ url, params }: { url: string; params?: T }) => {
+  return request<T>(url, { method: 'GET', params: params })
 }
 
-export const post = <T>(url: string, body = {}) => {
-  return request<T>(url, { method: 'POST', body })
+export const post = <T>({ url, body }: { url: string; body?: T }) => {
+  return request<T>(url, { method: 'POST', body: body })
 }
