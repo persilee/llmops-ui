@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import AppsApi from '@/services/api/apps'
 import { useRoute } from 'vue-router'
+import DebugEmptyMessage from './components/DebugEmptyMessage.vue'
+import DebugHeader from './components/DebugHeader.vue'
 
 const inputValue = ref('')
 interface Message {
@@ -42,7 +44,7 @@ const sendMessage = async () => {
       role: 'ai',
       content,
     })
-  } catch {
+  } finally {
     isLoading.value = false
   }
 }
@@ -66,19 +68,11 @@ const sendMessage = async () => {
         </div>
       </div>
       <div class="flex flex-col w-1/3 h-full bg-white">
-        <header
-          class="flex items-center flex-shrink-0 h-16 px-4 text-xl bg-white border-b border-gray-200"
+        <DebugHeader />
+        <div
+          class="flex flex-col h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none"
         >
-          调试与预览
-        </header>
-        <div class="h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none">
-          <div
-            v-if="messages.length === 0"
-            class="flex flex-col justify-center items-center mt-[200px]"
-          >
-            <a-avatar class="" :size="70" shape="square">🤖</a-avatar>
-            <div class="text-2xl text-neutral-950 font-semibold text-center mt-2">聊天机器人</div>
-          </div>
+          <DebugEmptyMessage v-if="messages.length === 0" />
           <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.id">
             <a-avatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</a-avatar>
             <a-avatar v-else class="shrink-0" :size="30">🤖</a-avatar>
