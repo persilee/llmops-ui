@@ -9,6 +9,7 @@ const categories = ref<Array<GetCategoriesResp>>([])
 const providers = ref<Array<GetBuiltinToolsResp>>([])
 const category = ref<string>('all')
 const searchWord = ref<string>('')
+const showIndex = ref<number>(-1)
 const loading = ref<boolean>(false)
 const error = ref<string | null>(null)
 
@@ -88,8 +89,8 @@ onMounted(async () => {
         </a-input>
       </div>
       <a-row :gutter="[20, 20]" class="flex-1">
-        <a-col :span="6" v-for="provider in filterProviders" :key="provider.name">
-          <a-card class="cursor-pointer rounded-lg" hoverable>
+        <a-col :span="6" v-for="(provider, idx) in filterProviders" :key="provider.name">
+          <a-card class="cursor-pointer rounded-lg" hoverable @click="showIndex = idx">
             <div class="flex items-center gap-3 mb-3">
               <a-avatar :size="40" shape="square" :style="{ background: provider.background }">
                 <img
@@ -125,6 +126,71 @@ onMounted(async () => {
         </a-col>
       </a-row>
     </div>
+    <a-drawer
+      :visible="showIndex != -1"
+      :width="380"
+      :footer="false"
+      title="工具详情"
+      :drawer-style="{ background: '#F9FAFB' }"
+      @cancel="showIndex = -1"
+    >
+      <div class="" v-if="showIndex != -1">
+        <div class="flex items-center gap-3 mb-3">
+          <a-avatar
+            :size="40"
+            shape="square"
+            :style="{ background: filterProviders[showIndex].background }"
+          >
+            <img
+              :src="`${BASE_URL}/builtin-tools/${filterProviders[showIndex].name}/icon`"
+              :alt="filterProviders[showIndex].name"
+            />
+          </a-avatar>
+          <div class="flex flex-col">
+            <div class="text-base text-gray-900 font-bold">
+              {{ filterProviders[showIndex].label }}
+            </div>
+            <div class="text-xs text-gray-500 line-clamp-1">
+              提供商 {{ filterProviders[showIndex].name }} •
+              {{ filterProviders[showIndex].tools.length }}
+            </div>
+          </div>
+        </div>
+        <div class="leading-[18px] text-gray-500">
+          {{ filterProviders[showIndex].description }}
+        </div>
+        <a-divider />
+        <div class="flex flex-col">
+          <div class="mb-3 text-xs text-gray-500">
+            包含 {{ filterProviders[showIndex].tools.length }} 个工具
+          </div>
+          <a-card
+            v-for="tool in filterProviders[showIndex].tools"
+            :key="tool.name"
+            class="cursor-pointer flex flex-col rounded-xl"
+          >
+            <div class="font-bold text-gray-900 mb-2">{{ tool.label }}</div>
+            <div class="text-gray-500 text-xs">{{ tool.description }}</div>
+            <div v-if="tool.inputs.length > 0" class="">
+              <div class="flex items-center gap-2 my-4">
+                <div class="text-xs text-gray-500 font-bold">参数</div>
+                <hr class="flex-1 border-gray-200" />
+              </div>
+              <div class="flex flex-col gap-4">
+                <div v-for="input in tool.inputs" :key="input.name" class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2 text-xs">
+                    <div class="text-gray-900 font-bold">{{ input.name }}</div>
+                    <div class="text-gray-500">{{ input.type }}</div>
+                    <div class="text-red-700">{{ input.required ? '必填' : '' }}</div>
+                  </div>
+                  <div class="text-xs text-gray-500">{{ input.description }}</div>
+                </div>
+              </div>
+            </div>
+          </a-card>
+        </div>
+      </div>
+    </a-drawer>
   </a-spin>
 </template>
 
