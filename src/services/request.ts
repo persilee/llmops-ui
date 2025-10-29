@@ -1,6 +1,7 @@
 import { BASE_URL, TIME_OUT } from '@/config'
 import { HttpCode } from './http-code'
 import { Message } from '@arco-design/web-vue'
+import type { BaseResponse } from './types'
 
 const baseFetchOptions = {
   method: 'GET',
@@ -17,7 +18,7 @@ type FetchOptionType = Omit<RequestInit, 'body'> & {
   body?: BodyInit | Record<string, unknown> | null
 }
 
-const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> => {
+const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseResponse<T>> => {
   const options: typeof baseFetchOptions & FetchOptionType = Object.assign(
     {},
     baseFetchOptions,
@@ -63,7 +64,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
       globalThis
         .fetch(urlWithPrefix, options as RequestInit)
         .then(async (res) => {
-          const data = await res.json()
+          const data= await res.json()
           if (data.code === HttpCode.Success) {
             resolve(data)
           } else {
@@ -76,7 +77,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<T> =>
           reject(err)
         })
     }),
-  ]) as Promise<T>
+  ]) as Promise<BaseResponse<T>>
 }
 
 export const request = <T>(url: string, options = {}) => {

@@ -1,0 +1,6 @@
+/* src/styles/custom-theme.css */
+
+/* 如果需要针对特定组件 */
+.arco-btn-secondary {
+  --color-secondary: #e5e7eb !important;
+}

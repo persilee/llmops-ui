@@ -1,5 +1,3 @@
-import type { BaseResponse } from '@/services/types'
-
-export type DebugAppResp = BaseResponse<{
+export type DebugAppResp = {
   content: string
-}>
+}

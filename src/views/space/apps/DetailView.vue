@@ -74,8 +74,8 @@ const sendMessage = async () => {
         >
           <DebugEmptyMessage v-if="messages.length === 0" />
           <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.id">
-            <a-avatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</a-avatar>
-            <a-avatar v-else class="shrink-0" :size="30">🤖</a-avatar>
+            <AAvatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</AAvatar>
+            <AAvatar v-else class="shrink-0" :size="30">🤖</AAvatar>
             <div class="flex flex-col gap-2">
               <div class="font-semibold text-gray-700">
                 {{ message.role === 'human' ? '小明' : 'AI' }}

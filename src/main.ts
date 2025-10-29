@@ -1,9 +1,10 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 
+import '@/assets/styles/custom-theme.css'
+import '@/assets/styles/main.css'
 import App from './App.vue'
 import router from './router'
-import '@/assets/styles/main.css'
 
 // 创建Vue应用实例
 const app = createApp(App)
