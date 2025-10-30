@@ -36,7 +36,7 @@ const router = createRouter({
         {
           path: 'store/tools',
           name: 'store-tools-list',
-          component: () => import('@/views/store/tools/ListView.vue'),
+          component: () => import('@/views/store/tools/ToolStore.vue'),
         },
         {
           path: 'open',

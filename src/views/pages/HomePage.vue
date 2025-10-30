@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useCounterStore } from '@/stores/counter'
 import { post } from '@/services/request'
+import { useCounterStore } from '@/stores/counter'
 
 const counterStore = useCounterStore()
 
 const debug = () => {
-  post('apps/debug', { query: '你好，你是？' })
+  post({ url: 'apps/debug', body: { query: '你好，你是？' } })
 }
 </script>
 
