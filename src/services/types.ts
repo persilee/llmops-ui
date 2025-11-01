@@ -4,12 +4,12 @@ export type BaseResponse<T> = {
   data: T
 }
 
-export type BasePaginatorResponse<T> = BaseResponse<{
+export type BasePaginatorResponse<T> = {
   list: Array<T>
   paginator: {
-    totalPage: number
-    totalRecord: number
-    currentPage: number
-    pageSize: number
+    total_page: number
+    total_record: number
+    current_page: number
+    page_size: number
   }
-}>
+}

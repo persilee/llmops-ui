@@ -1,37 +1,43 @@
 <script setup lang="ts">
 import BuiltinToolApi from '@/services/api/builtin-tool'
 import type { GetBuiltinToolsResp, GetCategoriesResp } from '@/services/api/builtin-tool/types'
+import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
-import ToolCard from './components/ToolCard.vue'
-import ToolDetailDrawer from './components/ToolDetailDrawer.vue'
+import PageCard from '../../components/PageCard.vue'
+import ToolHeader from '../../components/PageHeader.vue'
+import ToolDetailDrawer from '../../components/ToolDetailDrawer.vue'
 import ToolFilter from './components/ToolFilter.vue'
-import ToolHeader from './components/ToolHeader.vue'
 
 const categories = ref<Array<GetCategoriesResp>>([])
 const providers = ref<Array<GetBuiltinToolsResp>>([])
 const category = ref<string>('all')
 const searchWord = ref<string>('')
 const showIndex = ref<number>(-1)
+const isShowToolDetail = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const error = ref<string | null>(null)
 
-const isShowToolDetail = computed(() => showIndex.value !== -1)
-
 const filterProviders = computed(() => {
+  // 过滤工具列表，根据选中的类别和搜索关键词进行筛选
   return providers.value.filter((item) => {
+    // 类别匹配：选中"全部"或工具类别与选中类别相同
     const matchCategory = category.value === 'all' || item.category === category.value
+    // 搜索关键词匹配：搜索框为空或工具标签包含搜索关键词（不区分大小写）
     const matchSearchWord =
       searchWord.value === '' || item.label.toLowerCase().includes(searchWord.value)
 
+    // 同时满足类别和搜索关键词条件
     return matchCategory && matchSearchWord
   })
 })
 
+// 计算属性：获取当前选中的工具提供者
 const selectedProvider = computed(() => {
-  return showIndex.value !== -1 ? filterProviders.value[showIndex.value] : null
+  return filterProviders.value[showIndex.value]
 })
 
-onMounted(async () => {
+// 获取工具类别数据和工具列表数据
+const fetchData = async () => {
   loading.value = true
   error.value = null
 
@@ -44,11 +50,16 @@ onMounted(async () => {
     categories.value = categoriesResp.data
     providers.value = builtinToolsResp.data
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load data'
-    console.error('Error loading data:', err)
+    Message.error('数据加载失败')
+    error.value = err instanceof Error ? err.message : '数据加载失败'
+    console.error(err)
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  fetchData()
 })
 
 const handleCreateTool = () => {
@@ -58,10 +69,11 @@ const handleCreateTool = () => {
 
 const handleToolCardClick = (index: number) => {
   showIndex.value = index
+  isShowToolDetail.value = true
 }
 
 const handleCloseDrawer = () => {
-  showIndex.value = -1
+  isShowToolDetail.value = false
 }
 </script>
 
@@ -69,7 +81,7 @@ const handleCloseDrawer = () => {
   <a-spin :loading="loading" class="block h-full w-full bg-gray-50">
     <div class="flex flex-col p-6">
       <!-- 页面头部 -->
-      <ToolHeader title="插件广场" @click="handleCreateTool" />
+      <ToolHeader title="插件广场" button-text="创建自定义插件" @click="handleCreateTool" />
 
       <!-- 筛选区域 -->
       <ToolFilter
@@ -81,7 +93,7 @@ const handleCloseDrawer = () => {
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="(provider, idx) in filterProviders" :key="provider.name">
-          <ToolCard :tool="provider" @click="handleToolCardClick(idx)" />
+          <PageCard :data="provider" @click="handleToolCardClick(idx)" />
         </a-col>
         <a-col :span="24" v-if="filterProviders.length === 0">
           <a-empty
@@ -96,7 +108,7 @@ const handleCloseDrawer = () => {
     <ToolDetailDrawer
       v-model:visible="isShowToolDetail"
       :provider="selectedProvider"
-      @click="handleCloseDrawer"
+      @update:visible="handleCloseDrawer"
     />
   </a-spin>
 </template>

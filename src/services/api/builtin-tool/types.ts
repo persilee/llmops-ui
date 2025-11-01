@@ -11,7 +11,18 @@ export interface GetBuiltinToolsResp {
   label: string
   name: string
   tools: Tool[]
-  created_at: string
+  created_at: number
+}
+
+export const isGetBuiltinToolsResp = (data: any): data is GetBuiltinToolsResp => {
+  return (
+    'background' in data &&
+    'category' in data &&
+    'description' in data &&
+    'label' in data &&
+    'name' in data &&
+    'tools' in data
+  )
 }
 
 export interface Tool {

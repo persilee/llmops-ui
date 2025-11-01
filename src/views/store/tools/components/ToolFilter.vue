@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GetCategoriesResp } from '@/services/api/builtin-tool/types'
+import InputSearch from '@/views/components/InputSearch.vue'
 
 const categories = defineModel<GetCategoriesResp[]>('categories', { default: () => [] })
 const selectedCategory = defineModel<string>('selectedCategory', { default: () => '' })
@@ -26,17 +27,7 @@ const searchWord = defineModel<string>('searchWord', { default: () => '' })
         {{ item.name }}
       </a-button>
     </div>
-    <a-input
-      v-model="searchWord"
-      name="search-tool"
-      placeholder="搜索插件"
-      class="w-[200px] bg-white rounded-lg border-gray-300 focus-within:border-blue-700"
-      allow-clear
-    >
-      <template #prefix>
-        <img src="@/assets/images/icon-search.png" class="w-4 h-4" />
-      </template>
-    </a-input>
+    <InputSearch v-model="searchWord" placeholder="搜索插件" />
   </div>
 </template>
 

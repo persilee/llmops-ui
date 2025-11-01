@@ -1,6 +1,6 @@
 import { BASE_URL, TIME_OUT } from '@/config'
-import { HttpCode } from './http-code'
 import { Message } from '@arco-design/web-vue'
+import { HttpCode } from './http-code'
 import type { BaseResponse } from './types'
 
 const baseFetchOptions = {
@@ -64,7 +64,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
       globalThis
         .fetch(urlWithPrefix, options as RequestInit)
         .then(async (res) => {
-          const data= await res.json()
+          const data = await res.json()
           if (data.code === HttpCode.Success) {
             resolve(data)
           } else {
@@ -84,7 +84,7 @@ export const request = <T>(url: string, options = {}) => {
   return baseFetch<T>(url, options)
 }
 
-export const get = <T>({ url, params }: { url: string; params?: T }) => {
+export const get = <T, P = any>({ url, params }: { url: string; params?: P }) => {
   return request<T>(url, { method: 'GET', params: params })
 }
 

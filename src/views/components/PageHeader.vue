@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   title: string
+  buttonText: string
 }>()
 </script>
 
@@ -16,7 +17,7 @@ defineProps<{
       type="primary"
       class="h-10 rounded-[10px] px-5 text-sm font-bold text-blue-700 bg-blue-100"
     >
-      创建自定义插件
+      {{ buttonText }}
     </a-button>
   </div>
 </template>
