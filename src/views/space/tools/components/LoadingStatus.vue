@@ -27,7 +27,9 @@ const emit = defineEmits<{
     </a-col>
     <!-- 没有更多数据时显示 -->
     <a-col
-      v-if="!loading && paginator.current_page >= paginator.total_page"
+      v-if="
+        !loading && paginator.current_page >= paginator.total_page && paginator.current_page > 1
+      "
       :span="24"
       align="center"
     >

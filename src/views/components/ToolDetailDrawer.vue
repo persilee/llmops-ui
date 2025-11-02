@@ -19,7 +19,7 @@ const visible = defineModel<boolean>('visible', { default: false })
     :drawer-style="{ background: '#F9FAFB' }"
     @update:visible="$emit('update:visible', $event)"
   >
-    <div class="" v-if="provider">
+    <div class="bg-gray-50" v-if="provider">
       <div class="flex items-center gap-3 mb-3">
         <a-avatar :size="40" shape="square" :style="{ background: getBackground(provider) }">
           <a-image :src="getIcon(provider)" :alt="provider.name" />
@@ -37,6 +37,12 @@ const visible = defineModel<boolean>('visible', { default: false })
       <div class="leading-[18px] text-gray-500">
         {{ provider.description }}
       </div>
+      <a-button type="outline" long class="mt-4 bg-white border-gray-300 text-gray-700">
+        <template #icon>
+          <icon-settings />
+        </template>
+        编辑
+      </a-button>
       <a-divider />
       <div class="flex flex-col gap-2">
         <div class="text-xs text-gray-500">包含 {{ provider.tools.length }} 个工具</div>

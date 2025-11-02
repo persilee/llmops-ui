@@ -38,7 +38,11 @@ const handleSearch = (value: string) => {
           <PageRouterLink to="/space/datasets" label="知识库" />
         </div>
         <!-- 搜索框 -->
-        <InputSearch placeholder="搜索知识库" @update:searchWord="handleSearch" />
+        <InputSearch
+          :search-word="store.searchWord"
+          placeholder="搜索知识库"
+          @update:searchWord="handleSearch"
+        />
       </div>
     </div>
 
