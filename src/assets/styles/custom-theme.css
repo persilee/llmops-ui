@@ -7,3 +7,7 @@
 .arco-btn-secondary {
   --color-secondary: #e5e7eb !important;
 }
+
+.arco-input-wrapper {
+  --border-radius-small: 4px !important;
+}

@@ -32,11 +32,6 @@ export const isGetAPIToolProvidersWithPage = (data: any): data is GetAPIToolProv
   )
 }
 
-export interface Header {
-  key: string
-  value: string
-}
-
 export interface Tool {
   description: string
   id: string
@@ -49,4 +44,32 @@ export interface Input {
   name: string
   required: string
   type: string
+}
+
+export interface CreateAPIToolProviderReq {
+  headers: Header[]
+  icon: string
+  name: string
+  openapi_schema: string
+}
+
+export interface UpdateAPIToolProviderReq {
+  headers: Header[]
+  icon: string
+  name: string
+  openapi_schema: string
+}
+
+export interface GetAPIToolProviderResp {
+  created_at: number
+  headers: Header[]
+  icon: string
+  id: string
+  name: string
+  openapi_schema: string
+}
+
+export interface Header {
+  name: string
+  value: string
 }

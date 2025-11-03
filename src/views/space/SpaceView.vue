@@ -27,7 +27,11 @@ const handleSearch = (value: string) => {
   <div class="flex flex-col h-full w-full px-6 bg-gray-50 overflow-hidden">
     <div class="pt-6 sticky top-0 z-66 bg-gray-50">
       <!-- 页面的头部 -->
-      <PageHeader title="个人空间" :button-text="getButtonText()" />
+      <PageHeader
+        title="个人空间"
+        :button-text="getButtonText()"
+        @click="store.openCreateToolModal()"
+      />
       <!-- 页面导航+搜索框 -->
       <div class="flex items-center justify-between mb-6">
         <!-- 导航 -->

@@ -2,12 +2,18 @@
 import { type GetAPIToolProvidersWithPage } from '@/services/api/api-tool/types'
 import { type GetBuiltinToolsResp } from '@/services/api/builtin-tool/types'
 import { getBackground, getIcon, getName, typeMap } from '@/utils/util'
+import { useToolProviderStore } from '../space/SpaceView.store'
 
 const props = defineProps<{
   provider?: GetBuiltinToolsResp | GetAPIToolProvidersWithPage
+  loading?: boolean
 }>()
 
 const visible = defineModel<boolean>('visible', { default: false })
+
+defineEmits(['updateToolProvider'])
+
+const store = useToolProviderStore()
 </script>
 
 <template>
@@ -37,7 +43,13 @@ const visible = defineModel<boolean>('visible', { default: false })
       <div class="leading-[18px] text-gray-500">
         {{ provider.description }}
       </div>
-      <a-button type="outline" long class="mt-4 bg-white border-gray-300 text-gray-700">
+      <a-button
+        type="outline"
+        long
+        class="mt-4 bg-white border-gray-300 text-gray-700"
+        @click="$emit('updateToolProvider', provider)"
+        :loading="loading"
+      >
         <template #icon>
           <icon-settings />
         </template>

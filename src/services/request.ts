@@ -80,14 +80,26 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
   ]) as Promise<BaseResponse<T>>
 }
 
-export const request = <T>(url: string, options = {}) => {
+export const request = <T>(url: string, options = {}): Promise<BaseResponse<T>> => {
   return baseFetch<T>(url, options)
 }
 
-export const get = <T, P = any>({ url, params }: { url: string; params?: P }) => {
+export const get = <T, P = any>({
+  url,
+  params,
+}: {
+  url: string
+  params?: P
+}): Promise<BaseResponse<T>> => {
   return request<T>(url, { method: 'GET', params: params })
 }
 
-export const post = <T>({ url, body }: { url: string; body?: T }) => {
+export const post = <T, B = any>({
+  url,
+  body,
+}: {
+  url: string
+  body?: B
+}): Promise<BaseResponse<T>> => {
   return request<T>(url, { method: 'POST', body: body })
 }
