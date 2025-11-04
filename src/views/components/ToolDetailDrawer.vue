@@ -27,9 +27,13 @@ const store = useToolProviderStore()
   >
     <div class="bg-gray-50" v-if="provider">
       <div class="flex items-center gap-3 mb-3">
-        <a-avatar :size="40" shape="square" :style="{ background: getBackground(provider) }">
-          <a-image :src="getIcon(provider)" :alt="provider.name" />
-        </a-avatar>
+        <a-image
+          class="w-10 h-10 rounded-lg"
+          fit="cover"
+          :src="getIcon(provider)"
+          :alt="provider.name"
+          :style="{ background: getBackground(provider) }"
+        />
         <div class="flex flex-col">
           <div class="text-base text-gray-900 font-bold">
             {{ getName(provider) }}

@@ -12,9 +12,13 @@ defineProps<{
 <template>
   <a-card class="cursor-pointer rounded-lg" hoverable>
     <div class="flex items-center gap-3 mb-3">
-      <a-avatar :size="40" shape="square" :style="{ background: getBackground(data) }">
-        <a-image :src="getIcon(data)" :alt="data.name" />
-      </a-avatar>
+      <a-image
+        class="w-10 h-10 rounded-lg"
+        fit="cover"
+        :src="getIcon(data)"
+        :alt="data.name"
+        :style="{ background: getBackground(data) }"
+      />
       <div class="flex flex-col">
         <div class="text-base text-gray-900 font-bold">{{ getName(data) }}</div>
         <div class="text-xs text-gray-500 line-clamp-1">
