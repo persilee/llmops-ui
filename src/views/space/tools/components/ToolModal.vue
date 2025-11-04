@@ -290,7 +290,8 @@ const handleDeleteTool = async () => {
     title: '删除确认?', // 模态框标题
     content: '确定要删除该工具吗?', // 提示内容
     hideCancel: false, // 显示取消按钮
-    bodyClass: 'text-center',
+    titleAlign: 'start', // 标题左对齐
+    simple: false, // 简单模式
     // 确认按钮的回调函数
     onOk: async () => {
       // 获取当前选中的工具提供者ID
@@ -314,6 +315,10 @@ const handleDeleteTool = async () => {
         // 在控制台输出错误信息
         console.error(errorMessage)
       }
+    },
+    onCancel: () => {
+      // 取消删除操作
+      console.log('取消删除')
     },
   })
 }

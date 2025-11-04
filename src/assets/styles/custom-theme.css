@@ -11,3 +11,8 @@
 .arco-input-wrapper {
   --border-radius-small: 4px !important;
 }
+
+.arco-modal-footer,
+.arco-modal-header {
+  border: none !important;
+}
