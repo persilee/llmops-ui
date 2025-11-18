@@ -14,6 +14,7 @@ interface Message {
 }
 const messages = ref<Message[]>([])
 const isLoading = ref(false)
+const isCursor = ref(false)
 const isDisabled = computed(() => isLoading.value || inputValue.value.trim() === '')
 const route = useRoute()
 
@@ -26,6 +27,7 @@ const sendMessage = async () => {
 
   try {
     isLoading.value = true
+
     messages.value.push({
       id: messages.value.length,
       role: 'human',
@@ -34,15 +36,29 @@ const sendMessage = async () => {
 
     const humanMsg = inputValue.value
     inputValue.value = ''
-    const resp = await AppsApi.debugApp({
-      appId: route.params.appId as string,
-      body: { query: humanMsg },
-    })
-    const content = resp.data?.content
+
     messages.value.push({
       id: messages.value.length,
       role: 'ai',
-      content,
+      content: '',
+    })
+    await AppsApi.debugApp({
+      appId: route.params.appId as string,
+      body: { query: humanMsg },
+      onData: (event_response) => {
+        isCursor.value = true
+        const event = event_response?.event
+        const data = event_response?.data
+
+        const lastIndex = messages.value.length - 1
+        const message = messages.value[lastIndex]
+
+        if (event === 'agent_message') {
+          const chunk_content = data?.data
+          messages.value[lastIndex].content = message.content + chunk_content
+          if (!chunk_content) isCursor.value = false
+        }
+      },
     })
   } finally {
     isLoading.value = false
@@ -73,24 +89,27 @@ const sendMessage = async () => {
           class="flex flex-col h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none"
         >
           <DebugEmptyMessage v-if="messages.length === 0" />
-          <div class="flex flex-row gap-2 mb-6" v-for="message in messages" :key="message.id">
-            <AAvatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</AAvatar>
-            <AAvatar v-else class="shrink-0" :size="30">🤖</AAvatar>
-            <div class="flex flex-col gap-2">
-              <div class="font-semibold text-gray-700">
-                {{ message.role === 'human' ? '小明' : 'AI' }}
-              </div>
-              <div
-                v-if="message.role === 'human'"
-                class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
-              >
-                {{ message.content }}
-              </div>
-              <div
-                v-else
-                class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
-              >
-                {{ message.content }}
+          <div v-for="message in messages" :key="message.id">
+            <div v-if="message.content != ''" class="flex flex-row gap-2 mb-6">
+              <AAvatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</AAvatar>
+              <AAvatar v-else class="shrink-0" :size="30">🤖</AAvatar>
+              <div class="flex flex-col gap-2">
+                <div class="font-semibold text-gray-700">
+                  {{ message.role === 'human' ? '小明' : 'AI' }}
+                </div>
+                <div
+                  v-if="message.role === 'human'"
+                  class="max-w-max bg-blue-700 text-white border border-blue-800 px-4 py-3 rounded-2xl leading-5"
+                >
+                  {{ message.content }}
+                </div>
+                <div
+                  v-else
+                  class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
+                >
+                  {{ message.content }}
+                  <div v-if="isCursor && messages.length - 1 == message.id" class="cursor"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -150,5 +169,20 @@ const sendMessage = async () => {
 .send-icon-active {
   filter: brightness(0) saturate(100%) invert(35%) sepia(96%) saturate(462%) hue-rotate(185deg)
     brightness(96%) contrast(95%);
+}
+
+.cursor {
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background-color: #444;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 </style>

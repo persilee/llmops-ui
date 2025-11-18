@@ -111,7 +111,7 @@ export const post = <T, B = any>({
  * @param onData 处理接收到的SSE数据的回调函数
  * @returns Promise<void>
  */
-export const ssePost = (
+export const ssePost = async (
   url: string,
   fetchOptions: FetchOptionType,
   onData: (data: { [key: string]: any }) => void,
@@ -127,9 +127,9 @@ export const ssePost = (
   if (body) options.body = JSON.stringify(body)
 
   // 发起fetch请求并处理响应流
-  globalThis.fetch(urlWithPrefix, options as RequestInit).then((response: Response) => {
-    return handleStream(response, onData)
-  })
+  const resp = await globalThis.fetch(urlWithPrefix, options as RequestInit)
+
+  return handleStream(resp, onData)
 }
 
 /**
