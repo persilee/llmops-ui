@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Message } from '@arco-design/web-vue'
 import AppsApi from '@/services/api/apps'
+import { Message } from '@arco-design/web-vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DebugEmptyMessage from './components/DebugEmptyMessage.vue'
 import DebugHeader from './components/DebugHeader.vue'
@@ -94,14 +94,14 @@ const sendMessage = async () => {
               </div>
             </div>
           </div>
-          <div v-show="isLoading" class="flex flex-row gap-2 mb-6">
+          <div v-if="isLoading" class="flex flex-row gap-2 mb-6">
             <a-avatar class="shrink-0" :size="30">AI</a-avatar>
             <div class="flex flex-col gap-2">
               <div class="font-semibold text-gray-700">AI</div>
               <div
                 class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-2xl leading-5"
               >
-                <a-spin />
+                <a-spin :loading="isLoading" />
               </div>
             </div>
           </div>
