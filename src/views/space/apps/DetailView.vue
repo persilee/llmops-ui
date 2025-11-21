@@ -46,7 +46,6 @@ const sendMessage = async () => {
       appId: route.params.appId as string,
       body: { query: humanMsg },
       onData: (event_response) => {
-        isCursor.value = true
         const event = event_response?.event
         const data = event_response?.data
 
@@ -54,7 +53,7 @@ const sendMessage = async () => {
         const message = messages.value[lastIndex]
 
         if (event === 'agent_message') {
-          const chunk_content = data?.data
+          const chunk_content = data?.answer
           messages.value[lastIndex].content = message.content + chunk_content
           if (!chunk_content) isCursor.value = false
         }
@@ -62,6 +61,7 @@ const sendMessage = async () => {
     })
   } finally {
     isLoading.value = false
+    isCursor.value = true
   }
 }
 </script>

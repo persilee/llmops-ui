@@ -9,7 +9,7 @@ import { deepEqual } from '@/utils/util'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { reactive, ref, useTemplateRef, watch } from 'vue'
-import { useToolProviderStore } from '../../SpaceView.store'
+import { useSpaceStore } from '../../SpaceView.store'
 
 // Props 定义
 interface Props {
@@ -26,7 +26,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const store = useToolProviderStore()
+const store = useSpaceStore()
 const formRef = useTemplateRef('formRef')
 const loading = ref<boolean>(false)
 const validateSchemaLoading = ref<boolean>(false)

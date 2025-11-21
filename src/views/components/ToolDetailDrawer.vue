@@ -2,7 +2,7 @@
 import { type GetAPIToolProvidersWithPage } from '@/services/api/api-tool/types'
 import { type GetBuiltinToolsResp } from '@/services/api/builtin-tool/types'
 import { getBackground, getIcon, getName, typeMap } from '@/utils/util'
-import { useToolProviderStore } from '../space/SpaceView.store'
+import { useSpaceStore } from '../space/SpaceView.store'
 
 const props = defineProps<{
   provider?: GetBuiltinToolsResp | GetAPIToolProvidersWithPage
@@ -13,7 +13,7 @@ const visible = defineModel<boolean>('visible', { default: false })
 
 defineEmits(['updateToolProvider'])
 
-const store = useToolProviderStore()
+const store = useSpaceStore()
 </script>
 
 <template>

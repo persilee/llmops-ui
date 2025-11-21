@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useToolProviderStore = defineStore('toolProvider', () => {
+export const useSpaceStore = defineStore('space', () => {
   const searchWord = ref<string>('')
   const isOpenCreateToolModal = ref<boolean>(false)
   const isOpenEditToolModal = ref<boolean>(false)

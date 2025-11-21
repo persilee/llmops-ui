@@ -3,10 +3,10 @@ import { useRoute } from 'vue-router'
 import InputSearch from '../components/InputSearch.vue'
 import PageHeader from '../components/PageHeader.vue'
 import PageRouterLink from '../components/PageRouterLink.vue'
-import { useToolProviderStore } from './SpaceView.store'
+import { useSpaceStore } from './SpaceView.store'
 
 const route = useRoute()
-const store = useToolProviderStore()
+const store = useSpaceStore()
 
 const getButtonText = () => {
   const buttonTextMap: Record<string, string> = {

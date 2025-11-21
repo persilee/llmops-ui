@@ -4,14 +4,14 @@ import type { GetAPIToolProvidersWithPage } from '@/services/api/api-tool/types'
 import type { Paginator } from '@/services/types'
 import PageCard from '@/views/components/PageCard.vue'
 
-import LoadingStatus from './components/LoadingStatus.vue'
+import LoadingStatus from '../../components/LoadingStatus.vue'
 import ToolModal from './components/ToolModal.vue'
 
 import ToolDetailDrawer from '@/views/components/ToolDetailDrawer.vue'
 import { Message } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
-import { useToolProviderStore } from '../SpaceView.store'
+import { useSpaceStore } from '../SpaceView.store'
 
 const providers = ref<GetAPIToolProvidersWithPage[]>([])
 const paginator = ref<Paginator>({
@@ -24,7 +24,7 @@ const showIndex = ref<number>(-1)
 const isShowToolDetail = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const error = ref<string | null>(null)
-const store = useToolProviderStore()
+const store = useSpaceStore()
 
 const scrollContainerRef = useTemplateRef('scrollContainer')
 

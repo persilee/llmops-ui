@@ -4,6 +4,7 @@ import {
   type GetAPIToolProvidersWithPage,
 } from '@/services/api/api-tool/types'
 import { isGetBuiltinToolsResp, type GetBuiltinToolsResp } from '@/services/api/builtin-tool/types'
+import { isGetDatasetsWithPage, type GetDatasetsWithPage } from '@/services/api/dataset/types'
 
 /**
  * 获取工具图标URL
@@ -12,16 +13,27 @@ import { isGetBuiltinToolsResp, type GetBuiltinToolsResp } from '@/services/api/
  *  - 如果是API工具提供商，返回其icon属性
  *  - 其他情况返回空字符串
  */
-export const getIcon = (data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage): string => {
-  return isGetBuiltinToolsResp(data)
-    ? `${BASE_URL}/builtin-tools/${data.name}/icon`
-    : isGetAPIToolProvidersWithPage(data)
-      ? data.icon
-      : ''
+export const getIcon = (
+  data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage | GetDatasetsWithPage,
+): string => {
+  if (isGetBuiltinToolsResp(data)) {
+    return `${BASE_URL}/builtin-tools/${data.name}/icon`
+  }
+  if (isGetAPIToolProvidersWithPage(data)) {
+    return data.icon
+  }
+  if (isGetDatasetsWithPage(data)) {
+    return data.icon
+  }
+  return ''
 }
 
-export const getBackground = (data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage) => {
-  return isGetBuiltinToolsResp(data) ? data.background : '#ffffff'
+export const getBackground = (data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage | any) => {
+  if (isGetBuiltinToolsResp(data)) {
+    return data.background
+  } else {
+    return '#ffffff'
+  }
 }
 
 /**
@@ -31,12 +43,34 @@ export const getBackground = (data: GetBuiltinToolsResp | GetAPIToolProvidersWit
  *  - 如果是API工具提供商，返回其name属性
  *  - 其他情况返回空字符串
  */
-export const getName = (data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage): string => {
-  return isGetBuiltinToolsResp(data)
-    ? data.label
-    : isGetAPIToolProvidersWithPage(data)
-      ? data.name
-      : ''
+export const getName = (
+  data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage | GetDatasetsWithPage,
+): string => {
+  if (isGetBuiltinToolsResp(data)) {
+    return data.label
+  }
+  if (isGetAPIToolProvidersWithPage(data)) {
+    return data.name
+  }
+  if (isGetDatasetsWithPage(data)) {
+    return data.name
+  }
+  return ''
+}
+
+export const getSubLabel = (
+  data: GetBuiltinToolsResp | GetAPIToolProvidersWithPage | GetDatasetsWithPage,
+): string => {
+  if (isGetBuiltinToolsResp(data)) {
+    return `提供商 ${data.name} • ${data.tools.length}`
+  }
+  if (isGetAPIToolProvidersWithPage(data)) {
+    return `提供商 ${data.name} • ${data.tools.length}`
+  }
+  if (isGetDatasetsWithPage(data)) {
+    return `${data.document_count} 文档 • ${Math.round(data.character_count / 1000)} 千字符 • ${data.related_app_count} 关联应用`
+  }
+  return ''
 }
 
 export const typeMap: { [key: string]: string } = {
