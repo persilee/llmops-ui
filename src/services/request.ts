@@ -69,7 +69,6 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
             resolve(data)
           } else {
             Message.error(data.message)
-            reject(new Error(data.message))
           }
         })
         .catch((err) => {

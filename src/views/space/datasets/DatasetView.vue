@@ -5,12 +5,15 @@ import type { Paginator } from '@/services/types'
 import { formatDate } from '@/utils/format-util'
 import LoadingStatus from '@/views/components/LoadingStatus.vue'
 import PageCard from '@/views/components/PageCard.vue'
+import { Message } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useSpaceStore } from '../SpaceView.store'
+import DatasetModal from './components/DatasetModal.vue'
 
 const loading = ref(false)
 const datasets = ref<GetDatasetsWithPage[]>([])
+const selectedDataset = ref<GetDatasetsWithPage>()
 const paginator = ref<Paginator>({
   current_page: 1,
   page_size: 20,
@@ -87,6 +90,23 @@ const getDate = (dataset: GetDatasetsWithPage) => {
   return `User • 最近编辑 ${formatDate(dataset.created_at, 'MM-DD HH:mm')}`
 }
 
+const handleSelect = async (v: string, dataset: GetDatasetsWithPage) => {
+  if (v == 'edit') {
+    selectedDataset.value = dataset
+    store.openEditDatasetModal()
+  }
+  if (v == 'delete') {
+    try {
+      loading.value = true
+      const resp = await DatasetApi.deleteDataset(dataset.id)
+      Message.success(resp.message)
+      await fetchData()
+    } finally {
+      loading.value = false
+    }
+  }
+}
+
 onMounted(() => {
   fetchData()
 })
@@ -100,7 +120,7 @@ onUnmounted(() => {
 <template>
   <div ref="scrollContainer" @scroll="handleScroll">
     <a-spin :loading="loading" class="block h-full w-full overflow-scroll scrollbar-w-none">
-      <!-- 工具列表 -->
+      <!-- 知识库列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="dataset in datasets" :key="dataset.id">
           <PageCard
@@ -111,13 +131,13 @@ onUnmounted(() => {
             :description="dataset.description"
             :date="getDate(dataset)"
           >
-            <a-dropdown position="br">
+            <a-dropdown position="br" @select="(v: string) => handleSelect(v, dataset)">
               <a-button type="text" class="rounded-lg text-gray-700" size="small">
                 <template #icon><icon-more /></template>
               </a-button>
               <template #content>
-                <a-doption>设置</a-doption>
-                <a-doption class="text-red-500">删除</a-doption>
+                <a-doption value="edit">设置</a-doption>
+                <a-doption value="delete" class="text-red-500">删除</a-doption>
               </template>
             </a-dropdown>
           </PageCard>
@@ -136,6 +156,12 @@ onUnmounted(() => {
         :has-data="datasets.length > 0"
         :show-load-more-btn="showLoadMoreBtn"
         @load-more="fetchData(true)"
+      />
+
+      <DatasetModal
+        v-model:visible="store.openDatasetModal"
+        :dataset="selectedDataset"
+        @success="fetchData()"
       />
     </a-spin>
   </div>

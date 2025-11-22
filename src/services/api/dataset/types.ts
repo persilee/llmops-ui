@@ -27,3 +27,28 @@ export const isGetDatasetsWithPage = (data: any): data is GetDatasetsWithPage =>
     'updated_at' in data
   )
 }
+
+export interface CreateDatasetReq {
+  description: string
+  icon: string
+  name: string
+}
+
+export interface UpdateDatasetReq {
+  description: string
+  icon: string
+  name: string
+}
+
+export interface GetDatasetResp {
+  character_count: number
+  created_at: number
+  description: string
+  document_count: number
+  hit_count: number
+  icon: string
+  id: string
+  name: string
+  related_app_count: number
+  updated_at: number
+}

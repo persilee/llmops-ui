@@ -16,7 +16,6 @@ defineProps<{
         class="w-10 h-10 rounded-lg"
         fit="cover"
         :src="icon"
-        :alt="name"
         :style="{ background: background }"
       />
       <div class="flex flex-col">
