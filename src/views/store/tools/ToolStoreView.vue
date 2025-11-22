@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { BASE_URL } from '@/config'
 import BuiltinToolApi from '@/services/api/builtin-tool'
 import type { GetBuiltinToolsResp, GetCategoriesResp } from '@/services/api/builtin-tool/types'
+import { formatDate } from '@/utils/format-util'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
 import PageCard from '../../components/PageCard.vue'
@@ -75,6 +77,18 @@ const handleToolCardClick = (index: number) => {
 const handleCloseDrawer = () => {
   isShowToolDetail.value = false
 }
+
+const getIcon = (provider: GetBuiltinToolsResp) => {
+  return `${BASE_URL}/builtin-tools/${provider.name}/icon`
+}
+
+const getSubLabel = (provider: GetBuiltinToolsResp) => {
+  return `提供商 ${provider.name} • ${provider.tools.length}`
+}
+
+const getDate = (provider: GetBuiltinToolsResp) => {
+  return `User • 发布时间 ${formatDate(provider.created_at, 'MM-DD HH:mm')}`
+}
 </script>
 
 <template>
@@ -93,7 +107,15 @@ const handleCloseDrawer = () => {
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="(provider, idx) in filterProviders" :key="provider.name">
-          <PageCard :data="provider" @click="handleToolCardClick(idx)" />
+          <PageCard
+            :icon="getIcon(provider)"
+            :background="provider.background"
+            :name="provider.label"
+            :sub-label="getSubLabel(provider)"
+            :description="provider.description"
+            :date="getDate(provider)"
+            @click="handleToolCardClick(idx)"
+          />
         </a-col>
         <a-col :span="24" v-if="filterProviders.length === 0">
           <a-empty
@@ -106,8 +128,12 @@ const handleCloseDrawer = () => {
 
     <!-- 工具详情抽屉 -->
     <ToolDetailDrawer
+      v-if="selectedProvider"
       v-model:visible="isShowToolDetail"
       :provider="selectedProvider"
+      :icon="getIcon(selectedProvider)"
+      :background="selectedProvider.background"
+      :name="selectedProvider.label"
       @update:visible="handleCloseDrawer"
     />
   </a-spin>

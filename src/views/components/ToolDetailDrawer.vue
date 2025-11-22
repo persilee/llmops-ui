@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { type GetAPIToolProvidersWithPage } from '@/services/api/api-tool/types'
 import { type GetBuiltinToolsResp } from '@/services/api/builtin-tool/types'
-import { getBackground, getIcon, getName, typeMap } from '@/utils/util'
+import { typeMap } from '@/utils/util'
 import { useSpaceStore } from '../space/SpaceView.store'
 
 const props = defineProps<{
   provider?: GetBuiltinToolsResp | GetAPIToolProvidersWithPage
+  icon: string
+  background: string
+  name: string
   loading?: boolean
 }>()
 
@@ -30,13 +33,13 @@ const store = useSpaceStore()
         <a-image
           class="w-10 h-10 rounded-lg"
           fit="cover"
-          :src="getIcon(provider)"
+          :src="icon"
           :alt="provider.name"
-          :style="{ background: getBackground(provider) }"
+          :style="{ background: background }"
         />
         <div class="flex flex-col">
           <div class="text-base text-gray-900 font-bold">
-            {{ getName(provider) }}
+            {{ name }}
           </div>
           <div class="text-xs text-gray-500 line-clamp-1">
             提供商 {{ provider.name }} •

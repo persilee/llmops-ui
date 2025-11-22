@@ -2,6 +2,7 @@
 import DatasetApi from '@/services/api/dataset'
 import type { GetDatasetsWithPage } from '@/services/api/dataset/types'
 import type { Paginator } from '@/services/types'
+import { formatDate } from '@/utils/format-util'
 import LoadingStatus from '@/views/components/LoadingStatus.vue'
 import PageCard from '@/views/components/PageCard.vue'
 import { debounce } from 'lodash-es'
@@ -78,6 +79,14 @@ const stop = watch(
   },
 )
 
+const getSubLabel = (dataset: GetDatasetsWithPage) => {
+  return `${dataset.document_count} 文档 • ${Math.round(dataset.character_count / 1000)} 千字符 • ${dataset.related_app_count} 关联应用`
+}
+
+const getDate = (dataset: GetDatasetsWithPage) => {
+  return `User • 最近编辑 ${formatDate(dataset.created_at, 'MM-DD HH:mm')}`
+}
+
 onMounted(() => {
   fetchData()
 })
@@ -94,7 +103,14 @@ onUnmounted(() => {
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="dataset in datasets" :key="dataset.id">
-          <PageCard :data="dataset" date-label="最近编辑">
+          <PageCard
+            :icon="dataset.icon"
+            background="#ffffff"
+            :name="dataset.name"
+            :sub-label="getSubLabel(dataset)"
+            :description="dataset.description"
+            :date="getDate(dataset)"
+          >
             <a-dropdown position="br">
               <a-button type="text" class="rounded-lg text-gray-700" size="small">
                 <template #icon><icon-more /></template>

@@ -7,6 +7,7 @@ import PageCard from '@/views/components/PageCard.vue'
 import LoadingStatus from '../../components/LoadingStatus.vue'
 import ToolModal from './components/ToolModal.vue'
 
+import { formatDate } from '@/utils/format-util'
 import ToolDetailDrawer from '@/views/components/ToolDetailDrawer.vue'
 import { Message } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
@@ -115,6 +116,14 @@ const showLoadMoreBtn = computed(() => {
   )
 })
 
+const getSubLabel = (provider: GetAPIToolProvidersWithPage) => {
+  return `提供商 ${provider.name} • ${provider.tools.length}`
+}
+
+const getDate = (provider: GetAPIToolProvidersWithPage) => {
+  return `User • 发布时间 ${formatDate(provider.created_at, 'MM-DD HH:mm')}`
+}
+
 // 处理模态框关闭的函数
 const handleCloseModal = () => {
   store.closeCreateToolModal() // 关闭创建工具的模态框
@@ -144,7 +153,15 @@ onUnmounted(() => {
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="(provider, idx) in providers" :key="provider.name">
-          <PageCard :data="provider" @click="handleToolCardClick(idx)" />
+          <PageCard
+            :icon="provider.icon"
+            background="#ffffff"
+            :name="provider.name"
+            :sub-label="getSubLabel(provider)"
+            :description="provider.description"
+            :date="getDate(provider)"
+            @click="handleToolCardClick(idx)"
+          />
         </a-col>
         <a-col :span="24" v-if="providers.length === 0">
           <a-empty
@@ -162,8 +179,12 @@ onUnmounted(() => {
         @load-more="fetchData(false)"
       />
       <ToolDetailDrawer
+        v-if="selectedProvider"
         v-model:visible="isShowToolDetail"
         :provider="selectedProvider"
+        :icon="selectedProvider.icon"
+        background="#ffffff"
+        :name="selectedProvider.name"
         @update:visible="handleCloseDrawer"
         @update-tool-provider="store.openCreateToolModal(true)"
       />
