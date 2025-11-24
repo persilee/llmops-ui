@@ -106,7 +106,7 @@ const route = useRoute()
       </div>
     </a-layout-sider>
     <!-- 主内容区域 -->
-    <a-layout-content>
+    <a-layout-content class="bg-gray-50">
       <router-view></router-view>
     </a-layout-content>
   </a-layout>

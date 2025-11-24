@@ -10,6 +10,7 @@ import { debounce } from 'lodash-es'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useSpaceStore } from '../SpaceView.store'
 import DatasetModal from './components/DatasetModal.vue'
+import { useDatasetStore } from './DatasetView.store'
 
 const loading = ref(false)
 const datasets = ref<GetDatasetsWithPage[]>([])
@@ -21,6 +22,7 @@ const paginator = ref<Paginator>({
   total_record: 0,
 })
 const store = useSpaceStore()
+const datasetStore = useDatasetStore()
 const scrollContainerRef = useTemplateRef('scrollContainer')
 
 const fetchData = async (isLoadMore: boolean = false) => {
@@ -107,6 +109,10 @@ const handleSelect = async (v: string, dataset: GetDatasetsWithPage) => {
   }
 }
 
+const handelToDocument = (dataset: GetDatasetsWithPage) => {
+  datasetStore.dataset = dataset
+}
+
 onMounted(() => {
   fetchData()
 })
@@ -123,24 +129,32 @@ onUnmounted(() => {
       <!-- 知识库列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
         <a-col :span="6" v-for="dataset in datasets" :key="dataset.id">
-          <PageCard
-            :icon="dataset.icon"
-            background="#ffffff"
-            :name="dataset.name"
-            :sub-label="getSubLabel(dataset)"
-            :description="dataset.description"
-            :date="getDate(dataset)"
+          <RouterLink
+            :to="{
+              name: 'space-datasets-documents',
+              params: { datasetId: dataset.id },
+            }"
+            @click="handelToDocument(dataset)"
           >
-            <a-dropdown position="br" @select="(v: string) => handleSelect(v, dataset)">
-              <a-button type="text" class="rounded-lg text-gray-700" size="small">
-                <template #icon><icon-more /></template>
-              </a-button>
-              <template #content>
-                <a-doption value="edit">设置</a-doption>
-                <a-doption value="delete" class="text-red-500">删除</a-doption>
-              </template>
-            </a-dropdown>
-          </PageCard>
+            <PageCard
+              :icon="dataset.icon"
+              background="#ffffff"
+              :name="dataset.name"
+              :sub-label="getSubLabel(dataset)"
+              :description="dataset.description"
+              :date="getDate(dataset)"
+            >
+              <a-dropdown position="br" @select="(v: string) => handleSelect(v, dataset)">
+                <a-button type="text" class="rounded-lg text-gray-700" size="small">
+                  <template #icon><icon-more /></template>
+                </a-button>
+                <template #content>
+                  <a-doption value="edit">设置</a-doption>
+                  <a-doption value="delete" class="text-red-500">删除</a-doption>
+                </template>
+              </a-dropdown>
+            </PageCard>
+          </RouterLink>
         </a-col>
         <a-col :span="24" v-if="datasets.length === 0">
           <a-empty

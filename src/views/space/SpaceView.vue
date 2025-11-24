@@ -34,8 +34,8 @@ const handleSearch = (value: string) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full w-full px-6 bg-gray-50 overflow-hidden">
-    <div class="pt-6 sticky top-0 z-66 bg-gray-50">
+  <div class="flex flex-col h-full w-full px-6 overflow-hidden">
+    <div class="pt-6 sticky top-0 z-6">
       <!-- 页面的头部 -->
       <PageHeader title="个人空间" :button-text="getButtonText()" @click="handleClick()" />
       <!-- 页面导航+搜索框 -->

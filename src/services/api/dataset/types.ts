@@ -7,6 +7,7 @@ export interface GetDatasetsWithPage {
   created_at: number
   description: string
   document_count: number
+  hit_count: number
   icon: string
   id: string
   name: string
@@ -20,6 +21,7 @@ export const isGetDatasetsWithPage = (data: any): data is GetDatasetsWithPage =>
     'created_at' in data &&
     'description' in data &&
     'document_count' in data &&
+    'hit_count' in data &&
     'icon' in data &&
     'id' in data &&
     'name' in data &&
