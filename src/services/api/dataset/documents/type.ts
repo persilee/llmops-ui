@@ -15,3 +15,11 @@ export interface GetDocumentsWithPage {
   status: string
   updated_at: number
 }
+
+export interface UpdateDocumentNameReq {
+  name: string
+}
+
+export interface UpdateDocumentEnabledReq {
+  enabled: boolean
+}

@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
 import { formatDate } from '@/utils/format-util'
 
 // 定义组件属性
 const props = defineProps({
   documents: {
-    type: Array,
+    type: Array<GetDocumentsWithPage>,
     default: () => [],
   },
   pagination: {
@@ -18,11 +19,31 @@ const props = defineProps({
 })
 
 // 定义事件
-const emit = defineEmits(['page-change'])
+const emit = defineEmits(['page-change', 'select', 'switch-change'])
 
 // 处理分页变化
 const handlePageChange = (page: number) => {
   emit('page-change', page)
+}
+
+const handleSelect = (v: string, document: GetDocumentsWithPage) => {
+  emit('select', v, document)
+}
+
+const getContent = (document: GetDocumentsWithPage) => {
+  if (document.error != '' && document.status != 'completed') {
+    return `错误：${document.error},状态：${document.status}`
+  } else if (document.error != '') {
+    return `错误：${document.error}`
+  } else if (document.status != 'completed') {
+    return `状态：${document.status}`
+  } else {
+    return `不可用状态`
+  }
+}
+
+const handleChange = (v: string | number | boolean, document: GetDocumentsWithPage) => {
+  emit('switch-change', v, document)
 }
 </script>
 
@@ -103,14 +124,31 @@ const handlePageChange = (page: number) => {
             <template #split>
               <a-divider direction="vertical" />
             </template>
-            <a-switch size="small" type="round" :checked-value="!record.enabled"></a-switch>
-            <a-dropdown position="br">
+            <a-tooltip
+              v-if="record.status != 'completed' || record.error != ''"
+              :content="getContent(record)"
+            >
+              <a-switch
+                size="small"
+                type="round"
+                :checked-value="!record.enabled"
+                disabled
+              ></a-switch>
+            </a-tooltip>
+            <a-switch
+              v-else
+              v-model:model-value="record.enabled"
+              size="small"
+              type="round"
+              @change="(v) => handleChange(v, record)"
+            ></a-switch>
+            <a-dropdown position="br" @select="(v: string) => handleSelect(v, record)">
               <a-button type="text" size="mini" class="text-gray-700">
                 <template #icon><icon-more /></template>
               </a-button>
               <template #content>
-                <a-doption>重命名</a-doption>
-                <a-doption class="text-red-700">删除</a-doption>
+                <a-doption value="rename">重命名</a-doption>
+                <a-doption value="delete" class="text-red-700">删除</a-doption>
               </template>
             </a-dropdown>
           </a-space>

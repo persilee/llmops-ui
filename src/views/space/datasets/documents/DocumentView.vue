@@ -2,22 +2,26 @@
 import DocumentsApi from '@/services/api/dataset/documents'
 import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
 import InputSearch from '@/views/components/InputSearch.vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { onMounted, reactive, ref } from 'vue'
 import { useDatasetStore } from '../DatasetView.store'
+import DocumentModal from '../components/DocumentModal.vue'
 import DocumentTable from '../components/DocumentTable.vue'
 
 const store = useDatasetStore()
 const loading = ref(false)
 const documents = ref<GetDocumentsWithPage[]>([])
+const document = ref<GetDocumentsWithPage | null>(null)
 const pagination = reactive({
   total: 0,
   current: 1,
   defaultCurrent: 1,
-  pageSize: 5,
-  defaultPageSize: 5,
+  pageSize: 20,
+  defaultPageSize: 20,
   showTotal: true,
 })
+const visible = ref(false)
 
 const fetchData = async () => {
   try {
@@ -42,12 +46,71 @@ const handlePageChange = (page: number) => {
   fetchData()
 }
 
+const handleSwitchChange = async (v: boolean, document: GetDocumentsWithPage) => {
+  try {
+    if (store.dataset && store.dataset.id) {
+      loading.value = true
+      const resp = await DocumentsApi.updateDocumentEnabled(store.dataset.id, document.id, {
+        enabled: v,
+      })
+      if (resp.code == 'success') {
+        Message.success(resp.message)
+      }
+      fetchData()
+    }
+  } catch (error) {
+    document.enabled = !v
+  } finally {
+    loading.value = false
+  }
+}
+
 const debouncedFetchData = debounce(fetchData, 300)
 
 const handleSearch = (value: string) => {
   store.searchWord = value
   pagination.current = 1
   debouncedFetchData()
+}
+
+const handleSelect = (v: string, data: GetDocumentsWithPage) => {
+  if (v == 'rename') {
+    document.value = data
+    visible.value = true
+  } else {
+    handleDelete(data)
+  }
+}
+
+const handleDelete = (data: GetDocumentsWithPage) => {
+  Modal.warning({
+    title: '要删除该文档吗?', // 模态框标题
+    content:
+      '删除文档后，知识库/向量数据库将无法检索到该文档，如需暂时关闭该文档的检索，可以选择禁用功能。', // 提示内容
+    hideCancel: false, // 显示取消按钮
+    titleAlign: 'start', // 标题左对齐
+    simple: false, // 简单模式
+    // 确认按钮的回调函数
+    onOk: async () => {
+      try {
+        if (store.dataset && store.dataset.id) {
+          loading.value = true
+          const resp = await DocumentsApi.deleteDocument(store.dataset.id, data.id)
+          Message.success(resp.message)
+          if (resp.code == 'success') {
+            fetchData()
+          }
+        }
+      } catch (error) {
+      } finally {
+        loading.value = false
+      }
+    },
+    onCancel: () => {
+      // 取消删除操作
+      console.log('取消删除')
+    },
+  })
 }
 
 onMounted(() => {
@@ -109,7 +172,10 @@ onMounted(() => {
       :pagination="pagination"
       :loading="loading"
       @page-change="handlePageChange"
+      @select="handleSelect"
+      @switch-change="handleSwitchChange"
     />
+    <DocumentModal v-model:visible="visible" :document="document" :callback="fetchData" />
   </div>
 </template>
 

@@ -1,6 +1,10 @@
-import { get } from '@/services/request'
+import { get, post } from '@/services/request'
 import type { GetPagesParams } from '@/services/types'
-import type { GetDocumentsWithPageResp } from './type'
+import type {
+  GetDocumentsWithPageResp,
+  UpdateDocumentEnabledReq,
+  UpdateDocumentNameReq,
+} from './type'
 
 class DocumentsApi {
   /**
@@ -13,6 +17,50 @@ class DocumentsApi {
     return get<GetDocumentsWithPageResp>({
       url: `/datasets/${datasetId}/documents`,
       params,
+    })
+  }
+
+  /**
+   * 更新文档名称
+   * @param datasetId 数据集ID
+   * @param documentId 文档ID
+   * @param req 更新文档名称的请求体，包含新的文档名称
+   * @returns 返回一个Promise，解析为更新操作的响应结果
+   */
+  static updateDocumentName(datasetId: string, documentId: string, req: UpdateDocumentNameReq) {
+    return post({
+      url: `/datasets/${datasetId}/document/${documentId}/name`,
+      body: req,
+    })
+  }
+
+  /**
+   * 删除文档
+   * @param datasetId 数据集ID
+   * @param documentId 文档ID
+   * @returns 返回一个Promise，解析为删除操作的响应结果
+   */
+  static deleteDocument(datasetId: string, documentId: string) {
+    return post({
+      url: `/datasets/${datasetId}/document/${documentId}/delete`,
+    })
+  }
+
+  /**
+   * 更新文档启用状态
+   * @param datasetId 数据集ID
+   * @param documentId 文档ID
+   * @param req 更新文档启用状态的请求体，包含启用状态信息
+   * @returns 返回一个Promise，解析为更新操作的响应结果
+   */
+  static updateDocumentEnabled(
+    datasetId: string,
+    documentId: string,
+    req: UpdateDocumentEnabledReq,
+  ) {
+    return post({
+      url: `/datasets/${datasetId}/document/${documentId}/enabled`,
+      body: req,
     })
   }
 }
