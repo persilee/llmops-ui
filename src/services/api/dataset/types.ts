@@ -1,4 +1,5 @@
 import type { BasePaginatorResponse } from '@/services/types'
+import type { FileItem } from '@arco-design/web-vue'
 
 export type GetDatasetsWithPageResp = BasePaginatorResponse<GetDatasetsWithPage>
 
@@ -31,6 +32,7 @@ export const isGetDatasetsWithPage = (data: any): data is GetDatasetsWithPage =>
 }
 
 export interface CreateDatasetReq {
+  fileList?: Array<FileItem>
   description: string
   icon: string
   name: string

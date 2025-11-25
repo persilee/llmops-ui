@@ -214,3 +214,70 @@ const handleStream = (response: Response, onData: (data: { [key: string]: any })
   // 开始读取流数据
   read()
 }
+
+/**
+ * 文件上传函数
+ * @param url 上传接口的URL路径
+ * @param options 上传配置选项
+ * @param options.method 请求方法，默认为POST
+ * @param options.headers 请求头配置
+ * @param options.data 上传的数据，通常是FormData对象
+ * @param options.onProgress 上传进度回调函数
+ * @returns Promise<T> 返回一个Promise，resolve时包含服务器响应数据
+ */
+export const upload = <T>(url: string, options: any) => {
+  // 构建完整的请求URL，确保以BASE_URL为前缀
+  const urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+
+  // 定义默认的上传配置
+  const defaultOptions = {
+    method: 'POST',
+    url: urlWithPrefix,
+    headers: {},
+    data: {},
+  }
+
+  // 合并默认配置和用户自定义配置
+  options = {
+    ...defaultOptions,
+    ...options,
+    headers: { ...defaultOptions.headers, ...options.headers },
+  }
+
+  // 返回Promise以支持异步操作
+  return new Promise<BaseResponse<T>>((resolve, reject) => {
+    // 创建XMLHttpRequest对象
+    const xhr: XMLHttpRequest = new XMLHttpRequest()
+    // 初始化请求
+    xhr.open(options.method, options.url, true)
+    // 设置请求头
+    for (const key in options.headers) {
+      xhr.setRequestHeader(key, options.headers[key])
+    }
+
+    // 允许发送凭证信息
+    xhr.withCredentials = true
+    // 设置响应类型为JSON
+    xhr.responseType = 'json'
+
+    // 监听请求状态变化
+    xhr.onreadystatechange = () => {
+      // 请求完成时处理响应
+      if (xhr.readyState === 4) {
+        // 请求成功时返回响应数据
+        if (xhr.status === 200) {
+          resolve(xhr.response)
+        } else {
+          // 请求失败时返回错误信息
+          reject(xhr)
+        }
+      }
+    }
+
+    // 设置上传进度回调
+    xhr.upload.onprogress = options.onProgress
+
+    // 发送请求
+    xhr.send(options.data)
+  })
+}

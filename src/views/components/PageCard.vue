@@ -15,6 +15,7 @@ defineProps<{
       <a-image
         class="w-10 h-10 rounded-lg"
         fit="cover"
+        :preview-visible="false"
         :src="icon"
         :style="{ background: background }"
       />

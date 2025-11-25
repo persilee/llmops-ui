@@ -5,8 +5,9 @@ import type {
   GetAPIToolProvidersWithPage,
   Header,
 } from '@/services/api/api-tool/types'
+import UploadApi from '@/services/api/upload-file'
 import { deepEqual } from '@/utils/util'
-import { Message, Modal } from '@arco-design/web-vue'
+import { Message, Modal, type FileItem, type RequestOption } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { reactive, ref, useTemplateRef, watch } from 'vue'
 import { useSpaceStore } from '../../SpaceView.store'
@@ -35,7 +36,8 @@ const validateSchemaHelpText = ref('')
 const validateSchemaStatus = ref('')
 
 const formData = reactive<CreateAPIToolProviderReq>({
-  icon: 'https://iknow-pic.cdn.bcebos.com/77c6a7efce1b9d1618b138ffe1deb48f8c54643e?for=bg',
+  fileList: <FileItem>[],
+  icon: '',
   name: '',
   openapi_schema: '',
   headers: [],
@@ -187,6 +189,7 @@ const handleSchemaBlur = debounce(async () => {
 const resetForm = () => {
   // 重置表单数据
   Object.assign(formData, {
+    fileList: [],
     icon: '',
     name: '',
     openapi_schema: '',
@@ -240,13 +243,23 @@ const handleSubmit = async ({
     if (!props.provider?.id) {
       throw new Error('未找到工具提供者ID')
     }
-    const resp = await APIToolsApi.updateAPIToolProvider(props.provider.id, values)
+    const resp = await APIToolsApi.updateAPIToolProvider(props.provider.id, {
+      headers: values.headers,
+      icon: values.icon,
+      name: values.name,
+      openapi_schema: values.openapi_schema,
+    })
     return resp.message
   }
 
   // 处理创建新工具提供者的异步函数
   const handleCreate = async () => {
-    const resp = await APIToolsApi.createAPIToolProvider(values)
+    const resp = await APIToolsApi.createAPIToolProvider({
+      headers: values.headers,
+      icon: values.icon,
+      name: values.name,
+      openapi_schema: values.openapi_schema,
+    })
     return resp.message
   }
 
@@ -340,6 +353,7 @@ const handleCloseModal = () => {
 }
 
 const updateFormData = (data: {
+  fileList: Array<FileItem>
   icon: string
   name: string
   openapi_schema: string
@@ -391,7 +405,7 @@ const handleUpdateToolProvider = async (provider: GetAPIToolProvidersWithPage) =
     }
 
     // 更新表单数据
-    updateFormData({ icon, name, openapi_schema, headers })
+    updateFormData({ fileList: [{ uid: '1', url: icon }], icon, name, openapi_schema, headers })
 
     // 重置验证状态
     resetValidationState()
@@ -405,6 +419,46 @@ const handleUpdateToolProvider = async (provider: GetAPIToolProvidersWithPage) =
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 处理图片上传的异步函数
+ * @param option 上传选项对象，包含以下属性：
+ *   - fileItem: 上传的文件项
+ *   - onSuccess: 上传成功时的回调函数
+ *   - onError: 上传失败时的回调函数
+ * 功能：
+ 1. 调用上传API上传图片
+ 2. 处理上传成功的情况，更新表单中的icon字段
+ 3. 处理上传失败的情况，显示错误消息
+ 4. 捕获并处理上传过程中的异常
+ */
+const handleUpload = async (option: RequestOption) => {
+  try {
+    const { fileItem, onSuccess, onError } = option
+    const resp = await UploadApi.uploadImage(fileItem.file)
+    if (resp.code == 'success') {
+      formData.icon = resp.data.url
+      onSuccess(resp)
+    } else {
+      onError(resp)
+      Message.error(resp.message)
+    }
+  } catch (error) {
+    Message.error('上传失败')
+  }
+}
+
+/**
+ * 处理移除图片的函数
+ * @returns {boolean} 返回true表示允许移除
+ * 功能：
+ 1. 清空表单中的icon字段
+ 2. 返回true以确认移除操作
+ */
+const handleRemove = (): boolean => {
+  formData.icon = ''
+  return true
 }
 
 // 监听模态框打开状态，
@@ -452,11 +506,14 @@ watch(
             :rules="[{ required: true, message: '插件图标不能为空' }]"
           >
             <a-upload
-              v-model="formData.icon"
+              v-model:file-list="formData.fileList"
               :limit="1"
               list-type="picture-card"
               accept="image/png, image/jpeg"
               class="justify-center"
+              image-preview
+              :custom-request="handleUpload"
+              :on-before-remove="handleRemove"
             ></a-upload>
           </a-form-item>
           <!-- 插件名称 -->
