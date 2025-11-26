@@ -22,6 +22,7 @@ const handleClick = () => {
   if ((route.name as string) == 'space-apps') {
     store.openCreateToolModal()
   } else if ((route.name as string) == 'space-tools') {
+    store.openCreateToolModal()
   } else if ((route.name as string) == 'space-workflows') {
   } else if ((route.name as string) == 'space-datasets') {
     store.openCreateDatasetModal()

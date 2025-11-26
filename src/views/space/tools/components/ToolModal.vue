@@ -481,20 +481,12 @@ watch(
   <a-modal
     :visible="visible"
     :width="680"
-    hide-title
+    :title="store.isOpenEditToolModal ? '编辑插件' : '新建插件'"
+    title-align="start"
     :footer="false"
     modal-class="rounded-xl"
-    @close="handleCloseModal"
+    @cancel="handleCloseModal"
   >
-    <!-- 标题 -->
-    <div class="flex items-center justify-between">
-      <div class="text-lg font-bold text-gray-700">
-        {{ store.isOpenEditToolModal ? '编辑插件' : '新建插件' }}
-      </div>
-      <a-button type="text" class="text-gray-700" size="small" @click="handleCloseModal">
-        <template #icon><icon-close /></template>
-      </a-button>
-    </div>
     <!-- 表单 -->
     <div class="pt-6">
       <a-form ref="formRef" :model="formData" @submit="handleSubmit" layout="vertical">

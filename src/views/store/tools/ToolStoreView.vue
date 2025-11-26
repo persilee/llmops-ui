@@ -3,6 +3,8 @@ import { BASE_URL } from '@/config'
 import BuiltinToolApi from '@/services/api/builtin-tool'
 import type { GetBuiltinToolsResp, GetCategoriesResp } from '@/services/api/builtin-tool/types'
 import { formatDate } from '@/utils/format-util'
+import { useSpaceStore } from '@/views/space/SpaceView.store'
+import ToolModal from '@/views/space/tools/components/ToolModal.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
 import PageCard from '../../components/PageCard.vue'
@@ -18,6 +20,7 @@ const showIndex = ref<number>(-1)
 const isShowToolDetail = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const error = ref<string | null>(null)
+const store = useSpaceStore()
 
 const filterProviders = computed(() => {
   // 过滤工具列表，根据选中的类别和搜索关键词进行筛选
@@ -66,7 +69,15 @@ onMounted(() => {
 
 const handleCreateTool = () => {
   // 处理创建工具的逻辑
-  console.log('创建自定义插件')
+  store.openCreateToolModal()
+}
+
+// 处理模态框成功操作
+const handleModalSuccess = () => {
+  // 刷新数据列表
+  fetchData()
+  // 关闭模态框
+  store.closeCreateToolModal()
 }
 
 const handleToolCardClick = (index: number) => {
@@ -136,6 +147,9 @@ const getDate = (provider: GetBuiltinToolsResp) => {
       :name="selectedProvider.label"
       @update:visible="handleCloseDrawer"
     />
+
+    <!-- 工具模态框 -->
+    <ToolModal v-model:visible="store.isOpenCreateToolModal" @success="handleModalSuccess" />
   </a-spin>
 </template>
 

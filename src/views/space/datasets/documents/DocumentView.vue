@@ -8,6 +8,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useDatasetStore } from '../DatasetView.store'
 import DocumentModal from '../components/DocumentModal.vue'
 import DocumentTable from '../components/DocumentTable.vue'
+import HitModal from '../components/HitModal.vue'
 
 // 使用数据集状态管理store
 const store = useDatasetStore()
@@ -28,6 +29,8 @@ const pagination = reactive({
 })
 // 控制文档编辑模态框的显示状态
 const visible = ref(false)
+// 召回测试模态框的显示状态
+const hitVisible = ref(false)
 
 /**
  * 获取文档列表数据
@@ -178,6 +181,10 @@ const handleDelete = (data: GetDocumentsWithPage) => {
   })
 }
 
+const handleHit = () => {
+  hitVisible.value = true
+}
+
 onMounted(() => {
   fetchData()
 })
@@ -225,7 +232,7 @@ onMounted(() => {
         @update:searchWord="handleSearch"
       />
       <a-space :size="12">
-        <a-button class="rounded-lg bg-white border-1 border-gray-200 text-black"
+        <a-button @click="handleHit" class="rounded-lg bg-white border-1 border-gray-200 text-black"
           >召回测试</a-button
         >
         <a-button type="primary" class="rounded-lg">添加文件</a-button>
@@ -241,6 +248,7 @@ onMounted(() => {
       @switch-change="handleSwitchChange"
     />
     <DocumentModal v-model:visible="visible" :document="document" :callback="fetchData" />
+    <HitModal v-model="hitVisible" />
   </div>
 </template>
 

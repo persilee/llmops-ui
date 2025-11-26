@@ -43,6 +43,10 @@ export const useSpaceStore = defineStore(
 
     const $reset = () => {
       searchWord.value = ''
+      isOpenCreateToolModal.value = false
+      isOpenCreateDatasetModal.value = false
+      isOpenEditDatasetModal.value = false
+      isOpenEditToolModal.value = false
     }
 
     return {

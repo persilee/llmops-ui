@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { type GetAPIToolProvidersWithPage } from '@/services/api/api-tool/types'
+import {
+  isGetAPIToolProvidersWithPage,
+  type GetAPIToolProvidersWithPage,
+} from '@/services/api/api-tool/types'
 import { type GetBuiltinToolsResp } from '@/services/api/builtin-tool/types'
 import { typeMap } from '@/utils/util'
 import { useSpaceStore } from '../space/SpaceView.store'
@@ -51,6 +54,7 @@ const store = useSpaceStore()
         {{ provider.description }}
       </div>
       <a-button
+        v-if="isGetAPIToolProvidersWithPage(provider)"
         type="outline"
         long
         class="mt-4 bg-white border-gray-300 text-gray-700"
