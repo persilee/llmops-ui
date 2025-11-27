@@ -11,68 +11,109 @@ import { computed, ref, watch } from 'vue'
 import { useDatasetStore } from '../DatasetView.store'
 import RetrievalModal from './RetrievalModal.vue'
 
+// 知识库状态管理store实例
 const store = useDatasetStore()
+// 控制模态框显示/隐藏的状态
 const visible = defineModel({ type: Boolean, default: false })
+// 控制检索设置模态框显示/隐藏的状态
 const retrievalVisible = ref(false)
+// 查询历史记录的加载状态
 const queriesLoading = ref(false)
+// 存储查询历史记录的数据
 const datasetQueries = ref<GetDatasetQueriesResp[]>([])
+// 检索操作的加载状态
 const hitLoading = ref(false)
+// 存储检索结果的数据
 const hitSegments = ref<DatasetHitResp[]>([])
 
+// 默认检索设置配置
 const defaultRetrievalSetting: DatasetHitReq = {
-  query: '',
-  retrieval_strategy: 'semantic',
-  k: 5,
-  score: 0.5,
+  query: '', // 查询文本
+  retrieval_strategy: 'semantic', // 检索策略：语义检索
+  k: 5, // 返回结果数量
+  score: 0.5, // 相似度阈值
 }
 
+// 检索表单数据，基于默认设置初始化
 const hitForm = ref<DatasetHitReq>({
   ...defaultRetrievalSetting,
 })
 
+// 根据检索策略类型返回对应的按钮名称
 const btnName = computed(() => {
   if (hitForm.value.retrieval_strategy == 'hybrid') {
-    return '混合策略'
+    return '混合策略' // 混合检索策略
   } else if (hitForm.value.retrieval_strategy == 'full_text') {
-    return '全问检索'
+    return '全问检索' // 全文检索策略
   } else {
-    return '相似性检索'
+    return '相似性检索' // 默认语义检索策略
   }
 })
 
+/**
+ * 获取知识库的检索数据列表
+ * @returns {Promise<void>} 无返回值
+ */
 const handleHit = async () => {
+  // 检查查询文本是否为空或只包含空白字符
   if (hitForm.value.query?.trim() === '') {
+    // 如果为空，显示错误提示并返回
     Message.error('检索源文本不能为空')
     return
   }
 
   try {
+    // 确保知识库存在且有有效的ID
     if (store.dataset && store.dataset.id) {
+      // 设置加载状态为true，显示加载动画
       hitLoading.value = true
+      // 调用API执行检索，传入知识库ID和检索参数
       const resp = await DocumentsApi.hitDataset(store.dataset?.id, hitForm.value)
+      // 更新检索结果数据
       hitSegments.value = resp.data
 
+      // 获取并更新查询历史记录
       await fetchQueries()
     }
   } catch (e) {
+    // 捕获并处理可能出现的错误
   } finally {
+    // 无论成功或失败，最后都要关闭加载状态
     hitLoading.value = false
   }
 }
 
+/**
+ * 获取知识库的查询历史记录
+ * @returns {Promise<void>} 无返回值
+ */
 const fetchQueries = async () => {
   try {
+    // 检查知识库是否存在且有效
     if (store.dataset && store.dataset.id) {
+      // 设置加载状态
       queriesLoading.value = true
+      // 调用API获取查询历史
       const resp = await DocumentsApi.getDatasetQueries(store.dataset?.id)
+      // 更新查询历史数据
       datasetQueries.value = resp.data
     }
   } catch (error) {
+    // 错误处理
   } finally {
+    // 无论成功失败，都重置加载状态
     queriesLoading.value = false
   }
 }
 
+/**
+ * 关闭模态框处理函数
+ * 执行以下操作：
+ * 1. 关闭模态框显示
+ * 2. 清空查询历史记录
+ * 3. 清空检索结果
+ * 4. 重置检索设置为默认值
+ */
 const handleCloseModal = () => {
   visible.value = false
   datasetQueries.value = []
@@ -80,22 +121,43 @@ const handleCloseModal = () => {
   Object.assign(hitForm.value, { ...defaultRetrievalSetting })
 }
 
+/**
+ * 关闭检索设置模态框时的处理函数
+ * 将检索设置重置为默认值
+ */
 const closeRetrieval = () => {
   Object.assign(hitForm.value, { ...defaultRetrievalSetting })
 }
 
+/**
+ * 提交检索设置时的处理函数
+ * 清空当前的检索结果，为新的检索做准备
+ */
 const submitRetrieval = () => {
   hitSegments.value = []
 }
 
+/**
+ * 处理检索设置按钮点击事件
+ * 打开检索设置模态框，允许用户配置检索参数
+ */
 const handleRetrievalClick = () => {
   retrievalVisible.value = true
 }
 
+/**
+ * 处理查询历史记录点击事件
+ * @param {string} query - 选中的查询文本
+ * 将选中的查询文本设置到检索表单中
+ */
 const handleQueryClick = (query: string) => {
   hitForm.value.query = query
 }
 
+/**
+ * 监听模态框可见性变化
+ * 当模态框打开时，自动获取查询历史记录
+ */
 watch(
   () => visible.value,
   (val) => {

@@ -8,17 +8,26 @@ interface Emits {
   (e: 'close'): void
   (e: 'submit'): void
 }
+// 定义组件的事件发射器
 const emit = defineEmits<Emits>()
+// 定义visible模型，用于控制模态框的显示/隐藏状态
 const visible = defineModel('visible', { type: Boolean, default: false })
+// 定义retrievalForm模型，用于存储检索设置表单数据
 const retrievalForm = defineModel<DatasetHitReq>('retrievalSetting', { type: Object, default: {} })
 
+// 处理关闭模态框的方法
 const handleCloseModal = () => {
+  // 设置模态框为不可见
   visible.value = false
+  // 触发close事件
   emit('close')
 }
 
+// 处理表单提交的方法
 const handleSubmit = () => {
+  // 设置模态框为不可见
   visible.value = false
+  // 触发submit事件
   emit('submit')
 }
 </script>
