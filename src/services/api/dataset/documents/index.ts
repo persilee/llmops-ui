@@ -1,15 +1,20 @@
 import { get, post } from '@/services/request'
 import type { GetPagesParams } from '@/services/types'
 import type {
+  DatasetHitReq,
+  DatasetHitResp,
+  GetDatasetQueriesResp,
   GetDocumentsWithPageResp,
+  GetSegmentsWithPageResp,
   UpdateDocumentEnabledReq,
   UpdateDocumentNameReq,
+  UpdateSegmentReq,
 } from './type'
 
 class DocumentsApi {
   /**
-   * 获取数据集的分页文档列表
-   * @param datasetId 数据集ID
+   * 获取知识库的分页文档列表
+   * @param datasetId 知识库ID
    * @param params 分页参数，包含页码、每页数量等信息
    * @returns 返回一个Promise，解析为包含文档列表和分页信息的响应对象
    */
@@ -22,7 +27,7 @@ class DocumentsApi {
 
   /**
    * 更新文档名称
-   * @param datasetId 数据集ID
+   * @param datasetId 知识库ID
    * @param documentId 文档ID
    * @param req 更新文档名称的请求体，包含新的文档名称
    * @returns 返回一个Promise，解析为更新操作的响应结果
@@ -36,7 +41,7 @@ class DocumentsApi {
 
   /**
    * 删除文档
-   * @param datasetId 数据集ID
+   * @param datasetId 知识库ID
    * @param documentId 文档ID
    * @returns 返回一个Promise，解析为删除操作的响应结果
    */
@@ -48,7 +53,7 @@ class DocumentsApi {
 
   /**
    * 更新文档启用状态
-   * @param datasetId 数据集ID
+   * @param datasetId 知识库ID
    * @param documentId 文档ID
    * @param req 更新文档启用状态的请求体，包含启用状态信息
    * @returns 返回一个Promise，解析为更新操作的响应结果
@@ -61,6 +66,64 @@ class DocumentsApi {
     return post({
       url: `/datasets/${datasetId}/document/${documentId}/enabled`,
       body: req,
+    })
+  }
+
+  /**
+   * 向知识库发起查询请求
+   * @param datasetId 知识库ID
+   * @param req 查询请求体，包含查询相关的参数
+   * @returns 返回一个Promise，解析为查询结果数组
+   */
+  static hitDataset(datasetId: string, req: DatasetHitReq) {
+    return post<Array<DatasetHitResp>>({
+      url: `/datasets/${datasetId}/hit`,
+      body: req,
+    })
+  }
+
+  /**
+   * 获取知识库的查询记录
+   * @param datasetId 知识库ID
+   * @returns 返回一个Promise，解析为查询记录数组
+   */
+  static getDatasetQueries(datasetId: string) {
+    return get<Array<GetDatasetQueriesResp>>({
+      url: `/datasets/${datasetId}/get_dataset_queries`,
+    })
+  }
+
+  /**
+   * 更新文档片段
+   * @param datasetId 知识库ID
+   * @param documentId 文档ID
+   * @param segmentId 文档片段ID
+   * @param req 更新文档片段的请求体，包含更新内容
+   * @returns 返回一个Promise，解析为更新操作的响应结果
+   */
+  static updateSegment(
+    datasetId: string,
+    documentId: string,
+    segmentId: string,
+    req: UpdateSegmentReq,
+  ) {
+    return post({
+      url: `/datasets/${datasetId}/document/${documentId}/segment/${segmentId}/update`,
+      body: req,
+    })
+  }
+
+  /**
+   * 获取文档的分页片段列表
+   * @param datasetId 知识库ID
+   * @param documentId 文档ID
+   * @param params 分页参数，包含页码、每页数量等信息
+   * @returns 返回一个Promise，解析为包含片段列表和分页信息的响应对象
+   */
+  static getSegmentsWithPage(datasetId: string, documentId: string, params: GetPagesParams) {
+    return get<GetSegmentsWithPageResp>({
+      url: `/datasets/${datasetId}/documents/${documentId}/segments`,
+      params,
     })
   }
 }
