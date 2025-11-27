@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { formatDate } from '@/utils/format-util'
+import { ref } from 'vue'
+import RetrievalModal from './RetrievalModal.vue'
 
 const visible = defineModel({ type: Boolean, default: false })
+const retrievalVisible = ref(false)
 
 const handleCloseModal = () => {
   visible.value = false
+}
+
+const handleRetrievalClick = () => {
+  retrievalVisible.value = true
 }
 
 const data = [
@@ -133,7 +140,12 @@ const data = [
             <!-- 标题和按钮 -->
             <div class="flex items-center justify-between px-4 py-2">
               <div class="text-black text-sm font-bold">源文本</div>
-              <a-button type="outline" class="bg-white rounded-lg border-gray-300 text-gray-900">
+              <a-button
+                type="outline"
+                class="bg-white rounded-lg border-gray-300 text-gray-900"
+                @click="handleRetrievalClick"
+                size="small"
+              >
                 <template #icon>
                   <icon-language />
                 </template>
@@ -150,7 +162,7 @@ const data = [
               />
               <div class="flex items-center justify-between px-4">
                 <a-tag class="text-gray-500 rounded-md">0 / 200</a-tag>
-                <a-button type="primary">测试</a-button>
+                <a-button type="primary" size="small">测试</a-button>
               </div>
             </div>
           </div>
@@ -209,7 +221,12 @@ const data = [
                 <!-- 评分 -->
                 <div class="flex items-center gap-2 mb-1.5">
                   <img src="@/assets/images/icon-score.png" class="w-3 h-3" />
-                  <a-progress :stroke-width="6" :show-text="false" :percent="0.46" />
+                  <a-progress
+                    :stroke-width="6"
+                    :show-text="false"
+                    :percent="0.46"
+                    color="#CCCCCC"
+                  />
                   <div class="text-gray-500 text-xs font-bold">0.46</div>
                 </div>
                 <!-- 内容 -->
@@ -229,6 +246,7 @@ const data = [
         </div>
       </div>
     </div>
+    <RetrievalModal v-model:visible="retrievalVisible" />
   </a-modal>
 </template>
 
