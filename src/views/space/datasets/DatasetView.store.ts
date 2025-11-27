@@ -7,10 +7,12 @@ export const useDatasetStore = defineStore(
   () => {
     const dataset = ref<GetDatasetsWithPage>()
     const searchWord = ref<string>('')
+    const currentStep = ref<number>(1)
 
     return {
       dataset,
       searchWord,
+      currentStep,
     }
   },
   {

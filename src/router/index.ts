@@ -50,6 +50,11 @@ const router = createRouter({
           component: () => import('@/views/space/datasets/documents/DocumentView.vue'),
         },
         {
+          path: 'space/datasets/:datasetId/documents/create',
+          name: 'space-datasets-documents-create',
+          component: () => import('@/views/space/datasets/documents/CreateDocumentView.vue'),
+        },
+        {
           path: 'store/apps',
           name: 'store-apps-list',
           component: () => import('@/views/store/apps/ListView.vue'),

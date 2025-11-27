@@ -235,7 +235,14 @@ onMounted(() => {
         <a-button @click="handleHit" class="rounded-lg bg-white border-1 border-gray-200 text-black"
           >召回测试</a-button
         >
-        <a-button type="primary" class="rounded-lg">添加文件</a-button>
+        <RouterLink
+          :to="{
+            name: 'space-datasets-documents-create',
+            params: { datasetId: store.dataset?.id },
+          }"
+        >
+          <a-button type="primary" class="rounded-lg">添加文件</a-button>
+        </RouterLink>
       </a-space>
     </div>
     <!-- 表格内容 -->
