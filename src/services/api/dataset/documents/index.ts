@@ -1,9 +1,12 @@
 import { get, post } from '@/services/request'
 import type { GetPagesParams } from '@/services/types'
 import type {
+  CreateDocumentReq,
+  CreateDocumentResp,
   DatasetHitReq,
   DatasetHitResp,
   GetDatasetQueriesResp,
+  GetDocumentsStatusResp,
   GetDocumentsWithPageResp,
   GetSegmentsWithPageResp,
   UpdateDocumentEnabledReq,
@@ -124,6 +127,31 @@ class DocumentsApi {
     return get<GetSegmentsWithPageResp>({
       url: `/datasets/${datasetId}/documents/${documentId}/segments`,
       params,
+    })
+  }
+
+  /**
+   * 创建新文档
+   * @param datasetId 知识库ID
+   * @param req 创建文档的请求体，包含文档相关信息
+   * @returns 返回一个Promise，解析为创建操作的响应结果
+   */
+  static createDocument(datasetId: string, req: CreateDocumentReq) {
+    return post<CreateDocumentResp>({
+      url: `/datasets/${datasetId}/documents`,
+      body: req,
+    })
+  }
+
+  /**
+   * 获取文档状态
+   * @param datasetId 知识库ID
+   * @param batch 批次ID
+   * @returns 返回一个Promise，解析为文档状态数组
+   */
+  static getDocumentsStatus(datasetId: string, batch: string) {
+    return post<Array<GetDocumentsStatusResp>>({
+      url: `/datasets/${datasetId}/documents/batch/${batch}`,
     })
   }
 }

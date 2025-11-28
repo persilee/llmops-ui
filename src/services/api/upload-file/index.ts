@@ -1,5 +1,5 @@
 import { upload } from '@/services/request'
-import type { UploadImageResp } from './types'
+import type { UploadFileResp, UploadImageResp } from './types'
 
 class UploadApi {
   /**
@@ -12,6 +12,18 @@ class UploadApi {
     formData.append('file', image)
 
     return upload<UploadImageResp>('/upload-files/upload-image', { data: formData })
+  }
+
+  /**
+   * 上传文件
+   * @param file - 要上传的文件
+   * @returns 返回上传结果，包含文件信息
+   */
+  static uploadFile(file: File) {
+    const formData: FormData = new FormData()
+    formData.append('file', file)
+
+    return upload<UploadFileResp>('/upload-files/upload-file', { data: formData })
   }
 }
 

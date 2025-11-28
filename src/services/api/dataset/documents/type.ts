@@ -89,3 +89,57 @@ export interface UpdateSegmentReq {
   content: string
   keywords: string[]
 }
+
+export interface CreateDocumentReq {
+  upload_file_ids?: string[]
+  process_type?: string
+  rule?: Rule
+}
+
+export interface Rule {
+  pre_process_rules: PreProcessRule[]
+  segment: Segment
+}
+
+export interface PreProcessRule {
+  id: string
+  enabled: boolean
+}
+
+export interface Segment {
+  separators: string[]
+  chunk_size: number
+  chunk_overlap: number
+}
+
+export interface CreateDocumentResp {
+  batch: string
+  documents: Document[]
+}
+
+export interface Document {
+  created_at: number
+  id: string
+  name: string
+  status: string
+}
+
+export interface GetDocumentsStatusResp {
+  completed_at: number
+  completed_segment_count: number
+  created_at: number
+  error: string
+  extension: string
+  id: string
+  indexing_completed_at: number
+  mime_type: string
+  name: string
+  parsing_completed_at: number
+  position: number
+  processing_started_at: number
+  segment_count: number
+  size: number
+  splicing_completed_at: number
+  status: string
+  stopped_at: number
+}
