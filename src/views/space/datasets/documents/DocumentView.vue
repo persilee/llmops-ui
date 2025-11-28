@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import DatasetApi from '@/services/api/dataset'
 import DocumentsApi from '@/services/api/dataset/documents'
 import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
+import type { GetDatasetResp } from '@/services/api/dataset/types'
 import InputSearch from '@/views/components/InputSearch.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
@@ -14,6 +16,7 @@ import HitModal from '../components/HitModal.vue'
 const store = useDatasetStore()
 // 加载状态，用于控制表格加载动画
 const loading = ref(false)
+const dataset = ref<GetDatasetResp>()
 // 文档列表数据，类型为GetDocumentsWithPage数组
 const documents = ref<GetDocumentsWithPage[]>([])
 // 当前选中的文档对象，用于编辑操作
@@ -56,6 +59,21 @@ const fetchData = async () => {
   } catch (error) {
     // 错误处理
     console.error('获取文档列表失败:', error)
+  } finally {
+    // 关闭加载状态
+    loading.value = false
+  }
+}
+
+const fetchDatasetById = async () => {
+  try {
+    if (store.dataset && store.dataset.id) {
+      // 开启加载状态
+      loading.value = true
+      const resp = await DatasetApi.getDataset(store.dataset.id)
+      dataset.value = resp.data
+    }
+  } catch (error) {
   } finally {
     // 关闭加载状态
     loading.value = false
@@ -161,7 +179,8 @@ const handleDelete = (data: GetDocumentsWithPage) => {
           Message.success(resp.message)
           // 如果删除成功，刷新文档列表
           if (resp.code == 'success') {
-            fetchData()
+            await fetchDatasetById()
+            await fetchData()
           }
         }
       } catch (error) {
@@ -181,12 +200,30 @@ const handleDelete = (data: GetDocumentsWithPage) => {
   })
 }
 
+/**
+ * 处理召回测试按钮点击事件
+ * @description 打开召回测试模态框，允许用户测试知识库的检索效果
+ */
 const handleHit = () => {
   hitVisible.value = true
 }
 
-onMounted(() => {
-  fetchData()
+/**
+ * 处理召回测试模态框关闭事件
+ * @description 在模态框关闭后，重新获取数据集信息和文档列表，确保数据同步
+ */
+const handleCloseHit = async () => {
+  await fetchDatasetById()
+  await fetchData()
+}
+
+/**
+ * 组件挂载时的生命周期钩子
+ * @description 在组件挂载完成后，初始化加载数据集信息和文档列表数据
+ */
+onMounted(async () => {
+  await fetchDatasetById()
+  await fetchData()
 })
 </script>
 
@@ -209,16 +246,16 @@ onMounted(() => {
           :image-url="store.dataset?.icon"
         ></a-avatar>
         <div class="flex flex-col justify-between h-[40px]">
-          <div class="text-gray-700">知识库 / {{ store.dataset?.name }}</div>
+          <div class="text-gray-700">知识库 / {{ dataset?.name }}</div>
           <div class="flex items-center gap-2">
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >{{ store.dataset?.document_count }} 文档</a-tag
+              >{{ dataset?.document_count }} 文档</a-tag
             >
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >{{ store.dataset?.hit_count }} 命中</a-tag
+              >{{ dataset?.hit_count }} 命中</a-tag
             >
             <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-              >{{ store.dataset?.related_app_count }} 关联应用</a-tag
+              >{{ dataset?.related_app_count }} 关联应用</a-tag
             >
           </div>
         </div>
@@ -255,7 +292,7 @@ onMounted(() => {
       @switch-change="handleSwitchChange"
     />
     <DocumentModal v-model:visible="visible" :document="document" :callback="fetchData" />
-    <HitModal v-model="hitVisible" />
+    <HitModal v-model="hitVisible" :closed="handleCloseHit" />
   </div>
 </template>
 

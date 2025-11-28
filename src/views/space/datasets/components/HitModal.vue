@@ -11,6 +11,8 @@ import { computed, ref, watch } from 'vue'
 import { useDatasetStore } from '../DatasetView.store'
 import RetrievalModal from './RetrievalModal.vue'
 
+/** 定义组件的props */
+const props = defineProps<{ closed: () => void }>()
 // 知识库状态管理store实例
 const store = useDatasetStore()
 // 控制模态框显示/隐藏的状态
@@ -113,12 +115,14 @@ const fetchQueries = async () => {
  * 2. 清空查询历史记录
  * 3. 清空检索结果
  * 4. 重置检索设置为默认值
+ * 5. 调用父组件的closed方法，更新父组件数据
  */
 const handleCloseModal = () => {
   visible.value = false
   datasetQueries.value = []
   hitSegments.value = []
   Object.assign(hitForm.value, { ...defaultRetrievalSetting })
+  props.closed()
 }
 
 /**
@@ -281,11 +285,11 @@ watch(
         <!-- 中间竖线 -->
         <a-divider direction="vertical" class="mx-5" />
         <!-- 右边内容 -->
-        <div class="flex flex-1 items-center justify-center">
+        <div class="flex flex-1">
           <a-spin :loading="hitLoading">
             <a-row
               v-if="hitSegments.length > 0"
-              class="h-[690px] overflow-y-auto"
+              class="h-max-[690px] overflow-y-auto"
               :gutter="[16, 16]"
             >
               <a-col v-for="segment in hitSegments" :key="segment.id" :span="12">
