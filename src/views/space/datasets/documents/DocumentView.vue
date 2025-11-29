@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import router from '@/router'
 import DatasetApi from '@/services/api/dataset'
 import DocumentsApi from '@/services/api/dataset/documents'
 import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
@@ -217,6 +218,16 @@ const handleCloseHit = async () => {
   await fetchData()
 }
 
+const handleRowClick = (row: GetDocumentsWithPage) => {
+  router.push({
+    name: 'space-datasets-documents-segments',
+    params: {
+      datasetId: store?.dataset?.id,
+      documentId: row.id,
+    },
+  })
+}
+
 /**
  * 组件挂载时的生命周期钩子
  * @description 在组件挂载完成后，初始化加载数据集信息和文档列表数据
@@ -232,7 +243,7 @@ onMounted(async () => {
     <!-- 返回、标题、标签 -->
     <div class="flex items-center w-full gap-2 mb-6">
       <!-- 返回按钮 -->
-      <RouterLink :to="{ name: 'space-datasets' }">
+      <RouterLink :to="{ name: 'space-datasets' }" replace>
         <a-button size="mini" type="text" class="text-gray-700">
           <template #icon><icon-left /></template>
         </a-button>
@@ -290,6 +301,7 @@ onMounted(async () => {
       @page-change="handlePageChange"
       @select="handleSelect"
       @switch-change="handleSwitchChange"
+      @row-click="handleRowClick"
     />
     <DocumentModal v-model:visible="visible" :document="document" :callback="fetchData" />
     <HitModal v-model="hitVisible" :closed="handleCloseHit" />

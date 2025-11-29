@@ -19,11 +19,11 @@ class UploadApi {
    * @param file - 要上传的文件
    * @returns 返回上传结果，包含文件信息
    */
-  static uploadFile(file: File) {
+  static uploadFile(file: File, onProgress?: any) {
     const formData: FormData = new FormData()
     formData.append('file', file)
 
-    return upload<UploadFileResp>('/upload-files/upload-file', { data: formData })
+    return upload<UploadFileResp>('/upload-files/upload-file', { data: formData, onProgress })
   }
 }
 
