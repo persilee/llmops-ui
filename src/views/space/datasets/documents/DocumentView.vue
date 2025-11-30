@@ -22,6 +22,8 @@ const dataset = ref<GetDatasetResp>()
 const documents = ref<GetDocumentsWithPage[]>([])
 // 当前选中的文档对象，用于编辑操作
 const document = ref<GetDocumentsWithPage | null>(null)
+// 搜索关键词
+const searchWord = ref('')
 // 分页配置对象
 const pagination = reactive({
   total: 0, // 总数据条数
@@ -50,7 +52,7 @@ const fetchData = async () => {
       const resp = await DocumentsApi.getDocumentsWithPage(store.dataset.id, {
         current_page: pagination.current, // 当前页码
         page_size: pagination.pageSize, // 每页条数
-        search_word: store.searchWord, // 搜索关键词
+        search_word: searchWord.value, // 搜索关键词
       })
       // 更新文档列表数据
       documents.value = resp.data.list
@@ -95,7 +97,8 @@ const handlePageChange = (page: number) => {
  * @param v - 新的启用状态，true表示启用，false表示禁用
  * @param document - 需要修改状态的文档对象
  */
-const handleSwitchChange = async (v: boolean, document: GetDocumentsWithPage) => {
+const handleSwitchChange = async (v: boolean, ev: Event, document: GetDocumentsWithPage) => {
+  ev.stopPropagation()
   try {
     // 确保数据集存在
     if (store.dataset && store.dataset.id) {
@@ -133,7 +136,7 @@ const debouncedFetchData = debounce(fetchData, 300)
  * @description 更新搜索关键词，重置分页到第一页，并触发防抖的数据获取
  */
 const handleSearch = (value: string) => {
-  store.searchWord = value
+  searchWord.value = value
   pagination.current = 1
   debouncedFetchData()
 }
@@ -144,7 +147,7 @@ const handleSearch = (value: string) => {
  * @param data - 被选中的文档对象
  * @description 根据操作类型执行重命名或删除文档的操作
  */
-const handleSelect = (v: string, data: GetDocumentsWithPage) => {
+const handleSelect = (v: string, ev: Event, data: GetDocumentsWithPage) => {
   if (v == 'rename') {
     document.value = data
     visible.value = true
@@ -218,12 +221,23 @@ const handleCloseHit = async () => {
   await fetchData()
 }
 
-const handleRowClick = (row: GetDocumentsWithPage) => {
+/**
+ * 处理表格行点击事件
+ * @param row - 被点击的文档行数据，包含文档的详细信息
+ * @description 当用户点击文档表格中的某一行时触发此函数。
+ *              1. 将当前选中的文档信息存储到store中
+ *              2. 使用Vue Router导航到文档分段页面
+ *              3. 传递数据集ID和文档ID作为路由参数
+ */
+const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
+  // 将当前选中的文档信息存储到store中，以便其他组件可以访问
+  store.document = row
+  // 使用Vue Router导航到文档分段页面
   router.push({
-    name: 'space-datasets-documents-segments',
+    name: 'space-datasets-documents-segments', // 目标路由名称
     params: {
-      datasetId: store?.dataset?.id,
-      documentId: row.id,
+      datasetId: store?.dataset?.id, // 数据集ID，用于标识所属知识库
+      documentId: row.id, // 文档ID，用于标识具体的文档
     },
   })
 }
@@ -249,7 +263,20 @@ onMounted(async () => {
         </a-button>
       </RouterLink>
       <!-- 图标、标题、标签 -->
-      <div class="flex items-center gap-3">
+      <a-skeleton :loading="loading" :animation="true">
+        <div class="flex items-center gap-3">
+          <a-skeleton-shape class="w-[40px] h-[40px] rounded-lg" />
+          <div class="flex flex-col justify-between h-[40px]">
+            <a-skeleton-line :widths="['260px']" />
+            <div class="flex items-center gap-2">
+              <a-skeleton-line :rows="1" :widths="['80px']" :line-height="14" />
+              <a-skeleton-line :rows="1" :widths="['100px']" :line-height="14" />
+              <a-skeleton-line :rows="1" :widths="['120px']" :line-height="14" />
+            </div>
+          </div>
+        </div>
+      </a-skeleton>
+      <div v-if="!loading" class="flex items-center gap-3">
         <a-avatar
           :size="40"
           shape="square"
@@ -276,7 +303,7 @@ onMounted(async () => {
     <div class="flex items-center w-full justify-between mb-6">
       <InputSearch
         placeholder="搜索文档"
-        :search-word="store.searchWord"
+        :search-word="searchWord"
         @update:searchWord="handleSearch"
       />
       <a-space :size="12">

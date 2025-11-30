@@ -65,31 +65,6 @@ export interface GetDatasetQueriesResp {
   source: string
 }
 
-export type GetSegmentsWithPageResp = BasePaginatorResponse<GetSegmentsWithPage>
-
-export interface GetSegmentsWithPage {
-  character_count: number
-  content: string
-  created_at: number
-  dataset_id: string
-  disabled_at: number
-  document_id: string
-  enabled: boolean
-  error: string
-  hit_count: number
-  id: string
-  keywords: string[]
-  position: number
-  status: string
-  token_count: number
-  updated_at: number
-}
-
-export interface UpdateSegmentReq {
-  content: string
-  keywords: string[]
-}
-
 export interface CreateDocumentReq {
   upload_file_ids?: string[]
   process_type?: string
@@ -142,4 +117,20 @@ export interface GetDocumentsStatusResp {
   splicing_completed_at: number
   status: string
   stopped_at: number
+}
+
+export interface GetDocumentResp {
+  character_count: number
+  created_at: number
+  dataset_id: string
+  disabled_at: number
+  enabled: boolean
+  error: string
+  hit_count: number
+  id: string
+  name: string
+  position: number
+  segment_count: number
+  status: string
+  updated_at: number
 }

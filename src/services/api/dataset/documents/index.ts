@@ -6,12 +6,11 @@ import type {
   DatasetHitReq,
   DatasetHitResp,
   GetDatasetQueriesResp,
+  GetDocumentResp,
   GetDocumentsStatusResp,
   GetDocumentsWithPageResp,
-  GetSegmentsWithPageResp,
   UpdateDocumentEnabledReq,
   UpdateDocumentNameReq,
-  UpdateSegmentReq,
 } from './type'
 
 class DocumentsApi {
@@ -97,40 +96,6 @@ class DocumentsApi {
   }
 
   /**
-   * 更新文档片段
-   * @param datasetId 知识库ID
-   * @param documentId 文档ID
-   * @param segmentId 文档片段ID
-   * @param req 更新文档片段的请求体，包含更新内容
-   * @returns 返回一个Promise，解析为更新操作的响应结果
-   */
-  static updateSegment(
-    datasetId: string,
-    documentId: string,
-    segmentId: string,
-    req: UpdateSegmentReq,
-  ) {
-    return post({
-      url: `/datasets/${datasetId}/document/${documentId}/segment/${segmentId}/update`,
-      body: req,
-    })
-  }
-
-  /**
-   * 获取文档的分页片段列表
-   * @param datasetId 知识库ID
-   * @param documentId 文档ID
-   * @param params 分页参数，包含页码、每页数量等信息
-   * @returns 返回一个Promise，解析为包含片段列表和分页信息的响应对象
-   */
-  static getSegmentsWithPage(datasetId: string, documentId: string, params: GetPagesParams) {
-    return get<GetSegmentsWithPageResp>({
-      url: `/datasets/${datasetId}/documents/${documentId}/segments`,
-      params,
-    })
-  }
-
-  /**
    * 创建新文档
    * @param datasetId 知识库ID
    * @param req 创建文档的请求体，包含文档相关信息
@@ -152,6 +117,18 @@ class DocumentsApi {
   static getDocumentsStatus(datasetId: string, batch: string) {
     return post<Array<GetDocumentsStatusResp>>({
       url: `/datasets/${datasetId}/documents/batch/${batch}`,
+    })
+  }
+
+  /**
+   * 获取文档详情
+   * @param datasetId 知识库ID
+   * @param documentId 文档ID
+   * @returns 返回一个Promise，解析为文档详情对象
+   */
+  static getDocument(datasetId: string, documentId: string) {
+    return get<GetDocumentResp>({
+      url: `/datasets/${datasetId}/document/${documentId}`,
     })
   }
 }

@@ -31,16 +31,16 @@ const handlePageChange = (page: number) => {
  * @param v 选中的操作值（如 'rename' 或 'delete'）
  * @param document 当前操作的文档对象
  */
-const handleSelect = (v: string, document: GetDocumentsWithPage) => {
-  emit('select', v, document)
+const handleSelect = (v: string, ev: Event, document: GetDocumentsWithPage) => {
+  emit('select', v, ev, document)
 }
 
 /**
  * 处理表格行点击事件
  * @param document 被点击的文档对象
  */
-const handleRowClick = (document: GetDocumentsWithPage) => {
-  emit('row-click', document)
+const handleRowClick = (document: GetDocumentsWithPage, ev: Event) => {
+  emit('row-click', document, ev)
 }
 
 /**
@@ -65,8 +65,8 @@ const getContent = (document: GetDocumentsWithPage) => {
  * @param v 开关的新状态值
  * @param document 当前操作的文档对象
  */
-const handleChange = (v: string | number | boolean, document: GetDocumentsWithPage) => {
-  emit('switch-change', v, document)
+const handleChange = (v: string | number | boolean, ev: Event, document: GetDocumentsWithPage) => {
+  emit('switch-change', v, ev, document)
 }
 </script>
 
@@ -79,6 +79,7 @@ const handleChange = (v: string | number | boolean, document: GetDocumentsWithPa
     @page-change="handlePageChange"
     :loading="loading"
     @row-click="handleRowClick"
+    row-class="cursor-pointer"
   >
     <template #columns>
       <a-table-column
@@ -164,10 +165,13 @@ const handleChange = (v: string | number | boolean, document: GetDocumentsWithPa
               v-model:model-value="record.enabled"
               size="small"
               type="round"
-              @change="(v) => handleChange(v, record)"
+              @change="(v, ev) => handleChange(v, ev, record)"
             ></a-switch>
-            <a-dropdown position="br" @select="(v: string) => handleSelect(v, record)">
-              <a-button type="text" size="mini" class="text-gray-700">
+            <a-dropdown
+              position="br"
+              @select="(v: string, ev: Event) => handleSelect(v, ev, record)"
+            >
+              <a-button @click.stop type="text" size="mini" class="text-gray-700">
                 <template #icon><icon-more /></template>
               </a-button>
               <template #content>
