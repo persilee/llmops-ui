@@ -163,8 +163,10 @@ const handelDelete = async (dataset: GetDatasetsWithPage) => {
       try {
         loading.value = true
         const resp = await DatasetApi.deleteDataset(dataset.id)
-        Message.success(resp.message)
-        await fetchData()
+        if (resp.code == 'success') {
+          Message.success(resp.message)
+          datasets.value = datasets.value.filter((item) => item.id !== dataset.id)
+        }
       } finally {
         loading.value = false
       }
