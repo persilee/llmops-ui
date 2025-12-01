@@ -5,10 +5,12 @@ import type {
   DatasetHitResp,
   GetDatasetQueriesResp,
 } from '@/services/api/dataset/documents/type'
+import type { UpdateSegmentReq } from '@/services/api/dataset/segments/types'
 import { formatDate } from '@/utils/format-util'
 import { Message } from '@arco-design/web-vue'
 import { computed, ref, watch } from 'vue'
 import { useDatasetStore } from '../DatasetView.store'
+import SegmentModal from '../documents/segments/components/SegmentModal.vue'
 import RetrievalModal from './RetrievalModal.vue'
 
 /** 定义组件的props */
@@ -27,6 +29,8 @@ const datasetQueries = ref<GetDatasetQueriesResp[]>([])
 const hitLoading = ref(false)
 // 存储检索结果的数据
 const hitSegments = ref<DatasetHitResp[]>([])
+const segmentVisible = ref(false)
+const selectSegment = ref<DatasetHitResp | null>()
 
 // 默认检索设置配置
 const defaultRetrievalSetting: DatasetHitReq = {
@@ -106,6 +110,56 @@ const fetchQueries = async () => {
     // 无论成功失败，都重置加载状态
     queriesLoading.value = false
   }
+}
+
+/**
+ * 处理模态框显示状态的更新
+ * @param v 模态框的新显示状态
+ * @description
+ * 1. 更新模态框的显示状态
+ * 2. 如果模态框关闭，清空选中的片段数据
+ */
+const handleUpdateVisible = (v: boolean) => {
+  segmentVisible.value = v
+  if (!v) {
+    selectSegment.value = null
+  }
+}
+
+/**
+ * 处理片段更新成功的回调函数
+ * @param {UpdateSegmentReq} value - 更新后的片段数据，包含内容和关键词
+ * @description
+ * 1. 关闭片段编辑模态框
+ * 2. 检查是否有选中的片段且该片段存在ID
+ * 3. 在检索结果中找到对应的片段
+ * 4. 更新片段的内容和关键词
+ */
+const handleSuccess = (value: UpdateSegmentReq) => {
+  // 关闭片段编辑模态框
+  segmentVisible.value = false
+  // 检查是否有选中的片段且该片段存在ID
+  if (selectSegment.value && selectSegment.value.id) {
+    // 在检索结果中找到对应的片段
+    const segment = hitSegments.value.find((item) => item.id === selectSegment!.value!.id)
+    // 如果找到对应的片段，更新其内容和关键词
+    if (segment) {
+      segment.content = value.content
+      segment.keywords = value.keywords
+    }
+  }
+}
+
+/**
+ * 处理选择片段的函数
+ * @param segment - 选中的数据片段对象，包含片段的详细信息
+ * @description
+ * 1. 打开片段编辑模态框
+ * 2. 将选中的片段数据存储到状态中
+ */
+const handleSelectSegment = (segment: DatasetHitResp) => {
+  segmentVisible.value = true
+  selectSegment.value = segment
 }
 
 /**
@@ -286,14 +340,17 @@ watch(
         <a-divider direction="vertical" class="mx-5" />
         <!-- 右边内容 -->
         <div class="flex flex-1">
-          <a-spin :loading="hitLoading">
+          <a-spin :loading="hitLoading" class="w-full h-full">
             <a-row
               v-if="hitSegments.length > 0"
               class="h-max-[690px] overflow-y-auto"
               :gutter="[16, 16]"
             >
               <a-col v-for="segment in hitSegments" :key="segment.id" :span="12">
-                <div class="p-4 bg-gray-50 rounded-lg cursor-pointer">
+                <div
+                  class="p-4 bg-gray-50 rounded-lg cursor-pointer"
+                  @click="handleSelectSegment(segment)"
+                >
                   <!-- 评分 -->
                   <div
                     v-if="hitForm.retrieval_strategy == 'semantic'"
@@ -323,7 +380,7 @@ watch(
                 </div>
               </a-col>
             </a-row>
-            <a-empty v-else />
+            <a-empty v-else class="mt-10" />
           </a-spin>
         </div>
       </div>
@@ -333,6 +390,12 @@ watch(
       v-model:retrieval-setting="hitForm"
       @close="closeRetrieval"
       @submit="submitRetrieval"
+    />
+    <SegmentModal
+      v-model:visible="segmentVisible"
+      :segment="selectSegment"
+      @update:visible="handleUpdateVisible"
+      @success="handleSuccess"
     />
   </a-modal>
 </template>

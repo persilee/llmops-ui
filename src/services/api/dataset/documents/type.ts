@@ -50,6 +50,27 @@ export interface DatasetHitResp {
   updated_at: number
 }
 
+export const isDatasetHitResp = (data: any): data is DatasetHitResp => {
+  return (
+    'character_count' in data &&
+    'content' in data &&
+    'created_at' in data &&
+    'dataset_id' in data &&
+    'disabled_at' in data &&
+    'document' in data &&
+    'enabled' in data &&
+    'error' in data &&
+    'hit_count' in data &&
+    'id' in data &&
+    'keywords' in data &&
+    'position' in data &&
+    'score' in data &&
+    'status' in data &&
+    'token_count' in data &&
+    'updated_at' in data
+  )
+}
+
 export interface Document {
   extension: string
   id: string

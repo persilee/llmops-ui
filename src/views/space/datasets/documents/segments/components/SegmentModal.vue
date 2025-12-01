@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { isDatasetHitResp, type DatasetHitResp } from '@/services/api/dataset/documents/type'
 import SegmentsApi from '@/services/api/dataset/segments'
-import type { GetSegmentsWithPage, UpdateSegmentReq } from '@/services/api/dataset/segments/types'
+import {
+  isGetSegmentsWithPage,
+  type GetSegmentsWithPage,
+  type UpdateSegmentReq,
+} from '@/services/api/dataset/segments/types'
 import { Message } from '@arco-design/web-vue'
 import { reactive, ref, watch } from 'vue'
 import { useDatasetStore } from '../../../DatasetView.store'
@@ -13,7 +18,7 @@ interface Props {
   /** 控制模态框的显示/隐藏状态 */
   visible: boolean
   /** 当前要编辑的文档对象，可能为null */
-  segment?: GetSegmentsWithPage | null
+  segment?: GetSegmentsWithPage | DatasetHitResp | null
 }
 /**
  * 组件事件接口定义
@@ -22,7 +27,7 @@ interface Props {
 interface Emits {
   /** 更新visible属性的事件 */
   (e: 'update:visible', value: boolean): void
-  (e: 'success'): void
+  (e: 'success', value: UpdateSegmentReq): void
 }
 /** 定义组件的props */
 const props = defineProps<Props>()
@@ -61,20 +66,38 @@ const handleSubmit = async () => {
 
     // 如果存在segment，则执行更新操作
     if (props.segment) {
-      // 检查必要的数据是否存在
-      if (store.dataset && store.dataset.id && store.document && store.document.id) {
-        // 调用更新片段API
-        const resp = await SegmentsApi.updateSegment(
-          store.dataset.id,
-          store.document.id,
-          props.segment.id,
-          formData,
-        )
-        // 处理成功响应
-        if (resp.code == 'success') {
-          Message.success(resp.message)
-          emit('success')
+      let req: {
+        datasetId: string
+        documentId: string
+        segmentId: string
+        formData: UpdateSegmentReq
+      } | null = null
+
+      if (isGetSegmentsWithPage(props.segment)) {
+        req = {
+          datasetId: props.segment.dataset_id,
+          documentId: props.segment.document_id,
+          segmentId: props.segment.id,
+          formData: formData,
         }
+      } else if (isDatasetHitResp(props.segment)) {
+        req = {
+          datasetId: props.segment.dataset_id,
+          documentId: props.segment.document.id,
+          segmentId: props.segment.id,
+          formData: formData,
+        }
+      }
+
+      if (req) {
+        const resp = await SegmentsApi.updateSegment(
+          req.datasetId,
+          req.documentId,
+          req.segmentId,
+          req.formData,
+        )
+        Message.success(resp.message)
+        emit('success', formData)
       }
     } else {
       // 如果不存在segment，则执行创建操作
@@ -83,10 +106,8 @@ const handleSubmit = async () => {
         // 调用创建片段API
         const resp = await SegmentsApi.createSegment(store.dataset.id, store.document.id, formData)
         // 处理成功响应
-        if (resp.code == 'success') {
-          Message.success(resp.message)
-          emit('success')
-        }
+        Message.success(resp.message)
+        emit('success', formData)
       }
     }
   } catch (error) {
