@@ -105,6 +105,22 @@ export function remove_session(key: string): Response<boolean> {
 }
 
 /**
+ * 清除localStorage中的所有值
+ * @returns 包含状态和布尔值的响应对象
+ */
+export function clear(): Response<boolean> {
+  return clearIn(LOCAL_STORAGE)
+}
+
+/**
+ * 清除sessionStorage中的所有值
+ * @returns 包含状态和布尔值的响应对象
+ */
+export function clear_session(): Response<boolean> {
+  return clearIn(SESSION_STORAGE)
+}
+
+/**
  * 从指定存储中获取值的内部实现
  * @template T 值的类型
  * @param storage 存储对象获取函数
@@ -191,6 +207,26 @@ function setIn<T extends AllowedTypes>(storage: () => Storage, key: string, valu
 function removeIn(storage: () => Storage, key: string): Response<boolean> {
   try {
     storage().removeItem(key)
+    return {
+      status: Status.OK,
+      value: true,
+    }
+  } catch {
+    return {
+      status: Status.STORAGE_ERROR,
+      value: false,
+    }
+  }
+}
+
+/**
+ * 清除指定存储中所有值的内部实现
+ * @param storage 存储对象获取函数
+ * @returns 包含状态和布尔值的响应对象
+ */
+function clearIn(storage: () => Storage): Response<boolean> {
+  try {
+    storage().clear()
     return {
       status: Status.OK,
       value: true,

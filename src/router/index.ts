@@ -1,3 +1,4 @@
+import auth from '@/utils/auth'
 import BaseLayout from '@/views/layouts/BaseLayout.vue'
 import BlankLayout from '@/views/layouts/BlankLayout.vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -85,14 +86,20 @@ const router = createRouter({
           name: 'space-apps-detail',
           component: () => import('@/views/space/apps/DetailView.vue'),
         },
+        {
+          path: 'auth/login',
+          name: 'auth-login',
+          component: () => import('@/views/auth/LoginView.vue'),
+        },
       ],
     },
   ],
 })
 
 router.beforeEach((to, from, next) => {
-  console.log('to', to)
-  console.log('from', from)
+  if (!auth.isLogin() && to.name != 'auth-login') {
+    next({ name: 'auth-login' })
+  }
   next()
 })
 
