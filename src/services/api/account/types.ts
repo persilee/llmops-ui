@@ -11,6 +11,8 @@ export interface AccountResp {
 export interface AuthorizeResp {
   access_token: string
   expire_at: number
+  session_id?: string
+  user_id?: string
 }
 
 export interface GetProviderResp {
@@ -20,13 +22,6 @@ export interface GetProviderResp {
 export interface PasswordLoginReq {
   email: string
   password: string
-}
-
-export interface PasswordLoginResp {
-  access_token: string
-  expire_at: string
-  session_id: string
-  user_id: string
 }
 
 export interface UpdateAvatarReq {

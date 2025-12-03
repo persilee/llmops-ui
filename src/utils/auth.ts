@@ -11,17 +11,18 @@ export default {
    */
   isLogin: () => {
     // 从存储中获取用户凭证
-    const credential = Storage.get('credential', <AuthorizeResp>{}).value
+    const value = Storage.get('credential', {} as { credential?: AuthorizeResp }).value
 
+    if (!value?.credential) {
+      return false
+    }
+
+    const credential = value.credential
     // 获取当前时间戳（秒）
     const now = Math.floor(Date.now() / 1000)
-    // 检查凭证是否存在且有效
-    if (
-      !credential || // 凭证不存在
-      !credential.access_token || // 访问令牌不存在
-      !credential.expire_at || // 过期时间不存在
-      credential.expire_at < now // 凭证已过期
-    ) {
+
+    // 检查凭证是否有效
+    if (!credential.access_token || !credential.expire_at || credential.expire_at < now) {
       // 清除无效的存储数据
       Storage.clear()
       return false

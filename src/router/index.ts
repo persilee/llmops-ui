@@ -91,15 +91,24 @@ const router = createRouter({
           name: 'auth-login',
           component: () => import('@/views/auth/LoginView.vue'),
         },
+        {
+          path: 'auth/authorize/:provider_name',
+          name: 'auth-authorize',
+          component: () => import('@/views/auth/AuthorizeView.vue'),
+        },
       ],
     },
   ],
 })
 
+// 路由守卫：检查用户登录状态
 router.beforeEach((to, from, next) => {
-  if (!auth.isLogin() && to.name != 'auth-login') {
+  // 如果用户未登录且目标页面不是登录或授权页面，则重定向到登录页
+  if (!auth.isLogin() && !['auth-login', 'auth-authorize'].includes(to.name as string)) {
     next({ name: 'auth-login' })
+    return
   }
+  // 其他情况允许访问
   next()
 })
 

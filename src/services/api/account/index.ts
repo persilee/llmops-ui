@@ -4,7 +4,6 @@ import type {
   AuthorizeResp,
   GetProviderResp,
   PasswordLoginReq,
-  PasswordLoginResp,
   UpdateAvatarReq,
   UpdateNameReq,
   UpdatePasswordReq,
@@ -43,7 +42,7 @@ class AccountApi {
    * @returns 返回包含登录信息的Promise对象
    */
   static passwordLogin(req: PasswordLoginReq) {
-    return post<PasswordLoginResp>({
+    return post<AuthorizeResp>({
       url: '/auth/password-login',
       body: req,
     })
@@ -105,3 +104,5 @@ class AccountApi {
     })
   }
 }
+
+export default AccountApi
