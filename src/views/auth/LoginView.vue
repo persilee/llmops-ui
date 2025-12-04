@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CopyrightInfo from './components/CopyrightInfo.vue'
 import LoginBanner from './components/LoginBanner.vue'
 import LoginForm from './components/LoginForm.vue'
 </script>
@@ -13,9 +14,7 @@ import LoginForm from './components/LoginForm.vue'
         <LoginForm />
       </div>
       <div class="absolute right-0 bottom-0 w-full">
-        <footer class="flex items-center justify-center h-10 text-gray-600 text-center">
-          LLMOps AppBuilder
-        </footer>
+        <CopyrightInfo :start-year="2025" author="lishaoy.net" />
       </div>
     </div>
   </div>

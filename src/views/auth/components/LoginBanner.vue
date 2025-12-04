@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import imageBanner from '@/assets/images/image-banner.png'
+import imageBanner1 from '@/assets/images/image-banner1.png'
+import imageBanner2 from '@/assets/images/image-banner2.png'
 const carousels = [
   {
     slogan: '开箱即用的高质量AI编排模板',
     subSlogan: '丰富的应用组件，覆盖大多数典型业务场景',
-    image: imageBanner,
+    image: imageBanner1,
   },
   {
     slogan: '零代码 5 分钟编排原生 AI 应用',
     subSlogan: '高效开发你的 AI 应用',
-    image: imageBanner,
+    image: imageBanner2,
   },
 ]
 </script>
 
 <template>
   <div
-    class="w-[550px] flex items-center justify-center bg-gradient-to-tr from-[#1D2129] to-[#00308F]"
+    class="w-[30%] w-min-[560px] flex items-center justify-center bg-gradient-to-tr from-[#1D2129] to-[#00308F]"
   >
     <div class="flex-1 h-full">
       <a-carousel animation-name="fade" class="h-full">
