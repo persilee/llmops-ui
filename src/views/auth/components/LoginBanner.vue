@@ -17,13 +17,15 @@ const carousels = [
 
 <template>
   <div
-    class="w-[30%] w-min-[560px] flex items-center justify-center bg-gradient-to-tr from-[#1D2129] to-[#00308F]"
+    class="w-[30%] min-w-[560px] flex items-center justify-center bg-gradient-to-tl from-[#00308F] to-[#1D2139]"
   >
     <div class="flex-1 h-full">
       <a-carousel animation-name="fade" class="h-full">
         <a-carousel-item v-for="carousel in carousels" :key="carousel.slogan">
           <div class="flex flex-col items-center justify-center h-full">
-            <div class="text-2xl leading-7 font-bold text-gray-100">{{ carousel.slogan }}</div>
+            <div class="text-2xl leading-7 font-bold text-gray-100">
+              {{ carousel.slogan }}
+            </div>
             <div class="mt-2 text-gray-400 leading-[22px]">{{ carousel.subSlogan }}</div>
             <img :src="carousel.image" class="w-[320px] mt-[30px]" />
           </div>

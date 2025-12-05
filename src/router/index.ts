@@ -17,7 +17,7 @@ const router = createRouter({
         {
           path: 'home',
           name: 'home-page',
-          component: () => import('@/views/pages/HomePage.vue'),
+          component: () => import('@/views/home/HomePage.vue'),
         },
         {
           path: 'space',

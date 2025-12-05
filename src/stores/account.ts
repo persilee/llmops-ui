@@ -1,3 +1,4 @@
+import AccountApi from '@/services/api/account'
 import type { AccountResp } from '@/services/api/account/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -15,6 +16,13 @@ export const useAccountStore = defineStore(
     // 账户信息状态
     const account = ref<AccountResp>(initAccount)
 
+    const getAccount = async () => {
+      try {
+        const resp = await AccountApi.getCurrentUser()
+        account.value = resp.data
+      } catch (error) {}
+    }
+
     /**
      * 更新账户信息
      * @param data 新的账户信息数据
@@ -30,7 +38,7 @@ export const useAccountStore = defineStore(
       account.value = initAccount
     }
 
-    return { account, update, reset }
+    return { account, getAccount, update, reset }
   },
   {
     // 启用持久化存储

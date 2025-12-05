@@ -1,38 +1,74 @@
 import { BASE_URL, TIME_OUT } from '@/config'
+import router from '@/router'
+import { useCredentialStore } from '@/stores/credential'
 import { Message } from '@arco-design/web-vue'
 import { HttpCode } from './http-code'
 import type { BaseResponse } from './types'
 
+/**
+ * 基础请求配置选项
+ * @description 定义了所有HTTP请求的默认配置
+ */
 const baseFetchOptions = {
+  /** 请求方法，默认为GET */
   method: 'GET',
+  /** 请求模式，设置为cors以支持跨域请求 */
   mode: 'cors',
+  /** 是否发送凭证，设置为include以在跨域请求时发送cookies */
   credentials: 'include',
+  /** 请求头配置，默认设置Content-Type为application/json */
   headers: new Headers({
     'Content-Type': 'application/json',
   }),
+  /** 重定向模式，设置为follow自动跟随重定向 */
   redirect: 'follow',
 }
 
+/**
+ * 请求选项类型定义
+ *  @description 扩展了原生RequestInit，添加了自定义的params和body类型支持
+ */
 type FetchOptionType = Omit<RequestInit, 'body'> & {
+  /** GET请求的查询参数对象 */
   params?: Record<string, unknown>
+  /** 请求体数据，支持多种类型：BodyInit、普通对象或null */
   body?: BodyInit | Record<string, unknown> | null
 }
 
+/**
+ * 基础请求函数，处理所有HTTP请求的核心逻辑
+ * @param url 请求的URL路径
+ * @param fetchOptions 请求配置选项，包含方法、参数、请求体等
+ * @returns Promise<BaseResponse<T>> 返回一个Promise，包含服务器响应数据
+ */
 const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseResponse<T>> => {
+  // 合并基础请求配置和用户自定义配置
   const options: typeof baseFetchOptions & FetchOptionType = Object.assign(
     {},
     baseFetchOptions,
     fetchOptions,
   )
 
+  // 获取凭证存储实例
+  const store = useCredentialStore()
+  // 如果存在有效的访问令牌，则将其添加到请求头中
+  if (store.credential && store.credential.access_token) {
+    options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
+  }
+
+  // 构建完整的请求URL，确保以BASE_URL为前缀
   let urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
 
+  // 解构请求配置中的方法、参数和请求体
   const { method, params, body } = options
 
+  // 处理GET请求的查询参数
   if (method === 'GET' && params) {
+    // 将参数对象转换为查询字符串
     const paramsString = Object.keys(params)
       .map((key) => {
         const value = params[key]
+        // 只处理基本类型的参数值
         if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
           return `${key}=${encodeURIComponent(value)}`
         }
@@ -40,38 +76,54 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
       })
       .filter((item) => item)
       .join('&')
+    // 根据URL是否已包含查询参数来决定使用'&'还是'?'
     if (urlWithPrefix.includes('?')) {
       urlWithPrefix = `${urlWithPrefix}&${paramsString}`
     } else {
       urlWithPrefix = `${urlWithPrefix}?${paramsString}`
     }
 
+    // 从选项中删除params，避免将其作为请求体发送
     delete options.params
   }
 
+  // 处理请求体，如果是对象则转换为JSON字符串
   if (body && typeof body === 'object') {
     options.body = JSON.stringify(body)
   }
 
+  // 使用Promise.race实现请求超时控制
   return Promise.race([
+    // 超时Promise，在指定时间后拒绝
     new Promise((resolve, reject) => {
       setTimeout(() => {
         reject(new Error('请求超时'))
       }, TIME_OUT)
     }),
 
+    // 实际请求Promise
     new Promise((resolve, reject) => {
       globalThis
         .fetch(urlWithPrefix, options as RequestInit)
         .then(async (res) => {
           const data = await res.json()
+          // 处理成功响应
           if (data.code === HttpCode.Success) {
             resolve(data)
-          } else {
+          }
+          // 处理未授权响应，清除凭证并跳转到登录页
+          else if (data.code === HttpCode.Unauthorized) {
+            store.reset()
+            Message.error('登录已过期，请重新登录')
+            router.push({ name: 'auth-login' })
+          }
+          // 处理其他错误响应
+          else {
             Message.error(data.message)
             reject(new Error(data.message))
           }
         })
+        // 处理网络错误等异常
         .catch((err) => {
           Message.error(err?.message)
           reject(err)
@@ -80,10 +132,26 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
   ]) as Promise<BaseResponse<T>>
 }
 
+/**
+ * 基础请求方法
+ * @template T 响应数据的类型
+ * @param {string} url 请求的URL路径
+ * @param {FetchOptionType} options 请求配置选项，包含方法、参数、请求体等
+ * @returns {Promise<BaseResponse<T>>} 返回一个Promise，包含服务器响应数据
+ */
 export const request = <T>(url: string, options = {}): Promise<BaseResponse<T>> => {
   return baseFetch<T>(url, options)
 }
 
+/**
+ * GET请求方法
+ * @template T 响应数据的类型
+ * @template P 请求参数的类型
+ * @param {Object} params 请求参数对象
+ * @param {string} params.url 请求的URL路径
+ * @param {P} [params.params] GET请求的查询参数
+ * @returns {Promise<BaseResponse<T>>} 返回一个Promise，包含服务器响应数据
+ */
 export const get = <T, P = any>({
   url,
   params,
@@ -94,6 +162,15 @@ export const get = <T, P = any>({
   return request<T>(url, { method: 'GET', params: params })
 }
 
+/**
+ * POST请求方法
+ * @template T 响应数据的类型
+ * @template B 请求体的类型
+ * @param {Object} params 请求参数对象
+ * @param {string} params.url 请求的URL路径
+ * @param {B} [params.body] POST请求的请求体数据
+ * @returns {Promise<BaseResponse<T>>} 返回一个Promise，包含服务器响应数据
+ */
 export const post = <T, B = any>({
   url,
   body,
@@ -118,6 +195,11 @@ export const ssePost = async (
 ) => {
   // 合并基础请求配置、POST方法和自定义选项
   const options = Object.assign({}, baseFetchOptions, { method: 'POST' }, fetchOptions)
+  // 设置Bearer认证头，用于服务器端验证用户身份
+  const store = useCredentialStore()
+  if (store.credential && store.credential.access_token) {
+    options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
+  }
   // 处理URL，确保以BASE_URL为前缀
   const urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
 
@@ -244,6 +326,14 @@ export const upload = <T>(url: string, options: any) => {
     headers: { ...defaultOptions.headers, ...options.headers },
   }
 
+  // 获取凭证存储实例
+  const store = useCredentialStore()
+  // 如果存在有效的访问令牌，则将其添加到请求头中
+  if (store.credential && store.credential.access_token) {
+    // 设置Bearer认证头，用于服务器端验证用户身份
+    options.headers['Authorization'] = `Bearer ${store.credential.access_token}`
+  }
+
   // 返回Promise以支持异步操作
   return new Promise<BaseResponse<T>>((resolve, reject) => {
     // 创建XMLHttpRequest对象
@@ -266,7 +356,15 @@ export const upload = <T>(url: string, options: any) => {
       if (xhr.readyState === 4) {
         // 请求成功时返回响应数据
         if (xhr.status === 200) {
-          resolve(xhr.response)
+          const resp = xhr.response
+          if (resp.code == HttpCode.Success) {
+            resolve(resp)
+          } else if (resp.code == HttpCode.Unauthorized) {
+            store.reset()
+            Message.error('登录已过期，请重新登录')
+          } else {
+            reject(resp)
+          }
         } else {
           // 请求失败时返回错误信息
           reject(xhr)
