@@ -16,3 +16,7 @@
 .arco-modal-header {
   border: none !important;
 }
+
+.arco-dropdown {
+  padding: 0px !important;
+}

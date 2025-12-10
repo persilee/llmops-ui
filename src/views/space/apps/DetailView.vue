@@ -44,7 +44,7 @@ const sendMessage = async () => {
     })
     await AppsApi.debugApp({
       appId: route.params.appId as string,
-      body: { query: humanMsg },
+      req: { query: humanMsg },
       onData: (event_response) => {
         const event = event_response?.event
         const data = event_response?.data
@@ -67,11 +67,8 @@ const sendMessage = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <header class="flex items-center h-[74px] bg-gray-100 border-b border-gray-200 px-4">
-      顶部导航
-    </header>
-    <main class="flex! flex-row h-[calc(100vh-74px)]">
+  <div class="min-h-screen w-full">
+    <div class="flex flex-row h-[calc(100vh-74px)]">
       <div class="flex flex-col w-2/3 bg-gray-50 h-full">
         <header
           class="flex items-center flex-shrink-0 h-16 border-b border-gray-200 px-7 text-xl text-gray-700"
@@ -161,7 +158,7 @@ const sendMessage = async () => {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 

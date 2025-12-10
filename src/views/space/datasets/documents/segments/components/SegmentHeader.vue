@@ -2,6 +2,7 @@
 import type { GetDocumentResp } from '@/services/api/dataset/documents/type'
 import { formatDate } from '@/utils/format-util'
 import { getFileIcon } from '@/utils/util'
+import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
 
 /**
  * 组件属性接口定义
@@ -34,19 +35,7 @@ const handleBackClick = () => {
       <template #icon><icon-left /></template>
     </a-button>
     <!-- 图标、标题、标签 -->
-    <a-skeleton :loading="loading" :animation="true">
-      <div class="flex items-center gap-3">
-        <a-skeleton-shape class="w-[40px] h-[40px] rounded-lg" />
-        <div class="flex flex-col justify-between h-[40px]">
-          <a-skeleton-line :widths="['260px']" />
-          <div class="flex items-center gap-2">
-            <a-skeleton-line :rows="1" :widths="['80px']" :line-height="14" />
-            <a-skeleton-line :rows="1" :widths="['100px']" :line-height="14" />
-            <a-skeleton-line :rows="1" :widths="['120px']" :line-height="14" />
-          </div>
-        </div>
-      </div>
-    </a-skeleton>
+    <HeaderSkeleton :loading="loading" />
     <div v-if="!loading" class="flex items-center gap-3">
       <div class="bg-white border border-gray-300 rounded-lg p-2">
         <img :src="getFileIcon({ filename: document?.name })" class="w-[25px] h-[28px]" />

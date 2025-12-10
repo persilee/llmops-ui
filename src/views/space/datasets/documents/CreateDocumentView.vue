@@ -331,7 +331,7 @@ onUnmounted(() => {
   <div class="flex flex-col p-6 h-full">
     <!-- 返回按钮和标题 -->
     <div class="flex items-center mb-6 gap-4">
-      <a-button size="mini" type="text" class="text-gray-700" @click="handleConfirmOrBackClick">
+      <a-button type="text" class="text-gray-700" @click="handleConfirmOrBackClick">
         <template #icon><icon-left /></template>
       </a-button>
       <div class="text-lg font-bold text-gray-700">添加文件</div>

@@ -62,12 +62,12 @@ const router = createRouter({
         },
         {
           path: 'store/apps',
-          name: 'store-apps-list',
+          name: 'store-apps',
           component: () => import('@/views/store/apps/ListView.vue'),
         },
         {
           path: 'store/tools',
-          name: 'store-tools-list',
+          name: 'store-tools',
           component: () => import('@/views/store/tools/ToolStoreView.vue'),
         },
         {
@@ -83,9 +83,26 @@ const router = createRouter({
       children: [
         {
           path: 'space/apps/:appId',
-          name: 'space-apps-detail',
-          component: () => import('@/views/space/apps/DetailView.vue'),
+          component: () => import('@/views/space/apps/AppLayout.vue'),
+          children: [
+            {
+              path: 'detail',
+              name: 'space-apps-detail',
+              component: () => import('@/views/space/apps/DetailView.vue'),
+            },
+            {
+              path: 'published',
+              name: 'space-apps-published',
+              component: () => import('@/views/space/apps/PublishedView.vue'),
+            },
+            {
+              path: 'analysis',
+              name: 'space-apps-analysis',
+              component: () => import('@/views/space/apps/AnalysisView.vue'),
+            },
+          ],
         },
+
         {
           path: 'auth/login',
           name: 'auth-login',

@@ -4,6 +4,7 @@ import DatasetApi from '@/services/api/dataset'
 import DocumentsApi from '@/services/api/dataset/documents'
 import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
 import type { GetDatasetResp } from '@/services/api/dataset/types'
+import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
 import InputSearch from '@/views/components/InputSearch.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
@@ -258,24 +259,12 @@ onMounted(async () => {
     <div class="flex items-center w-full gap-2 mb-6">
       <!-- 返回按钮 -->
       <RouterLink :to="{ name: 'space-datasets' }" replace>
-        <a-button size="mini" type="text" class="text-gray-700">
+        <a-button type="text" class="text-gray-700">
           <template #icon><icon-left /></template>
         </a-button>
       </RouterLink>
       <!-- 图标、标题、标签 -->
-      <a-skeleton :loading="loading" :animation="true">
-        <div class="flex items-center gap-3">
-          <a-skeleton-shape class="w-[40px] h-[40px] rounded-lg" />
-          <div class="flex flex-col justify-between h-[40px]">
-            <a-skeleton-line :widths="['260px']" />
-            <div class="flex items-center gap-2">
-              <a-skeleton-line :rows="1" :widths="['80px']" :line-height="14" />
-              <a-skeleton-line :rows="1" :widths="['100px']" :line-height="14" />
-              <a-skeleton-line :rows="1" :widths="['120px']" :line-height="14" />
-            </div>
-          </div>
-        </div>
-      </a-skeleton>
+      <HeaderSkeleton :loading="loading" />
       <div v-if="!loading" class="flex items-center gap-3">
         <a-avatar
           :size="40"
