@@ -16,7 +16,7 @@ export type Paginator = {
   total_record: number
 }
 
-export type GetPagesParams = {
+export type PaginatorParams = {
   search_word?: string
   current_page?: number
   page_size?: number

@@ -186,7 +186,7 @@ onUnmounted(() => {
 
 <template>
   <a-modal :visible="visible" :width="1000" hide-title :footer="false" class="rounded-xl">
-    <div class="flex">
+    <div class="flex h-[560px]">
       <!-- 左边导航 -->
       <div class="w-[186px] flex flex-col">
         <!-- 标题 -->
@@ -211,6 +211,7 @@ onUnmounted(() => {
             <a-form-item
               field="fileList"
               label="账号头像"
+              asterisk-position="end"
               :rules="[{ required: true, message: '账号头像不能为空' }]"
             >
               <a-upload
@@ -295,4 +296,11 @@ onUnmounted(() => {
   </a-modal>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.arco-form-item-label-col > .arco-form-item-label) {
+  color: #000000 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0px !important;
+}
+</style>

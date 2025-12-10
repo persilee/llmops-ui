@@ -1,5 +1,5 @@
 import { get, post } from '@/services/request'
-import type { GetPagesParams } from '@/services/types'
+import type { PaginatorParams } from '@/services/types'
 import type {
   CreateDatasetReq,
   GetDatasetResp,
@@ -13,8 +13,8 @@ class DatasetApi {
    * @param params - 分页参数，包含页码、每页数量等信息
    * @returns 返回一个Promise，解析为包含知识库列表和分页信息的响应对象
    */
-  static getDatasetsWithPage(params: GetPagesParams) {
-    return get<GetDatasetsWithPageResp, GetPagesParams>({
+  static getDatasetsWithPage(params: PaginatorParams) {
+    return get<GetDatasetsWithPageResp, PaginatorParams>({
       url: '/datasets',
       params: params,
     })

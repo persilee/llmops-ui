@@ -1,5 +1,5 @@
 import { get, post } from '@/services/request'
-import type { GetPagesParams } from '@/services/types'
+import type { PaginatorParams } from '@/services/types'
 import type {
   CreateSegmentReq,
   GetSegmentResp,
@@ -16,7 +16,7 @@ class SegmentsApi {
    * @param params 分页参数
    * @returns Promise<GetSegmentsWithPageResp[]> 片段列表响应
    */
-  static getSegmentsWithPage(datasetId: string, documentId: string, params: GetPagesParams) {
+  static getSegmentsWithPage(datasetId: string, documentId: string, params: PaginatorParams) {
     return get<GetSegmentsWithPageResp>({
       url: `/datasets/${datasetId}/documents/${documentId}/segments`,
       params,
