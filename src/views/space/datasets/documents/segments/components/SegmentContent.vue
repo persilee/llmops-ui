@@ -26,7 +26,7 @@ interface Emits {
   /** 加载更多事件 */
   (e: 'load-more'): void
   /** 切换启用状态事件 */
-  (e: 'change-enabled', v: boolean,ev:Event, segment: GetSegmentsWithPage): void
+  (e: 'change-enabled', v: boolean, ev: Event, segment: GetSegmentsWithPage): void
   /** 删除事件 */
   (e: 'delete', segment: GetSegmentsWithPage): void
   /** 点击事件 */
@@ -47,7 +47,11 @@ const handleLoadMore = () => {
 }
 
 /** 处理启用状态切换事件 */
-const handelChangeEnabled = (v: boolean | string | number,ev:Event, segment: GetSegmentsWithPage) => {
+const handelChangeEnabled = (
+  v: boolean | string | number,
+  ev: Event,
+  segment: GetSegmentsWithPage,
+) => {
   emit('change-enabled', v as boolean, ev, segment)
 }
 
@@ -117,7 +121,7 @@ const showLoadMoreBtn = computed(() => {
                     v-model:model-value="segment.enabled"
                     size="small"
                     type="round"
-                    @change="(v, ev) => handelChangeEnabled(v,ev, segment)"
+                    @change="(v, ev) => handelChangeEnabled(v, ev, segment)"
                   />
                 </div>
               </div>

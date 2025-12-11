@@ -1,8 +1,93 @@
 <script setup lang="ts">
+import AppsApi from '@/services/api/apps'
+import { formatDate } from '@/utils/format-util'
 import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
-import { ref } from 'vue'
+import { Message } from '@arco-design/web-vue'
+import { computed, onMounted, ref } from 'vue'
+import { useAppStore } from './AppView.store'
+import HistoryVersionDrawer from './components/HistoryVersionDrawer.vue'
 
 const headerLoading = ref(false)
+const publishLoading = ref(false)
+const store = useAppStore()
+const historyVersionVisible = ref(false)
+
+const isPublished = computed(() => store.app?.status === 'published')
+
+/**
+ * 获取应用数据
+ * @description 从服务器获取应用信息并更新到store中
+ * @returns {Promise<void>}
+ */
+const fetchAppData = async () => {
+  try {
+    // 设置加载状态为true，显示加载中效果
+    headerLoading.value = true
+    // 调用API获取指定ID的应用数据
+    const resp = await AppsApi.getApp('ce991a57-97cc-42d9-8bbd-4426bd335ad5')
+    // 将获取到的数据存储到store中
+    store.app = resp.data
+  } finally {
+    // 无论成功失败，都将加载状态设置为false
+    headerLoading.value = false
+  }
+}
+
+/**
+ * 处理应用发布点击事件
+ * @description 当用户点击发布按钮时，调用发布API并更新应用数据
+ * @returns {Promise<void>}
+ */
+const handlePublishClick = async () => {
+  try {
+    // 检查应用数据是否存在
+    if (store.app && store.app.id) {
+      // 设置发布加载状态
+      publishLoading.value = true
+      // 调用发布API
+      const resp = await AppsApi.publish(store.app.id)
+      // 重新获取应用数据以更新状态
+      await fetchAppData()
+      // 显示成功消息
+      Message.success(resp.message)
+    }
+  } finally {
+    // 无论成功失败，都重置加载状态
+    publishLoading.value = false
+  }
+}
+
+/**
+ * 处理取消发布应用点击事件
+ * @description 当用户点击取消发布按钮时，调用取消发布API并更新应用数据
+ * @returns {Promise<void>}
+ */
+const handleCancelPublishClick = async () => {
+  try {
+    // 检查应用数据是否存在
+    if (store.app && store.app.id) {
+      // 设置发布加载状态，显示加载中效果
+      publishLoading.value = true
+      // 调用取消发布API
+      const resp = await AppsApi.cancelPublish(store.app.id)
+      // 重新获取应用数据以更新状态
+      await fetchAppData()
+      // 显示成功消息
+      Message.success(resp.message)
+    }
+  } finally {
+    // 无论成功失败，都重置加载状态
+    publishLoading.value = false
+  }
+}
+
+const handleHistoryVersionClick = () => {
+  historyVersionVisible.value = true
+}
+
+onMounted(() => {
+  fetchAppData()
+})
 </script>
 
 <template>
@@ -22,15 +107,12 @@ const headerLoading = ref(false)
         <div v-else class="flex items-center gap-3">
           <!-- 图标 -->
           <div class="bg-white border border-gray-300 rounded-lg p-2">
-            <img
-              src="https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2025/11/05/dd61aaff-a83f-463b-8564-736f379b870b.png"
-              class="w-[25px] h-[28px]"
-            />
+            <img :src="store.app?.icon" class="w-[25px] h-[28px]" />
           </div>
           <!-- 标题和信息 -->
           <div class="flex flex-col justify-between h-[40px]">
             <div class="flex items-center gap-1">
-              <div class="text-gray-700 font-bold">聊天机器人</div>
+              <div class="text-gray-700 font-bold">{{ store.app?.name }}</div>
               <img src="@/assets/images/icon-edit.png" class="w-3.5 h-3.5" />
             </div>
             <div class="flex items-center gap-2">
@@ -44,11 +126,11 @@ const headerLoading = ref(false)
                 <template #icon>
                   <img src="@/assets/images/icon-history.png" class="w-3 h-3" />
                 </template>
-                草稿
+                {{ isPublished ? '已发布' : '草稿' }}
               </a-tag>
-              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500"
-                >已自动保存 23:18:15</a-tag
-              >
+              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500">
+                已自动保存 {{ formatDate(store.app?.updated_at, 'HH:mm:ss') }}
+              </a-tag>
             </div>
           </div>
         </div>
@@ -76,21 +158,32 @@ const headerLoading = ref(false)
       </div>
       <!-- 右边按钮 -->
       <div class="flex-1 flex items-center justify-end gap-4">
-        <a-button class="rounded-lg bg-gray-100 border-gray-200">
+        <a-button class="rounded-lg bg-gray-100 border-gray-200" @click="handleHistoryVersionClick">
           <template #icon>
             <img src="@/assets/images/icon-history.svg" class="h-4 w-4" />
           </template>
         </a-button>
         <a-button-group>
-          <a-button type="primary" class="rounded-l-sm font-bold">更新发布</a-button>
+          <a-button
+            :loading="publishLoading"
+            type="primary"
+            class="rounded-l-sm font-bold"
+            @click="handlePublishClick"
+            >更新发布</a-button
+          >
           <a-dropdown position="br">
-            <a-button type="primary" class="w-6 rounded-r-sm">
+            <a-button type="primary" class="w-6 rounded-r-sm" :disabled="publishLoading">
               <template #icon>
                 <icon-down />
               </template>
             </a-button>
             <template #content>
-              <a-doption class="text-red-700">取消发布</a-doption>
+              <a-doption
+                :disabled="!isPublished"
+                :class="`${!isPublished ? 'text-gray-400' : 'text-red-700'}`"
+                @click="handleCancelPublishClick"
+                >取消发布</a-doption
+              >
             </template>
           </a-dropdown>
         </a-button-group>
@@ -99,6 +192,7 @@ const headerLoading = ref(false)
     <main class="flex-1 flex">
       <RouterView />
     </main>
+    <HistoryVersionDrawer v-model:visible="historyVersionVisible" />
   </div>
 </template>
 
