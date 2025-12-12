@@ -7,7 +7,7 @@ import type {
   FallbackHistoryToDraftReq,
   GetAppResp,
   GetDebugConversationMessagesWithPageResp,
-  GetDebugConversionSummaryReq,
+  GetDebugConversionSummaryResp,
   GetDraftAppConfigResp,
   GetPublishHistoriesWithPageResp,
   UpdateAppReq,
@@ -69,7 +69,7 @@ class AppsApi {
    * @returns 返回调试对话摘要的响应结果
    */
   static getDebugConversationSummary(appId: string) {
-    return get<GetDebugConversionSummaryReq>({
+    return get<GetDebugConversionSummaryResp>({
       url: `/apps/${appId}/conversation/summary`,
     })
   }

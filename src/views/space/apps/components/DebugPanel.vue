@@ -3,8 +3,8 @@ import AppsApi from '@/services/api/apps'
 import CustomCursor from '@/views/components/CustomCursor.vue'
 import { computed, ref } from 'vue'
 import { useAppStore } from '../AppView.store'
-import DebugEmptyMessage from './DebugEmptyMessage.vue'
-import DebugHeader from './DebugHeader.vue'
+import DebugEmptyMessage from './debug/DebugEmptyMessage.vue'
+import DebugHeader from './debug/DebugHeader.vue'
 
 const inputValue = ref('')
 interface Message {
@@ -70,11 +70,15 @@ const sendMessage = async () => {
 
 <template>
   <div class="flex flex-col w-1/3 h-full bg-white">
+    <!-- 标题和长期记忆按钮 -->
     <DebugHeader />
+    <!-- 调试消息 -->
     <div
       class="flex flex-col h-full min-h-0 px-6 py-7 overflow-x-hidden overflow-y-scroll scrollbar-w-none"
     >
+      <!-- 空消息显示 Agent 图标和名字 -->
       <DebugEmptyMessage v-if="messages.length === 0" />
+      <!-- 调试消息列表 -->
       <div v-for="message in messages" :key="message.id">
         <div v-if="message.content != ''" class="flex flex-row gap-2 mb-6">
           <a-avatar v-if="message.role === 'human'" class="shrink-0" :size="30">🙍🏻‍♂️</a-avatar>
@@ -111,6 +115,7 @@ const sendMessage = async () => {
         </div>
       </div>
     </div>
+    <!-- 输入框 -->
     <div class="flex flex-col w-full flex-shrink-0">
       <div class="flex items-center px-6 gap-4">
         <a-button class="flex-shrink-0" type="text" shape="circle" @click="clearMessages">

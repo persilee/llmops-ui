@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppsApi from '@/services/api/apps'
-import ChatPanel from '@/views/space/apps/components/ChatPanel.vue'
+import DebugPanel from '@/views/space/apps/components/DebugPanel.vue'
 import { onMounted, ref } from 'vue'
 import { useAppStore } from './AppView.store'
 import AbilityPanel from './components/AbilityPanel.vue'
@@ -49,7 +49,7 @@ onMounted(() => {
         <div class="flex flex-col w-2/3 bg-gray-50 h-full">
           <!-- 标题 -->
           <header
-            class="flex items-center flex-shrink-0 h-16 border-b border-gray-200 px-7 text-xl text-gray-700"
+            class="flex items-center flex-shrink-0 h-16 border-b border-gray-200 px-7 text-xl text-gray-900"
           >
             应用编排
           </header>
@@ -62,7 +62,7 @@ onMounted(() => {
           </div>
         </div>
         <!-- 右侧预览与调试 -->
-        <ChatPanel />
+        <DebugPanel />
       </div>
     </div>
   </a-spin>

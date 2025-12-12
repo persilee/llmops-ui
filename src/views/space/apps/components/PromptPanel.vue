@@ -3,7 +3,7 @@ import AIApi from '@/services/api/ai'
 import AppsApi from '@/services/api/apps'
 import CustomCursor from '@/views/components/CustomCursor.vue'
 import { Message } from '@arco-design/web-vue'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
 
 // 用户输入的提示词内容
@@ -161,7 +161,7 @@ const resetData = () => {
 }
 
 // 监听弹窗显示状态
-watch(
+const stop = watch(
   () => visible.value, // 监听visible的值
   (newVal) => {
     // 回调函数，接收新值
@@ -175,6 +175,10 @@ watch(
     }
   },
 )
+
+onUnmounted(() => {
+  stop() // 组件卸载时停止监听
+})
 </script>
 
 <template>
@@ -250,7 +254,7 @@ watch(
               </div>
               <!-- 输入框 -->
               <div
-                class="flex f0 items-center h-[46px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
+                class="flex flex-shrink-0 items-center h-[46px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
               >
                 <img src="@/assets/images/icon-optimize.svg" class="w-3.5 h-3.5" />
                 <input

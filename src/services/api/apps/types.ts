@@ -41,7 +41,11 @@ export interface UpdateDebugConversationSummaryReq {
   summary: string
 }
 
-export interface GetDebugConversionSummaryReq {
+export interface GetDebugConversionSummaryResp {
+  summary: string
+}
+
+export interface UpdateDebugConversionSummaryReq {
   summary: string
 }
 
