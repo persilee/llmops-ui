@@ -2,7 +2,7 @@
 import AppsApi from '@/services/api/apps'
 import { formatDate } from '@/utils/format-util'
 import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
 import { useAppStore } from './AppView.store'
 import HistoryVersionDrawer from './components/HistoryVersionDrawer.vue'
@@ -60,25 +60,38 @@ const handlePublishClick = async () => {
 /**
  * 处理取消发布应用点击事件
  * @description 当用户点击取消发布按钮时，调用取消发布API并更新应用数据
- * @returns {Promise<void>}
+ * @returns {void}
  */
 const handleCancelPublishClick = async () => {
-  try {
-    // 检查应用数据是否存在
-    if (store.app && store.app.id) {
-      // 设置发布加载状态，显示加载中效果
-      publishLoading.value = true
-      // 调用取消发布API
-      const resp = await AppsApi.cancelPublish(store.app.id)
-      // 重新获取应用数据以更新状态
-      await fetchAppData()
-      // 显示成功消息
-      Message.success(resp.message)
-    }
-  } finally {
-    // 无论成功失败，都重置加载状态
-    publishLoading.value = false
-  }
+  // 显示取消发布确认对话框
+  Modal.warning({
+    title: '要取消发布该Agent应用吗？', // 对话框标题
+    content:
+      '取消发布后，WebApp以及发布的社交媒体平台均无法使用该Agent，如需更新WebApp地址，请使用地址重生成功能。', // 取消发布警告内容
+    hideCancel: false, // 显示取消按钮，允许用户取消操作
+    titleAlign: 'start', // 标题左对齐显示
+    simple: false, // 使用完整模式显示对话框
+
+    // 确认删除的回调函数
+    onOk: async () => {
+      try {
+        // 检查应用数据是否存在
+        if (store.app && store.app.id) {
+          // 设置发布加载状态，显示加载中效果
+          publishLoading.value = true
+          // 调用取消发布API
+          const resp = await AppsApi.cancelPublish(store.app.id)
+          // 重新获取应用数据以更新状态
+          await fetchAppData()
+          // 显示成功消息
+          Message.success(resp.message)
+        }
+      } finally {
+        // 无论成功失败，都重置加载状态
+        publishLoading.value = false
+      }
+    },
+  })
 }
 
 const handleHistoryVersionClick = () => {

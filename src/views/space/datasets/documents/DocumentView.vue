@@ -196,12 +196,6 @@ const handleDelete = (data: GetDocumentsWithPage) => {
         loading.value = false
       }
     },
-
-    // 取消删除的回调函数
-    onCancel: () => {
-      // 用户取消删除操作
-      console.log('取消删除')
-    },
   })
 }
 

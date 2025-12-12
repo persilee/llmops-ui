@@ -211,7 +211,7 @@ export const ssePost = async (
   // 发起fetch请求并处理响应流
   const resp = await globalThis.fetch(urlWithPrefix, options as RequestInit)
 
-  return handleStream(resp, onData)
+  return await handleStream(resp, onData)
 }
 
 /**
@@ -220,81 +220,90 @@ export const ssePost = async (
  * @param onData 处理解析后的事件数据的回调函数
  *               接收一个包含event和data字段的对象作为参数
  */
-const handleStream = (response: Response, onData: (data: { [key: string]: any }) => void) => {
-  // 检查响应状态，如果不成功则抛出错误
-  if (!response.ok) throw new Error('网络请求失败')
+const handleStream = (
+  response: Response,
+  onData: (data: Record<string, any>) => void,
+): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    // 检查响应状态
+    if (!response.ok) {
+      reject(new Error(`网络请求失败: ${response.status} ${response.statusText}`))
+      return
+    }
 
-  // 获取响应流的读取器，用于读取数据块
-  const reader = response.body?.getReader()
-  // 创建文本解码器，用于将二进制数据转换为文本
-  const decoder = new TextDecoder('utf-8')
-  // 缓冲区，用于存储未处理完的数据
-  let buffer = ''
+    // 获取响应流读取器
+    const reader = response.body?.getReader()
+    if (!reader) {
+      reject(new Error('无法获取响应流读取器'))
+      return
+    }
 
-  /**
-   * 递归读取并处理流数据
-   * 持续读取数据块直到流结束或发生错误
-   */
-  const read = () => {
-    let hasError = false
-    // 读取下一个数据块
-    reader?.read().then((result: any) => {
-      // 如果流已结束，停止读取
-      if (result.done) return
+    // 创建文本解码器
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let isReading = true
 
-      // 将新数据块解码并添加到缓冲区
-      buffer += decoder.decode(result.value, { stream: true })
-      // 将缓冲区内容按行分割
-      const lines = buffer.split('\n')
+    // 清理函数
+    const cleanup = () => {
+      isReading = false
+      reader.releaseLock()
+    }
 
-      // 用于存储当前处理的事件类型和数据
-      let event = ''
-      let data = ''
+    // 处理单行数据
+    const processLine = (line: string, eventData: { event: string; data: string }) => {
+      const trimmedLine = line.trim()
 
-      try {
-        // 遍历每一行数据
-        lines.forEach((line) => {
-          // 移除行首尾空白字符
-          line = line.trim()
-          // 处理事件类型行
-          if (line.startsWith('event:')) {
-            event = line.slice(6).trim()
+      if (trimmedLine.startsWith('event:')) {
+        eventData.event = trimmedLine.slice(6).trim()
+      } else if (trimmedLine.startsWith('data:')) {
+        eventData.data = trimmedLine.slice(5).trim()
+      } else if (trimmedLine === '') {
+        if (eventData.event && eventData.data) {
+          try {
+            onData({
+              event: eventData.event,
+              data: JSON.parse(eventData.data),
+            })
+          } catch (error) {
+            console.error('解析SSE数据失败:', error)
           }
-          // 处理数据行
-          else if (line.startsWith('data:')) {
-            data = line.slice(5).trim()
-          }
-
-          // 遇到空行表示一个完整的事件结束
-          if (line == '') {
-            // 如果事件类型和数据都存在，触发回调
-            if (event != '' && data != '') {
-              // 解析数据并调用回调函数
-              onData({
-                event,
-                data: JSON.parse(data),
-              })
-              // 重置事件类型和数据
-              event = ''
-              data = ''
-            }
-          }
-        })
-
-        // 保留最后一行（可能是不完整的行）到缓冲区
-        buffer = lines.pop() || ''
-      } catch (error) {
-        // 发生错误时标记错误状态
-        hasError = true
+          eventData.event = ''
+          eventData.data = ''
+        }
       }
+    }
 
-      // 如果没有发生错误，继续读取下一个数据块
-      if (!hasError) read()
-    })
-  }
+    // 读取流数据
+    const readStream = async () => {
+      try {
+        while (isReading) {
+          const { done, value } = await reader.read()
 
-  // 开始读取流数据
-  read()
+          if (done) {
+            resolve()
+            return
+          }
+
+          // 解码并处理数据
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || '' // 保留最后一行（可能是不完整的行）
+
+          const eventData = { event: '', data: '' }
+          lines.forEach((line) => processLine(line, eventData))
+        }
+      } catch (error) {
+        cleanup()
+        reject(error instanceof Error ? error : new Error('流读取失败'))
+      }
+    }
+
+    // 开始读取
+    readStream()
+
+    // 返回清理函数
+    return cleanup
+  })
 }
 
 /**

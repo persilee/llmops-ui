@@ -12,7 +12,7 @@ class AIApi {
     req: OptimizePromptReq,
     onData: (event_response: Record<string, any>) => void,
   ) {
-    return ssePost('/ai/optimize/prompt', { body: { req } }, onData)
+    return ssePost('/ai/optimize/prompt', { body: { ...req } }, onData)
   }
 
   /**

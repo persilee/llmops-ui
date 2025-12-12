@@ -114,7 +114,7 @@ class AppsApi {
     req: DebugChatReq
     onData: (event_response: { [key: string]: any }) => void
   }) {
-    return ssePost(`/apps/${appId}/debug`, { body: { req } }, onData)
+    return ssePost(`/apps/${appId}/debug`, { body: { ...req } }, onData)
   }
 
   /**
