@@ -1,11 +1,16 @@
 import AppsApi from '@/services/api/apps'
-import type { GetAppResp, GetDraftAppConfigResp } from '@/services/api/apps/types'
+import type {
+  GetAppResp,
+  GetDraftAppConfigResp,
+  UpdateDraftAppConfigReq,
+} from '@/services/api/apps/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useAppStore = defineStore(
   'app',
   () => {
+    const loading = ref(false)
     const app = ref<GetAppResp>()
     const draftAppConfig = ref<GetDraftAppConfigResp>({
       id: '',
@@ -63,16 +68,37 @@ export const useAppStore = defineStore(
       app.value = resp.data
     }
 
-    const getDraftAppConfig = async (appId: string) => {
-      const resp = await AppsApi.getDraftAppConfig(appId)
-      draftAppConfig.value = resp.data
+    const getDraftAppConfig = async () => {
+      if (app.value && app.value.id) {
+        const resp = await AppsApi.getDraftAppConfig(app.value.id)
+        draftAppConfig.value = resp.data
+      }
+    }
+
+    const updateDraftAppConfig = async (req: UpdateDraftAppConfigReq) => {
+      if (!app.value?.id) {
+        return
+      }
+
+      try {
+        loading.value = true
+        const resp = await AppsApi.updateDraftAppConfig(app.value.id, req)
+        await getDraftAppConfig()
+        return resp
+      } catch (error) {
+        throw error
+      } finally {
+        loading.value = false
+      }
     }
 
     return {
       app,
       draftAppConfig,
+      loading,
       getApp,
       getDraftAppConfig,
+      updateDraftAppConfig,
     }
   },
   {

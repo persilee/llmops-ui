@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import AIApi from '@/services/api/ai'
-import AppsApi from '@/services/api/apps'
 import CustomCursor from '@/views/components/CustomCursor.vue'
 import { Message } from '@arco-design/web-vue'
-import { computed, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
 
 // 用户输入的提示词内容
 const inputValue = ref('')
 // 控制优化弹窗的显示状态
 const visible = ref(false)
+// 原始提示词内容
+const prompt = ref('')
 // 存储优化后的提示词内容
 const optimizePrompt = ref('')
 // 应用状态管理store实例
@@ -70,6 +71,7 @@ const optimizePromptFn = async (prompt: string) => {
   try {
     // 设置加载状态，显示加载动画
     optimizeLoading.value = true
+    isCursor.value = true
     // 调用AI优化API，使用流式响应实时更新优化结果
     await AIApi.optimizePrompt({ prompt: prompt }, (eventResp) => {
       // 获取当前返回的优化片段
@@ -106,18 +108,19 @@ const handleOptimize = () => {
  */
 const updatePrompt = async () => {
   // 检查必要的条件：应用存在、应用ID存在、优化后的提示词不为空
-  if (store.app && store.app.id && optimizePrompt.value) {
+  if (optimizePrompt.value) {
     try {
       // 设置加载状态，显示加载动画
       updatePromptLoading.value = true
       // 调用API更新应用的草稿配置，传入优化后的提示词
-      const resp = await AppsApi.updateDraftAppConfig(store.app.id, {
+      const resp = await store.updateDraftAppConfig({
         preset_prompt: optimizePrompt.value,
       })
-      // 刷新本地应用配置，确保显示最新的配置信息
-      await store.getDraftAppConfig(store.app.id)
-      // 显示更新成功的消息提示
-      Message.success(resp.message)
+      if (resp) {
+        prompt.value = optimizePrompt.value
+        handleCancelOptimize()
+        Message.success(resp.message)
+      }
     } catch (error) {
       // 错误处理：捕获并处理可能出现的异常
     } finally {
@@ -128,14 +131,18 @@ const updatePrompt = async () => {
 }
 
 /**
- * 处理替换提示词的操作
- * 当用户点击替换按钮时，将优化后的提示词更新到应用配置中
+ * 处理文本框失去焦点事件
+ * 当用户编辑完提示词并点击其他地方时触发
+ * 检查提示词内容是否发生变化，如果有变化则更新到应用配置中
  * @returns Promise<void> 返回一个Promise，表示异步操作完成
  */
-const handleReplacePrompt = async () => {
-  if (optimizePrompt.value) {
-    await updatePrompt()
-    handleCancelOptimize()
+const handleBlur = async () => {
+  // 比较当前提示词内容与草稿配置中的内容是否一致
+  if (prompt.value.trim() != store.draftAppConfig.preset_prompt.trim()) {
+    // 如果内容不一致，则更新草稿配置
+    await store.updateDraftAppConfig({
+      preset_prompt: prompt.value,
+    })
   }
 }
 
@@ -176,6 +183,18 @@ const stop = watch(
   },
 )
 
+/**
+ * 组件挂载时的生命周期钩子
+ * 初始化提示词内容，从store中获取草稿配置的预设提示词
+ */
+onMounted(() => {
+  prompt.value = store.draftAppConfig.preset_prompt
+})
+
+/**
+ * 组件卸载时的生命周期钩子
+ * 清理资源，停止watch监听器，防止内存泄漏
+ */
 onUnmounted(() => {
   stop() // 组件卸载时停止监听
 })
@@ -232,18 +251,18 @@ onUnmounted(() => {
                         type="primary"
                         size="small"
                         :loading="updatePromptLoading"
-                        @click="handleReplacePrompt"
+                        @click="updatePrompt"
                         >替换</a-button
                       >
                       <a-button size="small" @click="handleCancelOptimize">退出</a-button>
                     </div>
                     <div class="flex gap-2">
-                      <a-tooltip content="复制" content-class="rounded-lg">
+                      <a-tooltip content="复制" content-class="rounded-lg py-1">
                         <a-button type="text" size="small" class="text-gray-600">
                           <template #icon><icon-copy /></template>
                         </a-button>
                       </a-tooltip>
-                      <a-tooltip content="重新生成" content-class="rounded-lg">
+                      <a-tooltip content="重新生成" content-class="rounded-lg py-1">
                         <a-button type="text" size="small" class="text-gray-600">
                           <template #icon><icon-refresh /></template>
                         </a-button>
@@ -290,11 +309,12 @@ onUnmounted(() => {
     <!-- 提示词文本框 -->
     <div class="flex-1 px-3 pb-4">
       <a-textarea
-        v-model="store.draftAppConfig.preset_prompt"
+        v-model="prompt"
         class="h-full flex-1 bg-transparent rounded-xl focus-within:border-0 not-focus-within: border-0"
         placeholder="请输入提示词或点击优化自动生成提示词"
         :max-length="2000"
         show-word-limit
+        @blur="handleBlur"
       ></a-textarea>
     </div>
   </div>

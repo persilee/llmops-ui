@@ -141,8 +141,15 @@ onMounted(() => {
                 </template>
                 {{ isPublished ? '已发布' : '草稿' }}
               </a-tag>
-              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500">
-                已自动保存 {{ formatDate(store.app?.updated_at, 'HH:mm:ss') }}
+              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200">
+                <div v-if="store.loading" class="flex items-center gap-1.5">
+                  <a-spin :loading="store.loading" :size="14" class="loading" />
+                  <div class="text-gray-500 text-xs">保存中...</div>
+                </div>
+                <div v-else class="text-gray-500">
+                  草稿自动保存于
+                  {{ formatDate(store.draftAppConfig?.updated_at, 'HH:mm:ss') }}
+                </div>
               </a-tag>
             </div>
           </div>
@@ -212,5 +219,9 @@ onMounted(() => {
 <style scoped>
 .link-gray {
   color: #6b7280;
+}
+
+:deep(.loading .arco-spin-icon) {
+  color: #6a7282 !important;
 }
 </style>
