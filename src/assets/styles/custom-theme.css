@@ -21,3 +21,16 @@
   padding: 0px !important;
   border-radius: 8px !important;
 }
+
+.arco-popover-popup-content {
+  border-radius: 8px !important;
+}
+
+.arco-popover-content {
+  margin: 0px !important;
+}
+
+.arco-tooltip-content {
+  border-radius: 8px !important;
+  filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.1)) !important;
+}

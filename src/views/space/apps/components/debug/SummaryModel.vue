@@ -29,7 +29,7 @@ const handleCloseModal = () => {
 const fetchSummary = async () => {
   try {
     // 检查应用信息是否存在
-    if (store.app && store.app.id) {
+    if (store.app && store.app.id && store.draftAppConfig.long_term_memory.enable) {
       // 设置加载状态
       loading.value = true
       // 调用 API 获取对话摘要

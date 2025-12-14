@@ -7,6 +7,8 @@ import { useAppStore } from '../AppView.store'
 
 // 用户输入的提示词内容
 const inputValue = ref('')
+// 存储输入框或自动优化的提示词，便于再次生成使用
+const inputPrompt = ref('')
 // 控制优化弹窗的显示状态
 const visible = ref(false)
 // 原始提示词内容
@@ -25,6 +27,8 @@ const isShowBtns = ref(false)
 const inputRef = useTemplateRef('inputRef')
 // 更新提示词的加载状态
 const updatePromptLoading = ref(false)
+// 获取复制内容的DOM元素引用
+const contentToCopy = useTemplateRef('contentToCopy')
 // 计算属性：判断是否显示自动优化按钮
 const isShowAutoOptimize = computed(() => {
   return store.app && store.app.description && optimizePrompt.value.trim() == ''
@@ -53,11 +57,27 @@ const handleAutoOptimize = async () => {
 const handleOptimizePrompt = async () => {
   if (!isDisabled.value) {
     // 保存当前输入的提示词
-    const tempPrompt = inputValue.value
+    inputPrompt.value = inputValue.value
     // 清空输入框
     inputValue.value = ''
     // 调用优化函数处理提示词
-    optimizePromptFn(tempPrompt)
+    optimizePromptFn(inputPrompt.value)
+  }
+}
+
+/**
+ * 处理重新生成提示词的操作
+ * 根据是否存在之前输入的提示词来决定使用哪种优化方式
+ * 如果存在之前输入的提示词，则使用该提示词重新优化
+ * 如果不存在，则触发自动优化功能
+ * @returns Promise<void> 返回一个Promise，表示异步操作完成
+ */
+const handleRegenerate = async () => {
+  if (inputPrompt.value) {
+    optimizePromptFn(inputPrompt.value)
+  } else {
+    optimizePrompt.value = ''
+    handleAutoOptimize()
   }
 }
 
@@ -147,6 +167,30 @@ const handleBlur = async () => {
 }
 
 /**
+ * 复制优化后的提示词内容到剪贴板
+ * 获取指定DOM元素的文本内容，并使用浏览器的剪贴板API进行复制
+ * 复制完成后显示相应的成功或失败提示消息
+ * @returns Promise<void> 返回一个Promise，表示异步操作完成
+ */
+const copyToClipboard = async () => {
+  try {
+    // 检查目标元素是否存在，如果不存在则直接返回
+    if (!contentToCopy.value) return
+    // 获取div内的文本内容，优先使用textContent，如果不存在则使用innerText作为备选
+    const text = contentToCopy.value.textContent || contentToCopy.value.innerText
+
+    // 使用Clipboard API将文本复制到剪贴板
+    await navigator.clipboard.writeText(text)
+
+    // 复制成功时显示成功提示消息
+    Message.success('复制成功')
+  } catch (err) {
+    // 复制失败时捕获错误并显示失败提示消息
+    Message.error('复制失败' + err)
+  }
+}
+
+/**
  * 处理取消优化操作
  * 关闭优化弹窗并重置相关数据状态
  */
@@ -163,6 +207,7 @@ const handleCancelOptimize = () => {
  */
 const resetData = () => {
   optimizePrompt.value = ''
+  inputPrompt.value = ''
   isShowBtns.value = false
   isCursor.value = false
 }
@@ -212,17 +257,19 @@ onUnmounted(() => {
         position="bl"
         :popup-translate="[0, 8]"
       >
-        <a-button
-          type="text"
-          size="mini"
-          class="text-gray-500 font-bold text-sm"
-          @click="handleOptimize"
-        >
-          <template #icon>
-            <img src="@/assets/images/icon-optimize.svg" class="w-4 h-4" />
-          </template>
-          优化
-        </a-button>
+        <a-tooltip content="自动优化提示词">
+          <a-button
+            type="text"
+            size="mini"
+            class="text-gray-500 font-bold text-sm"
+            @click="handleOptimize"
+          >
+            <template #icon>
+              <img src="@/assets/images/icon-optimize.svg" class="w-4 h-4" />
+            </template>
+            优化
+          </a-button>
+        </a-tooltip>
         <template #content>
           <div class="bg-white rounded-xl shadow-xl p-4 w-[460px] max-h-[480px]">
             <div class="flex flex-col gap-2 h-full">
@@ -239,6 +286,7 @@ onUnmounted(() => {
               <!-- 提示词优化后的结果 -->
               <div v-else class="flex flex-1 flex-col">
                 <div
+                  ref="contentToCopy"
                   class="text-gray-500 flex-1 max-h-[330px] overflow-y-scroll scrollbar-w-none leading-6.5"
                 >
                   {{ optimizePrompt }}
@@ -258,12 +306,22 @@ onUnmounted(() => {
                     </div>
                     <div class="flex gap-2">
                       <a-tooltip content="复制" content-class="rounded-lg py-1">
-                        <a-button type="text" size="small" class="text-gray-600">
+                        <a-button
+                          type="text"
+                          size="small"
+                          class="text-gray-600"
+                          @click="copyToClipboard"
+                        >
                           <template #icon><icon-copy /></template>
                         </a-button>
                       </a-tooltip>
                       <a-tooltip content="重新生成" content-class="rounded-lg py-1">
-                        <a-button type="text" size="small" class="text-gray-600">
+                        <a-button
+                          type="text"
+                          size="small"
+                          class="text-gray-600"
+                          @click="handleRegenerate"
+                        >
                           <template #icon><icon-refresh /></template>
                         </a-button>
                       </a-tooltip>
