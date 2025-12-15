@@ -2,9 +2,18 @@
 import LongTermMemory from './ability/LongTermMemory.vue'
 import OpeningStatement from './ability/OpeningStatement.vue'
 import ReviewConfig from './ability/ReviewConfig.vue'
+import SpeechToText from './ability/SpeechToText.vue'
 import SuggestedAfterAnswer from './ability/SuggestedAfterAnswer.vue'
+import TextToSpeech from './ability/TextToSpeech.vue'
 
-const defaultActiveKey = ['LongTermMemory', 'OpeningStatement', 'ReviewConfig', 'SuggestedAfterAnswer']
+const defaultActiveKey = [
+  'LongTermMemory',
+  'OpeningStatement',
+  'ReviewConfig',
+  'SuggestedAfterAnswer',
+  'SpeechToText',
+  'TextToSpeech',
+]
 </script>
 
 <template>
@@ -19,6 +28,10 @@ const defaultActiveKey = ['LongTermMemory', 'OpeningStatement', 'ReviewConfig', 
         <OpeningStatement />
         <!-- 用户建议问题 -->
         <SuggestedAfterAnswer />
+        <!-- 语音输入 -->
+        <SpeechToText />
+        <!-- 语音输出 -->
+        <TextToSpeech />
         <!-- 内容审核 -->
         <ReviewConfig />
       </a-collapse>

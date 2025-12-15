@@ -2,7 +2,7 @@
 import type { ReviewConfig } from '@/services/api/apps/types'
 import { Message } from '@arco-design/web-vue'
 import * as _ from 'lodash-es'
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useAppStore } from '../../AppView.store'
 
 // 获取应用状态管理store实例
@@ -86,11 +86,16 @@ const handleSubmit = async () => {
 }
 
 // 监听模态框的显示状态
-watch(visible, (val) => {
+const stop = watch(visible, (val) => {
   // 当模态框打开时，从store中克隆审核配置数据到表单数据中
   if (val) {
     formData.value = _.cloneDeep(store.draftAppConfig.review_config)
   }
+})
+
+onUnmounted(() => {
+  // 组件卸载时，停止监听
+  stop()
 })
 </script>
 
@@ -136,12 +141,7 @@ watch(visible, (val) => {
               <div class="flex flex-col w-full">
                 <div class="flex items-center justify-between w-full">
                   <div class="text-[#4e5969]">审查输入内容</div>
-                  <a-switch
-                    v-model="formData.inputs_config.enable"
-                    type="round"
-                    size="small"
-                    class="inline-block"
-                  />
+                  <a-switch v-model="formData.inputs_config.enable" type="round" size="small" />
                 </div>
                 <div class="text-xs text-gray-500 my-2">预设回复</div>
                 <a-textarea

@@ -131,12 +131,6 @@ export interface InputsConfig {
   preset_response: string
 }
 
-export interface TextToSpeech {
-  auto_play: boolean
-  enable: boolean
-  voice: string
-}
-
 export interface ToolElement {
   provider: Dataset
   tool: ToolTool
