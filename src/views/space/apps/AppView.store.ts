@@ -42,6 +42,9 @@ export const useAppStore = defineStore(
       },
       opening_statement: '',
       opening_questions: [],
+      suggested_after_answer: {
+        enable: true,
+      },
       speech_to_text: {
         enable: false,
       },

@@ -86,6 +86,7 @@ export interface GetDraftAppConfigResp {
   dialog_round: number
   id: string
   long_term_memory: LongTermMemory
+  suggested_after_answer: SuggestedAfterAnswer
   model_config: ModelConfig
   opening_questions: string[]
   opening_statement: string
@@ -99,16 +100,16 @@ export interface GetDraftAppConfigResp {
   workflows: any[]
 }
 
+export interface SuggestedAfterAnswer {
+  enable: boolean
+}
+
 export interface Dataset {
   description?: string
   icon: string
   id: string
   name: string
   label?: string
-}
-
-export interface LongTermMemory {
-  enable: boolean
 }
 
 export interface ModelConfig {
@@ -123,19 +124,6 @@ export interface Parameters {
   presence_penalty: number
   temperature: number
   top_p: number
-}
-
-export interface RetrievalConfig {
-  k: number
-  retrieval_strategy: string
-  score: number
-}
-
-export interface ReviewConfig {
-  enable: boolean
-  inputs_config: InputsConfig
-  keywords: string[]
-  outputs_config: LongTermMemory
 }
 
 export interface InputsConfig {
@@ -170,6 +158,7 @@ export interface UpdateDraftAppConfigReq {
   model_config?: ModelConfig
   opening_questions?: any[]
   opening_statement?: string
+  suggested_after_answer?: SuggestedAfterAnswer
   preset_prompt?: string
   retrieval_config?: RetrievalConfig
   review_config?: ReviewConfig
@@ -181,12 +170,6 @@ export interface UpdateDraftAppConfigReq {
 
 export interface LongTermMemory {
   enable: boolean
-}
-
-export interface ModelConfig {
-  model: string
-  parameters: Parameters
-  provider: string
 }
 
 export interface Parameters {

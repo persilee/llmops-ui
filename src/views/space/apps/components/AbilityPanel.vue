@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import LongTermMemory from './ability/LongTermMemory.vue'
 import OpeningStatement from './ability/OpeningStatement.vue'
+import ReviewConfig from './ability/ReviewConfig.vue'
+import SuggestedAfterAnswer from './ability/SuggestedAfterAnswer.vue'
+
+const defaultActiveKey = ['LongTermMemory', 'OpeningStatement', 'ReviewConfig', 'SuggestedAfterAnswer']
 </script>
 
 <template>
@@ -8,11 +12,15 @@ import OpeningStatement from './ability/OpeningStatement.vue'
     <div class="flex items-center h-10 px-6 font-bold text-gray-900">应用能力</div>
 
     <div class="flex-1 overflow-y-scroll">
-      <a-collapse :default-active-key="['1', '2']" :bordered="false">
+      <a-collapse :default-active-key="defaultActiveKey" :bordered="false">
         <!-- 长期记忆 -->
         <LongTermMemory />
         <!-- 对话开场白 -->
         <OpeningStatement />
+        <!-- 用户建议问题 -->
+        <SuggestedAfterAnswer />
+        <!-- 内容审核 -->
+        <ReviewConfig />
       </a-collapse>
     </div>
   </div>

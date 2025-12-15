@@ -16,7 +16,7 @@ const handleSelect = (val: boolean) => {
 </script>
 
 <template>
-  <a-collapse-item header="长期记忆" key="1">
+  <a-collapse-item header="长期记忆" key="LongTermMemory">
     <!-- 标题 -->
     <template #expand-icon="{ active }">
       <icon-right :class="`${active ? 'rotate-90' : ''} transition duration-160`" />

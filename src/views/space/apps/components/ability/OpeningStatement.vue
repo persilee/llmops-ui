@@ -84,17 +84,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <a-collapse-item header="对话开场白" key="2">
+  <a-collapse-item header="对话开场白" key="OpeningStatement">
     <!-- 标题 -->
     <template #expand-icon="{ active }">
       <icon-right :class="`${active ? 'rotate-90' : ''} transition duration-160`" />
-    </template>
-    <template #extra>
-      <a-button @click.stop type="text" size="mini">
-        <template #icon>
-          <icon-plus class="text-gray-600" />
-        </template>
-      </a-button>
     </template>
     <!-- 内容 -->
     <div class="flex flex-col">
