@@ -143,3 +143,22 @@ export const padWithZeros = (num: number | string, length: number = 3): string =
   // 使用padStart补零
   return str.padStart(length, '0')
 }
+
+/**
+ * 将SVG字符串转换为图片数据URL
+ * @param svg SVG字符串
+ * @returns 返回SVG的数据URL
+ * @throws {Error} 当输入不是有效的SVG字符串时抛出错误
+ */
+export const svgToImgData = (svg: string): string => {
+  if (typeof svg !== 'string' || !svg.trim()) {
+    throw new Error('Invalid SVG string')
+  }
+
+  try {
+    const encodedSvg = encodeURIComponent(svg)
+    return `data:image/svg+xml;charset=utf-8,${encodedSvg}`
+  } catch (error) {
+    throw new Error('Failed to convert SVG to image data')
+  }
+}

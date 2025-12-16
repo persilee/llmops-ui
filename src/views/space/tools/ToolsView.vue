@@ -65,8 +65,6 @@ const fetchData = async (init?: boolean) => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : '数据加载失败'
     Message.error(errorMessage)
-    error.value = errorMessage
-    console.error('获取工具列表失败:', err)
   } finally {
     loading.value = false
   }

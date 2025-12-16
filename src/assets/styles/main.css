@@ -15,4 +15,9 @@
   .scrollbar-w-none::-webkit-scrollbar {
     display: none;
   }
+
+  .icon-active {
+    filter: brightness(0) saturate(100%) invert(35%) sepia(96%) saturate(462%) hue-rotate(185deg)
+      brightness(96%) contrast(95%);
+  }
 }

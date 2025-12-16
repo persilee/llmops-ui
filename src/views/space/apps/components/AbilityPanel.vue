@@ -5,6 +5,7 @@ import ReviewConfig from './ability/ReviewConfig.vue'
 import SpeechToText from './ability/SpeechToText.vue'
 import SuggestedAfterAnswer from './ability/SuggestedAfterAnswer.vue'
 import TextToSpeech from './ability/TextToSpeech.vue'
+import ToolsExpand from './ability/ToolsExpand.vue'
 
 const defaultActiveKey = [
   'LongTermMemory',
@@ -13,6 +14,7 @@ const defaultActiveKey = [
   'SuggestedAfterAnswer',
   'SpeechToText',
   'TextToSpeech',
+  'Tools',
 ]
 </script>
 
@@ -22,6 +24,8 @@ const defaultActiveKey = [
 
     <div class="flex-1 overflow-y-scroll">
       <a-collapse :default-active-key="defaultActiveKey" :bordered="false">
+        <!-- 扩展插件 -->
+        <ToolsExpand />
         <!-- 长期记忆 -->
         <LongTermMemory />
         <!-- 对话开场白 -->
