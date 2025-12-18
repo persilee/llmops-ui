@@ -75,3 +75,31 @@ export interface Header {
   name: string
   value: string
 }
+
+export interface GetAPIToolResp {
+  description: string
+  id: string
+  inputs: Input[]
+  name: string
+  provider: Provider
+}
+
+export interface Input {
+  description: string
+  name: string
+  required: string
+  type: string
+}
+
+export interface Provider {
+  description: string
+  headers: Header[]
+  icon: string
+  id: string
+  name: string
+}
+
+export interface Header {
+  name: string
+  value: string
+}

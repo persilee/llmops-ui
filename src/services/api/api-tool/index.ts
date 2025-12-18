@@ -4,6 +4,7 @@ import type {
   GetAPIToolProviderResp,
   GetAPIToolProvidersWithPageParams,
   GetAPIToolProvidersWithPageResp,
+  GetAPIToolResp,
   UpdateAPIToolProviderReq,
 } from './types'
 
@@ -82,6 +83,18 @@ class APIToolsApi {
   static getAPIToolProvider(providerId: string) {
     return get<GetAPIToolProviderResp>({
       url: `/api-tools/get-api-tool-provider/${providerId}`,
+    })
+  }
+
+  /**
+   * 获取API工具详情
+   * @param providerId - API工具提供商的ID
+   * @param toolName - API工具的名称
+   * @returns 返回一个Promise，解析为GetAPIToolResp类型的数据
+   */
+  static getApiTool(providerId: string, toolName: string) {
+    return get<GetAPIToolResp>({
+      url: `/api-tools/get-api-tool/${providerId}/tools/${toolName}`,
     })
   }
 }

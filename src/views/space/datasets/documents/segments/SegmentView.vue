@@ -218,7 +218,6 @@ const handleDelete = async (segment: GetSegmentsWithPage) => {
     },
     onCancel: () => {
       // 取消删除操作
-      console.log('取消删除')
     },
   })
 }

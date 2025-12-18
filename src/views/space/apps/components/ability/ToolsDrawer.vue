@@ -27,6 +27,7 @@ const builtinTools = ref<Array<GetBuiltinToolsResp>>([]) // 内置工具列表
 const categories = ref<Array<GetCategoriesResp>>([]) // 工具分类列表
 const category = ref<string>('all') // 当前选中的工具分类，默认为'all'
 const btnActive = ref<string>('customTool') // 当前激活的按钮状态，默认为自定义工具
+const selectIndex = ref(-1) // 当前选中的工具索引
 const paginator = ref<Paginator>({
   // 分页信息对象
   current_page: 1, // 当前页码
@@ -34,6 +35,7 @@ const paginator = ref<Paginator>({
   total_page: 0, // 总页数
   total_record: 0, // 总记录数
 })
+
 /**
  * 过滤内置工具列表的计算属性
  *
@@ -61,6 +63,9 @@ const filterBuiltinTools = computed(() => {
  */
 const handleClose = () => {
   visible.value = false
+  btnActive.value = 'customTool'
+  category.value = 'all'
+  selectIndex.value = -1
 }
 
 /**
@@ -204,23 +209,6 @@ const handleScroll = (e: Event) => {
 }
 
 /**
- * 获取当前应用配置中已存在的工具列表
- * @returns {Array} 返回格式化后的工具列表，每个工具包含以下属性：
- *   - params: 工具参数对象，初始为空对象
- *   - provider_id: 工具提供者的ID
- *   - tool_id: 工具的ID
- *   - type: 工具类型（如 'api_tool' 或 'builtin_tool'）
- */
-const getExistingTools = () => {
-  return store.draftAppConfig.tools.map(({ provider, tool, type }) => ({
-    params: {},
-    provider_id: provider.id,
-    tool_id: tool.id,
-    type,
-  }))
-}
-
-/**
  * 添加自定义工具到应用配置中
  * @param provider API工具提供者信息，包含提供者的ID等元数据
  * @param tool 要添加的自定义工具对象，包含工具的ID等信息
@@ -233,7 +221,7 @@ const addCustomTool = async (provider: GetAPIToolProvidersWithPage, tool: Custom
     // 构建更新后的工具列表
     const updatedTools = [
       // 展开当前已存在的工具列表
-      ...getExistingTools(),
+      ...store.getExistingTools(),
       // 添加新的自定义工具
       {
         params: {}, // 工具参数对象，当前为空对象
@@ -246,8 +234,7 @@ const addCustomTool = async (provider: GetAPIToolProvidersWithPage, tool: Custom
     // 调用store方法更新应用配置
     await store.updateDraftAppConfig({ tools: updatedTools })
 
-    // 成功添加后关闭抽屉
-    handleClose()
+    Message.success('添加扩展插件成功')
   } catch (error) {
     // 错误处理：如果添加失败，保持抽屉打开状态
   } finally {
@@ -268,7 +255,7 @@ const addBuiltinTool = async (provider: GetBuiltinToolsResp, tool: BuiltinTool) 
 
     // 获取当前已存在的工具列表，并添加新工具
     const updatedTools = [
-      ...getExistingTools(), // 展开现有工具列表
+      ...store.getExistingTools(),
       {
         params: Object.fromEntries(tool.params.map((item: any) => [item.name, item.default])), // 工具参数对象，将内置工具的参数默认值转换为键值对
         provider_id: provider.name, // 使用提供者名称作为ID
@@ -279,11 +266,10 @@ const addBuiltinTool = async (provider: GetBuiltinToolsResp, tool: BuiltinTool) 
 
     // 调用store方法更新应用配置
     await store.updateDraftAppConfig({
-      tools: updatedTools, // 传入更新后的工具列表
+      tools: updatedTools,
     })
 
-    // 成功添加后关闭抽屉
-    handleClose()
+    Message.success('添加扩展插件成功')
   } catch (error) {
     // 错误处理：如果添加失败，保持抽屉打开状态
   } finally {
@@ -292,12 +278,26 @@ const addBuiltinTool = async (provider: GetBuiltinToolsResp, tool: BuiltinTool) 
   }
 }
 
+/**
+ * 监听抽屉的显示状态变化
+ * 当抽屉打开时（visible为true），自动获取初始数据
+ *
+ * @param {boolean} val - 抽屉的显示状态
+ * @returns {void}
+ */
 const stop = watch(visible, async (val) => {
   if (val) {
     await fetchData()
   }
 })
 
+/**
+ * 组件卸载时的清理操作
+ *
+ * 当组件被卸载时，需要停止之前创建的 watch 监听器，
+ * 以防止内存泄漏和不必要的监听继续执行。
+ * 这是一个重要的清理步骤，确保组件在销毁时正确释放资源。
+ */
 onUnmounted(() => {
   stop()
 })
@@ -305,7 +305,7 @@ onUnmounted(() => {
 
 <template>
   <a-drawer
-    :width="640"
+    :width="740"
     v-model:visible="visible"
     :mask-closable="false"
     :header="false"
@@ -384,13 +384,14 @@ onUnmounted(() => {
           </div>
         </div>
         <!-- 右边内容 -->
-        <div class="flex-1 px-3.5 py-4 bg-white">
+        <div class="flex-1 px-3.5 py-4 bg-white w-[524px] flex-shrink-0">
           <CustomTools
             v-if="'customTool' == btnActive"
             :loading="builtinLoading"
             :load-mor-loading="loadMorLoading"
             :providers="providers"
             :paginator="paginator"
+            v-model:select-index="selectIndex"
             @handle-scroll="handleScroll"
             @load-more="getToolsData(true)"
             @add-tool="addCustomTool"
@@ -399,6 +400,7 @@ onUnmounted(() => {
             v-if="'builtinTool' == btnActive"
             :loading="toolsLoading"
             :builtin-tools="filterBuiltinTools"
+            v-model:select-index="selectIndex"
             @add-tool="addBuiltinTool"
           />
         </div>

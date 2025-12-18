@@ -173,7 +173,6 @@ const handelDelete = async (dataset: GetDatasetsWithPage) => {
     },
     onCancel: () => {
       // 取消删除操作
-      console.log('取消删除')
     },
   })
 }

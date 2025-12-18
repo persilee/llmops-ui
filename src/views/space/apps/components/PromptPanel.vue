@@ -21,6 +21,8 @@ const store = useAppStore()
 const optimizeLoading = ref(false)
 // 控制输入光标的显示状态
 const isCursor = ref(false)
+// 控制自动优化按钮的显示状态
+const isShowAutoOptimizeBtn = ref(false)
 // 控制操作按钮组的显示状态
 const isShowBtns = ref(false)
 // 输入框的DOM引用
@@ -31,7 +33,7 @@ const updatePromptLoading = ref(false)
 const contentToCopy = useTemplateRef('contentToCopy')
 // 计算属性：判断是否显示自动优化按钮
 const isShowAutoOptimize = computed(() => {
-  return store.app && store.app.description && optimizePrompt.value.trim() == ''
+  return store.app && store.app.description && isShowAutoOptimizeBtn.value
 })
 // 计算属性：判断输入框是否禁用（空值时禁用）
 const isDisabled = computed(() => {
@@ -45,6 +47,7 @@ const isDisabled = computed(() => {
  */
 const handleAutoOptimize = async () => {
   if (isShowAutoOptimize.value) {
+    isShowAutoOptimizeBtn.value = false
     optimizePromptFn(store.app!.description)
   }
 }
@@ -210,8 +213,11 @@ const resetData = () => {
   inputPrompt.value = ''
   isShowBtns.value = false
   isCursor.value = false
+  isShowAutoOptimizeBtn.value = false
 }
 
+// TODO: 弹窗关闭前要提示用户是否要放弃优化后的提示词
+// TODO: 闪烁光标可以换成圆点
 // 监听弹窗显示状态
 const stop = watch(
   () => visible.value, // 监听visible的值
@@ -220,6 +226,7 @@ const stop = watch(
     if (newVal) {
       // 当弹窗显示时
       resetData() // 重置数据状态
+      isShowAutoOptimizeBtn.value = true
       setTimeout(() => {
         // 延时执行
         inputRef.value?.focus() // 聚焦输入框

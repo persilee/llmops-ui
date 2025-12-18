@@ -52,3 +52,28 @@ export interface Option {
   label: string
   value: string
 }
+
+export interface GetProviderToolResp {
+  created_at: number
+  description: string
+  inputs: Input[]
+  label: string
+  name: string
+  params: any[]
+  provider: Provider
+}
+
+export interface Input {
+  description: string
+  name: string
+  required: boolean
+  type: string
+}
+
+export interface Provider {
+  background: string
+  category: string
+  description: string
+  label: string
+  name: string
+}
