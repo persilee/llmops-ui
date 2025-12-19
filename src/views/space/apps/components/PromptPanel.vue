@@ -375,7 +375,7 @@ onUnmounted(() => {
     <div class="flex-1 px-3 pb-4">
       <a-textarea
         v-model="prompt"
-        class="h-full flex-1 bg-transparent rounded-xl focus-within:border-0 not-focus-within: border-0"
+        class="h-[calc(100%-56px)] flex-1 bg-transparent rounded-xl focus-within:border-0 not-focus-within: border-0"
         placeholder="请输入提示词或点击优化自动生成提示词"
         :max-length="2000"
         show-word-limit

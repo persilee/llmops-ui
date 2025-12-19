@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import APIToolsApi from '@/services/api/api-tool'
+import type { Input } from '@/services/api/api-tool/types'
 import type { ToolElement } from '@/services/api/apps/types'
-import { copyToClipboard } from '@/utils/util'
+import BuiltinToolApi from '@/services/api/builtin-tool'
+import { copyToClipboard, typeMap } from '@/utils/util'
 import { ref } from 'vue'
 import { useAppStore } from '../../AppView.store'
 import EditToolDrawer from './EditToolDrawer.vue'
@@ -14,8 +17,12 @@ const visible = ref(false)
 const editToolVisible = ref(false)
 // 加载状态，用于控制工具列表的加载动画
 const loading = ref(false)
+// 加载状态，用于显示工具参数的加载动画
+const loadingInfo = ref(false)
 // 当前选中的工具对象，用于编辑时传递数据
 const selectTool = ref<ToolElement>()
+// 当前选中的工具的详细信息，用于弹出窗显示
+const inputsInfo = ref<Input[]>([])
 
 /**
  * 处理添加工具的方法
@@ -33,6 +40,46 @@ const handleAddTool = () => {
 const handleEditTool = (tool: ToolElement) => {
   selectTool.value = tool
   editToolVisible.value = true
+}
+
+/**
+ * 获取工具的详细信息
+ * @param visible - 控制是否获取工具信息，当 popover 显示时为 true
+ * @param tool - 工具对象，包含工具的类型、提供者和名称等信息
+ * @description 当用户悬停在工具信息按钮上时，异步获取工具的详细参数信息
+ *              根据工具类型（api_tool 或内置工具）调用不同的 API 接口
+ *              获取到的参数信息会存储在 inputsInfo 中用于显示
+ */
+const getToolInfo = async (visible: boolean, tool: ToolElement) => {
+  // 如果 popover 未显示，则不获取信息
+  if (!visible) return
+
+  try {
+    // 开始加载，显示加载动画
+    loadingInfo.value = true
+    // 声明响应变量
+    let resp
+    // 根据工具类型调用不同的 API
+    if (tool.type == 'api_tool') {
+      // API 工具：使用 provider.id 和 tool.name 获取工具信息
+      resp = await APIToolsApi.getApiTool(tool.provider.id, tool.tool.name)
+    } else {
+      // 内置工具：使用 provider.name 和 tool.name 获取工具信息
+      resp = await BuiltinToolApi.getProviderTool(tool.provider.name, tool.tool.name)
+    }
+
+    // 处理返回的输入参数信息
+    // 将 required 字段转换为字符串类型，确保模板中的一致性
+    inputsInfo.value = resp.data.inputs.map((input) => ({
+      ...input,
+      required: String(input.required),
+    }))
+  } catch (error) {
+    // 错误处理：静默处理错误，不显示错误信息
+  } finally {
+    // 无论成功失败，都关闭加载状态
+    loadingInfo.value = false
+  }
 }
 </script>
 
@@ -66,6 +113,37 @@ const handleEditTool = (tool: ToolElement) => {
             <span class="font-bold text-gray-900">{{ tool.tool.name }}</span>
             <span class="text-xs text-gray-500">{{ tool.tool.description }}</span>
           </div>
+          <a-popover @popup-visible-change="(visible: boolean) => getToolInfo(visible, tool)">
+            <template #content>
+              <a-spin :loading="loadingInfo" class="">
+                <div class="flex flex-col gap-3 max-w-[300px]">
+                  <div
+                    v-for="(input, iIndex) in inputsInfo"
+                    :key="iIndex"
+                    class="flex flex-col gap-1"
+                  >
+                    <div class="flex items-center gap-1.5">
+                      <div class="font-bold text-gray-800">{{ input.name }}</div>
+                      <div class="text-xs text-gray-600">
+                        {{ typeMap[input.type] }}
+                      </div>
+                      <div v-if="input.required == 'true'" class="text-xs text-yellow-600">
+                        必填
+                      </div>
+                    </div>
+                    <div class="text-gray-600 text-xs">{{ input.description }}</div>
+                  </div>
+                </div>
+              </a-spin>
+            </template>
+            <a-button
+              type="text"
+              size="mini"
+              class="opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible"
+            >
+              <template #icon><icon-info-circle class="text-gray-500" /></template>
+            </a-button>
+          </a-popover>
           <a-tooltip content="复制名称">
             <a-button
               type="text"
