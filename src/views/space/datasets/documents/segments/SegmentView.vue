@@ -16,7 +16,7 @@ import SegmentModal from './components/SegmentModal.vue'
 
 // 初始化路由实例，用于页面导航
 const router = useRouter()
-// 初始化数据集store，用于管理数据集相关的状态
+// 初始化知识库store，用于管理知识库相关的状态
 const store = useDatasetStore()
 // 文档详情的响应式变量，存储当前文档的详细信息
 const document = ref<GetDocumentResp>()
@@ -49,7 +49,7 @@ const paginator = ref<Paginator>({
 const handleBackClick = () => {
   router.replace({
     name: 'space-datasets-documents', // 目标路由名称
-    params: { datasetId: store.dataset?.id }, // 传递数据集ID作为路由参数
+    params: { datasetId: store.dataset?.id }, // 传递知识库ID作为路由参数
   })
 }
 
@@ -118,7 +118,7 @@ const fetchData = async (isLoadMore: boolean = false) => {
  */
 const fetchDocumentById = async () => {
   try {
-    // 检查必要的数据是否存在：数据集ID和文档ID
+    // 检查必要的数据是否存在：知识库ID和文档ID
     if (store.dataset && store.dataset.id && store.document && store.document.id) {
       // 开启加载状态，用于显示加载动画
       headerLoading.value = true
@@ -144,7 +144,7 @@ const fetchDocumentById = async () => {
 const handleChangeEnabled = async (v: boolean, ev: Event, segment: GetSegmentsWithPage) => {
   ev.stopPropagation()
   try {
-    // 检查必要的数据是否存在：数据集ID、文档ID和片段对象
+    // 检查必要的数据是否存在：知识库ID、文档ID和片段对象
     if (store.dataset && store.dataset.id && store.document && store.document.id && segment) {
       // 开启加载状态，用于显示加载动画
       loading.value = true
@@ -176,7 +176,7 @@ const handleChangeEnabled = async (v: boolean, ev: Event, segment: GetSegmentsWi
  * @description
  * 1. 显示确认对话框，提醒用户删除操作的影响
  * 2. 用户确认后执行删除操作：
- *    - 检查必要的数据是否存在（数据集ID、文档ID和片段对象）
+ *    - 检查必要的数据是否存在（知识库ID、文档ID和片段对象）
  *    - 开启加载状态
  *    - 调用API删除片段
  *    - 删除成功后显示成功消息并更新本地状态
@@ -195,7 +195,7 @@ const handleDelete = async (segment: GetSegmentsWithPage) => {
     // 确认按钮的回调函数
     onOk: async () => {
       try {
-        // 检查必要的数据是否存在：数据集ID、文档ID和片段对象
+        // 检查必要的数据是否存在：知识库ID、文档ID和片段对象
         if (store.dataset && store.dataset.id && store.document && store.document.id && segment) {
           // 开启加载状态，用于显示加载动画
           loading.value = true

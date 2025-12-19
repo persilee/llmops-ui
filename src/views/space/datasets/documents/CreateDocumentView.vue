@@ -17,7 +17,7 @@ let batch = ''
 let fetchCount = 0
 // 定时器ID，用于定时获取文档处理状态
 let timer: number | null | undefined = null
-// 数据集状态管理store
+// 知识库状态管理store
 const store = useDatasetStore()
 // Vue路由实例
 const router = useRouter()
@@ -164,7 +164,7 @@ const handlePreviousClick = () => {
  * 获取文档处理状态
  *
  * 该函数负责轮询获取文档的处理状态，具有以下功能：
- * 1. 检查数据集是否存在
+ * 1. 检查知识库是否存在
  * 2. 增加获取次数计数器，用于防止无限轮询
  * 3. 调用API获取文档状态并更新响应式数据
  * 4. 检查是否超过最大获取次数（66次），超过则停止轮询
@@ -177,7 +177,7 @@ const handlePreviousClick = () => {
  */
 const fetchDocumentsStatus = async () => {
   try {
-    // 检查数据集是否存在
+    // 检查知识库是否存在
     if (store.dataset && store.dataset.id) {
       // 增加获取次数计数器
       fetchCount++
@@ -301,7 +301,7 @@ const getStatus = (document: GetDocumentsStatusResp) => {
  * 该函数用于在文档处理完成后返回文档列表页面：
  * 1. 重置当前步骤为1
  * 2. 使用router.replace导航到文档列表页面
- * 3. 传递当前数据集ID作为路由参数
+ * 3. 传递当前知识库ID作为路由参数
  *
  * @returns {void}
  */

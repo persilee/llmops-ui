@@ -149,6 +149,50 @@ export const useAppStore = defineStore(
     }
 
     /**
+     * 移除指定的知识库
+     * @param {string} datasetId - 要移除的知识库ID
+     * @returns {Promise<void>} 返回一个Promise，表示移除操作的完成
+     * @description
+     * 该方法用于从应用配置中移除指定的知识库，执行以下操作：
+     * 1. 设置加载状态为true，显示加载动画
+     * 2. 过滤掉要移除的知识库
+     * 3. 将剩余知识库的ID转换为请求格式
+     * 4. 调用updateDraftAppConfig更新配置
+     * 5. 显示成功提示消息
+     * 6. 无论成功失败都会重置加载状态
+     * @throws {Error} 当移除操作失败时抛出错误
+     */
+    const removeDataset = async (datasetId: string) => {
+      try {
+        // 开始加载，显示加载动画
+        loading.value = true
+
+        // 过滤掉要移除的知识库，保留其他知识库
+        const filteredDatasets = draftAppConfig.value.datasets.filter(
+          (dataset) => dataset.id !== datasetId,
+        )
+
+        // 将过滤后的知识库数组转换为后端API所需的请求格式
+        // 只保留知识库的ID
+        const datasetReq = filteredDatasets.map((dataset) => dataset.id)
+
+        // 调用store的方法更新应用配置
+        // 传入处理后的知识库请求数据
+        await updateDraftAppConfig({ datasets: datasetReq })
+
+        // 显示成功提示消息
+        Message.success('移除知识库成功')
+      } catch (error) {
+        // 错误处理：捕获并记录移除过程中可能发生的错误
+        // 可以根据需要添加更多的错误处理逻辑，如显示错误提示
+      } finally {
+        // 无论操作成功还是失败，最后都将加载状态设置为false
+        // 确保加载动画总是会被关闭，提升用户体验
+        loading.value = false
+      }
+    }
+
+    /**
      * 移除指定的工具
      * @param {string} providerId - 要移除的工具id
      * @returns {Promise<void>} 返回一个Promise，表示移除操作的完成
@@ -203,6 +247,7 @@ export const useAppStore = defineStore(
       updateDraftAppConfig,
       getExistingTools,
       removeTool,
+      removeDataset,
     }
   },
   {

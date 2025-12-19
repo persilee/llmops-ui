@@ -4,6 +4,7 @@ import iconMd from '@/assets/images/icon-file-md.png'
 import iconNull from '@/assets/images/icon-file-null.png'
 import iconPdf from '@/assets/images/icon-file-pdf.png'
 import iconTxt from '@/assets/images/icon-file-txt.png'
+import { Message } from '@arco-design/web-vue'
 
 /**
  * 类型映射对象，用于将英文类型名转换为中文显示名称
@@ -161,4 +162,63 @@ export const svgToImgData = (svg: string): string => {
   } catch (error) {
     throw new Error('Failed to convert SVG to image data')
   }
+}
+
+/**
+ * 将文本复制到剪贴板
+ * @param {string} text - 要复制的文本内容
+ * @returns {Promise<void>} 返回一个 Promise，表示复制操作完成
+ *
+ * 该函数使用浏览器的 Clipboard API 将文本复制到剪贴板。
+ * 复制成功时会显示成功提示，失败时会显示错误信息。
+ *
+ * @example
+ * await copyToClipboard('Hello World') // 复制成功并显示提示
+ */
+export const copyToClipboard = async (text: string) => {
+  try {
+    // 使用Clipboard API将文本复制到剪贴板
+    await navigator.clipboard.writeText(text)
+
+    // 复制成功时显示成功提示消息
+    Message.success('复制成功')
+  } catch (err) {
+    // 复制失败时捕获错误并显示失败提示消息
+    Message.error('复制失败' + err)
+  }
+}
+
+/**
+ * 将数字转换为中文单位格式（万、千、亿等）
+ * @param num 要转换的数字
+ * @param decimalPlaces 保留的小数位数，默认1位
+ * @returns 格式化后的字符串
+ */
+export const formatNumberWithChineseUnit = (num: number, decimalPlaces: number = 1): string => {
+  // 处理0的情况
+  if (num === 0) return '0'
+
+  // 处理负数
+  const isNegative = num < 0
+  const absNum = Math.abs(num)
+
+  // 定义单位和对应的阈值
+  const units = [
+    { value: 1e8, unit: '亿' },
+    { value: 1e4, unit: '万' },
+    { value: 1e3, unit: '千' },
+    { value: 1, unit: '' },
+  ]
+
+  // 找到合适的单位
+  for (const { value, unit } of units) {
+    if (absNum >= value) {
+      const formatted = (absNum / value).toFixed(decimalPlaces)
+      // 去除末尾的.0
+      const result = parseFloat(formatted).toString()
+      return `${isNegative ? '-' : ''}${result} ${unit}`
+    }
+  }
+
+  return num.toString()
 }

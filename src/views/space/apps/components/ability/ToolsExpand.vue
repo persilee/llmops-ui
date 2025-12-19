@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ToolElement } from '@/services/api/apps/types'
+import { copyToClipboard } from '@/utils/util'
 import { ref } from 'vue'
 import { useAppStore } from '../../AppView.store'
 import EditToolDrawer from './EditToolDrawer.vue'
@@ -52,7 +53,7 @@ const handleEditTool = (tool: ToolElement) => {
     </template>
     <!-- 内容 -->
     <a-spin :loading="loading" class="w-full h-full">
-      <div class="flex flex-col gap-2">
+      <div v-if="store.draftAppConfig.tools.length > 0" class="flex flex-col gap-2">
         <div
           v-for="(tool, idx) in store.draftAppConfig.tools"
           :key="idx"
@@ -65,6 +66,16 @@ const handleEditTool = (tool: ToolElement) => {
             <span class="font-bold text-gray-900">{{ tool.tool.name }}</span>
             <span class="text-xs text-gray-500">{{ tool.tool.description }}</span>
           </div>
+          <a-tooltip content="复制名称">
+            <a-button
+              type="text"
+              size="mini"
+              class="opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible"
+              @click="copyToClipboard(tool.provider.name)"
+            >
+              <template #icon><icon-copy class="text-gray-500" /></template>
+            </a-button>
+          </a-tooltip>
           <a-tooltip content="编辑参数">
             <a-button
               type="text"
@@ -75,7 +86,7 @@ const handleEditTool = (tool: ToolElement) => {
               <template #icon><icon-settings class="text-gray-500" /></template>
             </a-button>
           </a-tooltip>
-          <a-tooltip content="移除">
+          <a-tooltip content="移除插件">
             <a-button
               type="text"
               size="mini"
@@ -86,6 +97,11 @@ const handleEditTool = (tool: ToolElement) => {
             </a-button>
           </a-tooltip>
         </div>
+      </div>
+      <div v-else class="text-gray-500">
+        插件能够让智能体调用外部
+        API，例如搜索信息、浏览网页、生成图片等，扩展智能体的能力和使用场景。应用最大支持关联 5
+        个知识库。
       </div>
     </a-spin>
     <!-- 新增工具抽屉 -->

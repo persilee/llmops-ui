@@ -14,7 +14,7 @@ import DocumentModal from '../components/DocumentModal.vue'
 import DocumentTable from '../components/DocumentTable.vue'
 import HitModal from '../components/HitModal.vue'
 
-// 使用数据集状态管理store
+// 使用知识库状态管理store
 const store = useDatasetStore()
 // 加载状态，用于控制表格加载动画
 const loading = ref(false)
@@ -47,7 +47,7 @@ const fetchData = async () => {
   try {
     // 开启加载状态
     loading.value = true
-    // 确保数据集存在
+    // 确保知识库存在
     if (store.dataset) {
       // 调用API获取文档列表
       const resp = await DocumentsApi.getDocumentsWithPage(store.dataset.id, {
@@ -101,7 +101,7 @@ const handlePageChange = (page: number) => {
 const handleSwitchChange = async (v: boolean, ev: Event, document: GetDocumentsWithPage) => {
   ev.stopPropagation()
   try {
-    // 确保数据集存在
+    // 确保知识库存在
     if (store.dataset && store.dataset.id) {
       // 开启加载状态
       loading.value = true
@@ -174,7 +174,7 @@ const handleDelete = (data: GetDocumentsWithPage) => {
     // 确认删除的回调函数
     onOk: async () => {
       try {
-        // 确保数据集存在
+        // 确保知识库存在
         if (store.dataset && store.dataset.id) {
           // 开启加载状态
           loading.value = true
@@ -209,7 +209,7 @@ const handleHit = () => {
 
 /**
  * 处理召回测试模态框关闭事件
- * @description 在模态框关闭后，重新获取数据集信息和文档列表，确保数据同步
+ * @description 在模态框关闭后，重新获取知识库信息和文档列表，确保数据同步
  */
 const handleCloseHit = async () => {
   await fetchDatasetById()
@@ -222,7 +222,7 @@ const handleCloseHit = async () => {
  * @description 当用户点击文档表格中的某一行时触发此函数。
  *              1. 将当前选中的文档信息存储到store中
  *              2. 使用Vue Router导航到文档分段页面
- *              3. 传递数据集ID和文档ID作为路由参数
+ *              3. 传递知识库ID和文档ID作为路由参数
  */
 const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
   // 将当前选中的文档信息存储到store中，以便其他组件可以访问
@@ -231,7 +231,7 @@ const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
   router.push({
     name: 'space-datasets-documents-segments', // 目标路由名称
     params: {
-      datasetId: store?.dataset?.id, // 数据集ID，用于标识所属知识库
+      datasetId: store?.dataset?.id, // 知识库ID，用于标识所属知识库
       documentId: row.id, // 文档ID，用于标识具体的文档
     },
   })
@@ -239,7 +239,7 @@ const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
 
 /**
  * 组件挂载时的生命周期钩子
- * @description 在组件挂载完成后，初始化加载数据集信息和文档列表数据
+ * @description 在组件挂载完成后，初始化加载知识库信息和文档列表数据
  */
 onMounted(async () => {
   await fetchDatasetById()

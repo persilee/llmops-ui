@@ -34,7 +34,7 @@ const props = defineProps<Props>()
 /** 定义组件的emit事件 */
 const emit = defineEmits<Emits>()
 
-// 使用数据集状态管理store
+// 使用知识库状态管理store
 const store = useDatasetStore()
 // 控制加载状态的响应式引用
 const loading = ref(false)

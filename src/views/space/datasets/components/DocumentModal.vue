@@ -56,7 +56,7 @@ const handleSubmit = async () => {
       loading.value = true
       // 调用API更新文档名称
       const resp = await DocumentsApi.updateDocumentName(
-        route.params.datasetId as string, // 数据集ID
+        route.params.datasetId as string, // 知识库ID
         props.document.id, // 文档ID
         formData, // 包含新名称的表单数据
       )
