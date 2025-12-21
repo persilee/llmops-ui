@@ -150,7 +150,6 @@ const getDocuments = async (
     documentPaginator.value = resp.data.paginator
   } catch (error) {
     // 错误处理：如果获取文档失败，catch块会捕获错误
-    // TODO: 可以添加具体的错误处理逻辑，如显示错误提示
   } finally {
     // 无论成功失败，都关闭加载状态
     loadingDocument.value = false
@@ -272,7 +271,6 @@ const handleSave = async () => {
     Message.success('更新知识库成功')
   } catch (error) {
     // 错误处理：如果保存失败，catch块会捕获错误
-    // TODO: 可以添加具体的错误处理逻辑，如显示错误提示
   } finally {
     // 无论成功失败，都关闭加载状态
     loading.value = false

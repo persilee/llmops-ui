@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import DotCursor from '@/components/DotCursor.vue'
 import AIApi from '@/services/api/ai'
-import CustomCursor from '@/views/components/CustomCursor.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
@@ -217,7 +217,6 @@ const resetData = () => {
 }
 
 // TODO: 弹窗关闭前要提示用户是否要放弃优化后的提示词
-// TODO: 闪烁光标可以换成圆点
 // 监听弹窗显示状态
 const stop = watch(
   () => visible.value, // 监听visible的值
@@ -297,7 +296,7 @@ onUnmounted(() => {
                   class="text-gray-500 flex-1 max-h-[330px] overflow-y-scroll scrollbar-w-none leading-6.5"
                 >
                   {{ optimizePrompt }}
-                  <CustomCursor v-if="isCursor" />
+                  <DotCursor v-if="isCursor" />
                 </div>
                 <Transition name="fade">
                   <div v-if="isShowBtns" class="flex items-center justify-between h-10 pt-2">

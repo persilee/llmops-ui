@@ -125,8 +125,19 @@ class AppsApi {
    */
   static getDebugConversationMessagesWithPage(appId: string, params: PaginatorParams) {
     return get<GetDebugConversationMessagesWithPageResp>({
-      url: `/apps/${appId}/conversation/messages`,
+      url: `/apps/${appId}/debug/conversations`,
       params: params,
+    })
+  }
+
+  /**
+   * 删除对话消息
+   * @param appId 应用ID
+   * @returns 返回删除对话消息的响应结果
+   */
+  static deleteConversationMessages(appId: string) {
+    return post({
+      url: `/apps/${appId}/debug/conversations/delete`,
     })
   }
 

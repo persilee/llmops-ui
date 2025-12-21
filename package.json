@@ -23,7 +23,8 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "ts-type-guards": "^0.7.0",
     "vue": "^3.5.18",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue-virtual-scroller": "^2.0.0-beta.8"
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.57.0",

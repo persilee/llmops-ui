@@ -6,6 +6,7 @@ interface Props {
   paginator: Paginator
   hasData: boolean
   showLoadMoreBtn: boolean
+  text?: string
 }
 
 defineProps<Props>()
@@ -33,7 +34,7 @@ const emit = defineEmits<{
       :span="24"
       align="center"
     >
-      <div class="text-gray-400 my-4">没有更多数据了</div>
+      <div class="text-xs text-gray-400 my-4">{{ text ?? '没有更多数据了' }}</div>
     </a-col>
     <!-- 大屏幕手动显示加载更多按钮 -->
     <a-col v-if="showLoadMoreBtn" align="center">
