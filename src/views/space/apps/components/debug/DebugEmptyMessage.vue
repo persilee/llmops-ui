@@ -34,14 +34,14 @@ const store = useAppStore()
     </div>
     <!-- 建议问题 -->
     <div v-if="store.draftAppConfig.opening_questions.length > 0" class="mt-3">
-      <span
+      <div
         v-for="(question, idx) in store.draftAppConfig.opening_questions"
         :key="idx"
-        class="border border-gray-200 rounded-lg py-1.5 px-3 cursor-pointer leading-5 inline-block hover:bg-gray-100 mb-1.5"
+        class="border border-gray-200 rounded-lg py-1.5 px-3 cursor-pointer leading-5 hover:bg-gray-100 mb-1.5 w-fit"
         @click="emits('selectOpeningQuestion', question)"
       >
         {{ question }}
-      </span>
+      </div>
     </div>
   </div>
 </template>

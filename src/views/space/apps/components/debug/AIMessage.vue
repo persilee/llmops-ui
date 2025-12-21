@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import DotCursor from '@/components/DotCursor.vue'
 import DotFlashing from '@/components/DotFlashing.vue'
-import type { GetDebugConversationMessagesWithPage } from '@/services/api/apps/types'
+import type {
+  AgentThought as AgentThoughtType,
+  GetDebugConversationMessagesWithPage,
+} from '@/services/api/apps/types'
 import { useAppStore } from '../../AppView.store'
 import AgentThought from './AgentThought.vue'
 
 const props = defineProps<{
   message: GetDebugConversationMessagesWithPage
   isShowDot: boolean
-  agentThoughts: Record<string, any>[]
+  agentThoughts: AgentThoughtType[]
   loading: boolean
   isShowCursor: boolean
   openingQuestions: string[]
@@ -41,14 +44,14 @@ const store = useAppStore()
         <DotCursor v-if="isShowCursor" />
       </div>
       <div v-if="openingQuestions.length > 0" class="mt-3">
-        <span
+        <div
           v-for="(question, idx) in openingQuestions"
           :key="idx"
-          class="border border-gray-200 rounded-lg py-1.5 px-3 cursor-pointer leading-5 inline-block hover:bg-gray-100 mb-1.5"
+          class="border border-gray-200 rounded-lg py-1.5 px-3 cursor-pointer leading-5 hover:bg-gray-100 mb-1.5 w-fit"
           @click="emits('selectOpeningQuestion', question)"
         >
           {{ question }}
-        </span>
+        </div>
       </div>
     </div>
   </div>
