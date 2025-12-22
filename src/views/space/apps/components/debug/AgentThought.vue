@@ -38,6 +38,7 @@ const lastThought = computed(() => {
 // 通过检查数组最后一项的事件类型是否为 QueueEvent.stop 来确定
 const isStopThought = computed(() => {
   const lastItem = props.agentThoughts[props.agentThoughts.length - 1]
+
   return lastItem?.event === QueueEvent.stop
 })
 
@@ -65,7 +66,7 @@ const thoughtSummaryText = computed(() => {
 // 计算属性：获取当前正在运行的思考事件的名称
 // 依赖于 lastThought 计算属性，如果存在最后一个思考事件，则返回其对应的事件名称
 const runningThoughtName = computed(() => {
-  return lastThought.value ? getThoughtName(lastThought.value.event) : ''
+  return lastThought.value ? getThoughtName(lastThought.value.event) : '正在思考中...'
 })
 
 /**
@@ -83,7 +84,7 @@ const getThoughtName = (thoughtName: keyof typeof thoughtNameMap): string => {
  * @returns 返回对应的短名称，如果不存在则返回空字符串
  */
 const getThoughtShortName = (thoughtName: keyof typeof thoughtShortNameMap): string => {
-  return thoughtShortNameMap[thoughtName] ?? ''
+  return thoughtShortNameMap[thoughtName] ?? '正在思考中...'
 }
 </script>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppsApi from '@/services/api/apps'
 import { Message } from '@arco-design/web-vue'
-import { onMounted, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { useAppStore } from '../../AppView.store'
 
 // 定义模态框的显示状态，使用defineModel创建双向绑定的响应式变量
@@ -74,9 +74,14 @@ const updateSummary = async () => {
   }
 }
 
-// 组件挂载时自动获取对话摘要
-onMounted(() => {
-  fetchSummary()
+const stop = watch(visible, (newVal) => {
+  if (newVal) {
+    fetchSummary()
+  }
+})
+
+onUnmounted(() => {
+  stop()
 })
 </script>
 

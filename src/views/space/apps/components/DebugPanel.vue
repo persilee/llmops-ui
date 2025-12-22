@@ -175,9 +175,9 @@ const handleScroll = async (e: Event) => {
  * await sendMessage();
  */
 const sendMessage = async () => {
-  // 检查是否处于禁用状态或应用ID不存在，如果是则直接返回
+  // 检查是否有对话正在进行中或ID不存在，如果有则停止当前对话
   if (isDisabled.value || !store.app?.id) {
-    Message.info('请等待对话结束，再重新开始新对话')
+    Message.info('对话正在进行中，请等待对话结束，或手动停止对话')
     return
   }
 
@@ -203,12 +203,15 @@ const sendMessage = async () => {
 
   // 将新消息添加到消息列表的开头
   messages.value.unshift(newMessage)
+
   // 保存用户输入内容
   const humanInput = inputValue.value
   // 清空输入框
   inputValue.value = ''
   // 滚动到底部以显示新消息
-  scrollRef.value.scrollToBottom()
+  if (scrollRef.value) {
+    scrollRef.value.scrollToBottom()
+  }
 
   try {
     // 调用调试API发送消息
@@ -228,8 +231,6 @@ const sendMessage = async () => {
       setTimeout(() => scrollRef.value.scrollToBottom(), 360)
     }
   } catch (error) {
-    // 错误处理：打印错误信息到控制台
-    console.error('Error in sendMessage:', error)
     // TODO: 可以添加用户友好的错误提示
   } finally {
     // 无论成功失败，都重置所有加载状态
@@ -468,13 +469,9 @@ onMounted(async () => {
         <div
           class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
         >
-          <input
-            v-model="inputValue"
-            type="text"
-            class="flex-1 outline-0"
-            @keyup.enter="sendMessage"
-            @keyup.enter.exact="sendMessage"
-          />
+          <form @submit.prevent="sendMessage" class="w-full">
+            <input v-model="inputValue" type="text" class="flex-1 outline-0 ml-1.5" />
+          </form>
           <a-button type="text" shape="circle">
             <template #icon><img src="@/assets/images/icon-add.png" class="w-4 h-4" /></template>
           </a-button>
