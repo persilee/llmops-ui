@@ -9,7 +9,7 @@ defineProps<{
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-2">
       <a-avatar :size="32" class="bg-blue-700!">
-        <icon-common :size="18" />
+        <slot><icon-common :size="18" /></slot>
       </a-avatar>
       <div class="text-xl font-medium text-gray-900">{{ title }}</div>
     </div>

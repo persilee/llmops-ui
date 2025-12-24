@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconSpace from '@/components/icons/IconSpace.vue'
 import { useRoute } from 'vue-router'
 import InputSearch from '../components/InputSearch.vue'
 import PageHeader from '../components/PageHeader.vue'
@@ -38,7 +39,9 @@ const handleSearch = (value: string) => {
   <div class="flex flex-col h-full w-full px-6 overflow-hidden">
     <div class="pt-6 sticky top-0 z-6">
       <!-- 页面的头部 -->
-      <PageHeader title="个人空间" :button-text="getButtonText()" @click="handleClick()" />
+      <PageHeader title="个人空间" :button-text="getButtonText()" @click="handleClick()">
+        <IconSpace />
+      </PageHeader>
       <!-- 页面导航+搜索框 -->
       <div class="flex items-center justify-between mb-6">
         <!-- 导航 -->
