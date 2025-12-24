@@ -1,7 +1,9 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="">开放 API 页面</div>
+  <div class="">
+    <h1>OpenapiKeyView</h1>
+  </div>
 </template>
 
 <style scoped></style>

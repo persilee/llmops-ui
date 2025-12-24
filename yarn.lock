@@ -544,6 +544,11 @@
     "@eslint/core" "^0.15.2"
     levn "^0.4.1"
 
+"@highlightjs/vue-plugin@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmmirror.com/@highlightjs/vue-plugin/-/vue-plugin-2.1.0.tgz#b7c41e3597a46975665b10cad57882cbde1d1594"
+  integrity sha512-E+bmk4ncca+hBEYRV2a+1aIzIV0VSY/e5ArjpuSN9IO7wBJrzUE2u4ESCwrbQD7sAy+jWQjkV5qCCWgc+pu7CQ==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.npmmirror.com/@humanfs/core/-/core-0.19.1.tgz"
@@ -2172,6 +2177,11 @@ he@^1.2.0:
   resolved "https://registry.npmmirror.com/he/-/he-1.2.0.tgz"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
+highlight.js@^11.11.1:
+  version "11.11.1"
+  resolved "https://registry.npmmirror.com/highlight.js/-/highlight.js-11.11.1.tgz#fca06fa0e5aeecf6c4d437239135fabc15213585"
+  integrity sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==
+
 hookable@^5.5.3:
   version "5.5.3"
   resolved "https://registry.npmmirror.com/hookable/-/hookable-5.5.3.tgz"
@@ -3475,6 +3485,11 @@ vue-eslint-parser@^10.2.0:
     espree "^10.3.0"
     esquery "^1.6.0"
     semver "^7.6.3"
+
+vue-json-pretty@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.npmmirror.com/vue-json-pretty/-/vue-json-pretty-2.6.0.tgz#30f865ff59a319bd88ff5ae7461682d07b0775e1"
+  integrity sha512-glz1aBVS35EO8+S9agIl3WOQaW2cJZW192UVKTuGmryx01ZvOVWc4pR3t+5UcyY4jdOfBUgVHjcpRpcnjRhCAg==
 
 vue-observe-visibility@^2.0.0-alpha.1:
   version "2.0.0-alpha.1"

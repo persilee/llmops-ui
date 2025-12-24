@@ -90,9 +90,14 @@ onMounted(() => {
             </template>
           </PageRouterLink>
           <!-- 开发API导航 -->
-          <PageRouterLink to="/open" label="开发 API" is-sider>
+          <PageRouterLink
+            to="/openapi/start"
+            label="开发 API"
+            is-sider
+            :class="route.path.startsWith('/openapi') ? ['bg-gray-200', 'font-bold'] : ''"
+          >
             <template #icon>
-              <IconOpenApiFull v-if="route.path.startsWith('/open')" />
+              <IconOpenApiFull v-if="route.path.startsWith('/openapi')" />
               <IconOpenApi v-else />
             </template>
           </PageRouterLink>

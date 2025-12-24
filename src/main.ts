@@ -3,9 +3,18 @@ import { createApp } from 'vue'
 
 import '@/assets/styles/custom-theme.css'
 import '@/assets/styles/main.css'
+import hljsVuePlugin from '@highlightjs/vue-plugin'
+import hljs from 'highlight.js/lib/core'
+import bash from 'highlight.js/lib/languages/bash'
+import shell from 'highlight.js/lib/languages/shell'
+import 'highlight.js/styles/monokai-sublime.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router'
+
+// 注册语言
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('shell', shell)
 
 // 创建Vue应用实例
 const app = createApp(App)
@@ -14,6 +23,9 @@ const app = createApp(App)
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
+
+// 使用highlight.js插件
+app.use(hljsVuePlugin)
 
 // 使用Vue Router路由插件
 app.use(router)

@@ -51,9 +51,11 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
 
   // 获取凭证存储实例
   const store = useCredentialStore()
-  // 如果存在有效的访问令牌，则将其添加到请求头中
-  if (store.credential && store.credential.access_token) {
-    options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
+
+  // 检查请求头是否为空且存在有效的访问令牌
+  const token = store.credential?.access_token
+  if (token && options.headers instanceof Headers && !options.headers.get('Authorization')) {
+    options.headers.set('Authorization', `Bearer ${token}`)
   }
 
   // 构建完整的请求URL，确保以BASE_URL为前缀
@@ -197,7 +199,8 @@ export const ssePost = async (
   const options = Object.assign({}, baseFetchOptions, { method: 'POST' }, fetchOptions)
   // 设置Bearer认证头，用于服务器端验证用户身份
   const store = useCredentialStore()
-  if (store.credential && store.credential.access_token) {
+  const token = store.credential?.access_token
+  if (token && options.headers instanceof Headers && !options.headers.get('Authorization')) {
     options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
   }
   // 处理URL，确保以BASE_URL为前缀

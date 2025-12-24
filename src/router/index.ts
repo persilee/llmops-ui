@@ -71,9 +71,20 @@ const router = createRouter({
           component: () => import('@/views/store/tools/ToolStoreView.vue'),
         },
         {
-          path: 'open',
-          name: 'open-index',
-          component: () => import('@/views/open/IndexView.vue'),
+          path: 'openapi',
+          component: () => import('@/views/openapi/OpenapiLayout.vue'),
+          children: [
+            {
+              path: 'start',
+              name: 'quick-start',
+              component: () => import('@/views/openapi/start/QuickStartView.vue'),
+            },
+            {
+              path: 'key',
+              name: 'openapi-key',
+              component: () => import('@/views/openapi/key/KeyView.vue'),
+            },
+          ],
         },
       ],
     },
@@ -102,7 +113,6 @@ const router = createRouter({
             },
           ],
         },
-
         {
           path: 'auth/login',
           name: 'auth-login',
