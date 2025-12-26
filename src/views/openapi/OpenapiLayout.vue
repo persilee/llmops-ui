@@ -14,15 +14,15 @@ const store = useOpenapiStore()
       <div class="ml-2 text-gray-500">利用开放 API 快速与企业现有业务对接</div>
     </div>
     <!-- 导航 -->
-    <div class="h-10 flex items-center mt-2">
+    <div class="h-10 flex items-center mt-2 gap-2">
       <RouterLink
         :to="{ name: 'quick-start' }"
-        :class="`px-4 py-2 rounded-lg ${$route.name === 'quick-start' ? 'bg-gray-300 ' : ''}`"
+        :class="`px-4 py-2 rounded-lg hover:bg-gray-300 ${$route.name === 'quick-start' ? 'bg-gray-300 ' : ''}`"
         >快速开始</RouterLink
       >
       <RouterLink
         :to="{ name: 'openapi-key' }"
-        :class="`px-4 py-2 rounded-lg ${$route.name === 'openapi-key' ? 'bg-gray-300 ' : ''}`"
+        :class="`px-4 py-2 rounded-lg hover:bg-gray-300 ${$route.name === 'openapi-key' ? 'bg-gray-300 ' : ''}`"
         >密钥</RouterLink
       >
       <div v-if="$route.name === 'openapi-key'" class="ml-auto">

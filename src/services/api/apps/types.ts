@@ -1,4 +1,5 @@
 import type { BasePaginatorResponse } from '@/services/types'
+import type { FileItem } from '@arco-design/web-vue'
 
 export type DebugAppResp = {
   content: string
@@ -10,6 +11,7 @@ export interface DebugChatReq {
 }
 
 export interface CreateAppReq {
+  fileList?: Array<FileItem>
   description: string
   icon: string
   name: string
@@ -215,4 +217,23 @@ export interface GetPublishHistoriesWithPage {
   created_at: number
   id: string
   version: number
+}
+
+export type GetAppsWithPageResp = BasePaginatorResponse<GetAppsWithPage>
+
+export interface GetAppsWithPage {
+  created_at: number
+  description: string
+  icon: string
+  id: string
+  model_config: ModelConfig
+  name: string
+  preset_prompt: string
+  status: string
+  updated_at: number
+}
+
+export interface ModelConfig {
+  model: string
+  provider: string
 }

@@ -4,14 +4,22 @@ import { formatDate } from '@/utils/format-util'
 import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
+import { useSpaceStore } from '../SpaceView.store'
 import { useAppStore } from './AppView.store'
+import AppModel from './components/AppModel.vue'
 import HistoryVersionDrawer from './components/HistoryVersionDrawer.vue'
 
+// 头部加载状态，用于控制头部信息的加载动画
 const headerLoading = ref(false)
+// 发布按钮加载状态，用于控制发布/取消发布操作的加载动画
 const publishLoading = ref(false)
+// 应用状态管理store，用于管理应用相关的数据和操作
 const store = useAppStore()
+// 空间状态管理store，用于管理空间相关的数据和操作
+const spaceStore = useSpaceStore()
+// 历史版本抽屉的显示状态，控制历史版本抽屉的打开和关闭
 const historyVersionVisible = ref(false)
-
+// 计算属性，判断应用是否已发布
 const isPublished = computed(() => store.app?.status === 'published')
 
 /**
@@ -21,12 +29,14 @@ const isPublished = computed(() => store.app?.status === 'published')
  */
 const fetchAppData = async () => {
   try {
-    // 设置加载状态为true，显示加载中效果
-    headerLoading.value = true
-    // 调用API获取指定ID的应用数据
-    const resp = await AppsApi.getApp('ce991a57-97cc-42d9-8bbd-4426bd335ad5')
-    // 将获取到的数据存储到store中
-    store.app = resp.data
+    if (store.app && store.app.id) {
+      // 设置加载状态为true，显示加载中效果
+      headerLoading.value = true
+      // 调用API获取指定ID的应用数据
+      const resp = await AppsApi.getApp(store.app.id)
+      // 将获取到的数据存储到store中
+      store.app = resp.data
+    }
   } finally {
     // 无论成功失败，都将加载状态设置为false
     headerLoading.value = false
@@ -94,10 +104,35 @@ const handleCancelPublishClick = async () => {
   })
 }
 
+/**
+ * 处理更新应用点击事件
+ * @description 当用户点击编辑按钮时，打开编辑应用模态框
+ * @returns {void}
+ */
+const handleUpdateApp = () => {
+  spaceStore.openEditAppModal()
+}
+
+/**
+ * 处理操作成功回调
+ * @description 当应用信息更新成功后，重新获取应用数据以刷新界面
+ * @returns {void}
+ */
+const handleSuccess = () => {
+  fetchAppData()
+}
+
+/**
+ * 处理历史版本点击事件
+ * @description 当用户点击历史版本按钮时，打开历史版本抽屉
+ * @returns {void}
+ */
 const handleHistoryVersionClick = () => {
   historyVersionVisible.value = true
 }
 
+// 组件挂载完成后执行的生命周期钩子
+// 在这里调用fetchData获取初始数据，确保页面加载时显示数据
 onMounted(() => {
   fetchAppData()
 })
@@ -126,7 +161,11 @@ onMounted(() => {
           <div class="flex flex-col justify-between h-[40px]">
             <div class="flex items-center gap-1">
               <div class="text-gray-700 font-bold">{{ store.app?.name }}</div>
-              <img src="@/assets/images/icon-edit.png" class="w-3.5 h-3.5" />
+              <a-button type="text" size="mini" @click="handleUpdateApp">
+                <template #icon>
+                  <img src="@/assets/images/icon-edit.png" class="w-3.5 h-3.5" />
+                </template>
+              </a-button>
             </div>
             <div class="flex items-center gap-2">
               <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500">
@@ -213,6 +252,11 @@ onMounted(() => {
       <RouterView />
     </main>
     <HistoryVersionDrawer v-model:visible="historyVersionVisible" />
+    <AppModel
+      v-model:visible="spaceStore.appModal.isOpen"
+      :app="store.app"
+      @success="handleSuccess"
+    />
   </div>
 </template>
 

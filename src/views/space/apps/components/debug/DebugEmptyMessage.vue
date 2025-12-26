@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { compact } from 'lodash-es'
 import { computed } from 'vue'
 import { useAppStore } from '../../AppView.store'
 
@@ -9,6 +10,11 @@ const isShowOpeningStatement = computed(() => {
 const emits = defineEmits(['selectOpeningQuestion'])
 
 const store = useAppStore()
+
+const hasOpeningQuestions = computed(() => {
+  const questions = store.draftAppConfig.opening_questions
+  return compact(questions)
+})
 </script>
 
 <template>
@@ -34,9 +40,9 @@ const store = useAppStore()
         }}
       </div>
       <!-- 建议问题 -->
-      <div v-if="store.draftAppConfig.opening_questions.length > 0" class="w-max mt-3 self-start">
+      <div v-if="hasOpeningQuestions.length > 0" class="w-max mt-3 self-start">
         <div
-          v-for="(question, idx) in store.draftAppConfig.opening_questions"
+          v-for="(question, idx) in hasOpeningQuestions"
           :key="idx"
           class="border border-gray-200 rounded-lg py-1.5 px-3 cursor-pointer leading-5 hover:bg-gray-100 mb-1.5 w-fit"
           @click="emits('selectOpeningQuestion', question)"

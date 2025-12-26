@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as _ from 'lodash-es'
-import { onMounted, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { useAppStore } from '../../AppView.store'
 
 // 初始化应用状态管理store
@@ -72,14 +72,22 @@ const handleOpeningQuestionsBlur = (index: number) => {
   })
 }
 
-// 组件挂载时执行的钩子函数
-onMounted(async () => {
-  // 从store中获取已保存的开场白问题列表
-  openingQuestions.value = store.draftAppConfig.opening_questions
-  // 如果问题数量少于3个，添加一个空输入框供用户输入
-  if (openingQuestions.value.length < 3) {
-    openingQuestions.value.push('')
-  }
+// 监听store中的开场白问题列表，如果发生变化则更新本地数据
+const stop = watch(
+  () => store.draftAppConfig.opening_questions,
+  (val) => {
+    // 从store中获取已保存的开场白问题列表
+    openingQuestions.value = val
+    // 如果问题数量少于3个，添加一个空输入框供用户输入
+    if (openingQuestions.value.length < 3) {
+      openingQuestions.value.push('')
+    }
+  },
+)
+
+// 组件卸载时停止监听
+onUnmounted(() => {
+  stop()
 })
 </script>
 

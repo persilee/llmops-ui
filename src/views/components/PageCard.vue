@@ -20,7 +20,7 @@ defineProps<{
         :style="{ background: background }"
       />
       <div class="flex flex-col">
-        <div class="text-base text-gray-900 font-bold">{{ name }}</div>
+        <div class="text-base text-gray-900 font-bold line-clamp-1">{{ name }}</div>
         <div class="text-xs text-gray-500 line-clamp-1">
           {{ subLabel }}
         </div>
@@ -34,7 +34,7 @@ defineProps<{
       <div class="w-4 h-4 flex items-center justify-center rounded-full bg-blue-700">
         <img src="@/assets/images/icon-user.png" class="w-2 h-2" />
       </div>
-      <div class="text-xs text-gray-400">
+      <div class="text-xs text-gray-400 line-clamp-1">
         {{ date }}
       </div>
     </div>

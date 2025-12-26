@@ -467,7 +467,7 @@ onMounted(async () => {
           <template #icon><img src="@/assets/images/icon-clear.png" class="w-4 h-4" /></template>
         </a-button>
         <div
-          class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
+          class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
         >
           <form @submit.prevent="sendMessage" class="w-full">
             <input v-model="inputValue" type="text" class="flex-1 outline-0 ml-1.5" />

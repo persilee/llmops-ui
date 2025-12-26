@@ -15,21 +15,36 @@ import AccountSetting from '@/views/components/AccountSetting.vue'
 import PageRouterLink from '@/views/components/PageRouterLink.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useSpaceStore } from '../space/SpaceView.store'
 
+// 获取当前路由信息
 const route = useRoute()
+// 获取路由实例，用于导航
 const router = useRouter()
+// 获取账户状态管理store实例
 const store = useAccountStore()
+// 获取空间状态管理store实例
+const spaceStore = useSpaceStore()
+// 控制账号设置弹窗显示状态的响应式变量
 const visible = ref(false)
 
+// 处理用户退出登录
 const handleLogout = () => {
   Storage.clear()
   router.push({ name: 'auth-login' })
 }
 
+// 打开账号设置弹窗
 const handleAccountSetting = () => {
   visible.value = true
 }
 
+// 打开创建应用弹窗
+const handleCreateApp = () => {
+  spaceStore.openCreateAppModal()
+}
+
+// 组件挂载时获取用户账户信息
 onMounted(() => {
   store.getAccount()
 })
@@ -47,7 +62,7 @@ onMounted(() => {
           </router-link>
         </div>
         <!-- 创建AI应用按钮 -->
-        <a-button type="primary" long class="rounded-lg mb-4 bg-blue-700!">
+        <a-button type="primary" long class="rounded-lg mb-4 bg-blue-700!" @click="handleCreateApp">
           <template #icon>
             <icon-plus />
           </template>

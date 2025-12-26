@@ -85,6 +85,13 @@ const stop = watch(
   },
 )
 
+/**
+ * 处理工具卡片点击事件
+ * @param index - 被点击的工具卡片在列表中的索引位置
+ * 该函数会：
+ * 1. 设置当前选中的工具索引
+ * 2. 打开工具详情抽屉显示详细信息
+ */
 const handleToolCardClick = (index: number) => {
   showIndex.value = index
   isShowToolDetail.value = true
@@ -94,11 +101,22 @@ const handleCloseDrawer = () => {
   isShowToolDetail.value = false
 }
 
+/**
+ * 处理滚动事件，实现无限滚动加载
+ * @param e - 滚动事件对象
+ */
 const handleScroll = (e: Event) => {
+  // 获取滚动容器元素
   const target = e.target as HTMLElement
+  // 判断是否滚动到底部附近（距离底部16px）
+  // scrollTop: 已滚动的距离
+  // clientHeight: 可视区域高度
+  // scrollHeight: 总内容高度
   if (target.scrollTop + target.clientHeight >= target.scrollHeight - 16) {
+    // 如果正在加载中，则不重复触发
     if (loading.value) return
 
+    // 触发加载更多数据
     fetchData(false)
   }
 }
@@ -114,17 +132,23 @@ const showLoadMoreBtn = computed(() => {
   )
 })
 
+/**
+ * 获取工具提供商的子标签信息
+ * @param provider - 工具提供商对象
+ * @returns 返回格式化的子标签字符串，包含提供商名称和工具数量
+ */
 const getSubLabel = (provider: GetAPIToolProvidersWithPage) => {
   return `提供商 ${provider.name} • ${provider.tools.length}`
 }
 
+/**
+ * 获取工具提供商的发布时间信息
+ * @param provider - 工具提供商对象，包含创建时间
+ * @returns 返回格式化的日期字符串，包含用户信息和发布时间
+ * 格式为："User • 发布时间 ${MM-DD HH:mm}"
+ */
 const getDate = (provider: GetAPIToolProvidersWithPage) => {
   return `User • 发布时间 ${formatDate(provider.created_at, 'MM-DD HH:mm')}`
-}
-
-// 处理模态框关闭的函数
-const handleCloseModal = () => {
-  store.closeCreateToolModal() // 关闭创建工具的模态框
 }
 
 // 处理模态框成功操作
@@ -135,11 +159,24 @@ const handleModalSuccess = () => {
   handleCloseDrawer()
 }
 
+/**
+ * 组件挂载到DOM后执行的生命周期钩子
+ * 执行以下初始化操作：
+ * 1. 重置store状态，确保组件状态干净
+ * 2. 调用fetchData(true)初始化加载第一页数据
+ */
 onMounted(() => {
   store.$reset()
   fetchData(true)
+  console.log('aaaaaaaaaa', store)
 })
 
+/**
+ * 组件卸载前执行的生命周期钩子
+ * 执行以下清理操作：
+ * 1. 停止watch监听器，避免内存泄漏
+ * 2. 重置store状态，确保组件状态干净
+ */
 onUnmounted(() => {
   stop()
   store.$reset()
@@ -185,11 +222,12 @@ onUnmounted(() => {
         background="#ffffff"
         :name="selectedProvider.name"
         @update:visible="handleCloseDrawer"
-        @update-tool-provider="store.openCreateToolModal(true)"
+        @update-tool-provider="store.openCreateToolModal()"
       />
       <!-- 工具模态框 -->
       <ToolModal
-        v-model:visible="store.isOpenCreateToolModal"
+        v-if="store"
+        v-model:visible="store.toolModal.isOpen"
         :provider="selectedProvider"
         @success="handleModalSuccess"
       />

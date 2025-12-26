@@ -6,6 +6,7 @@ import type {
   DebugChatReq,
   FallbackHistoryToDraftReq,
   GetAppResp,
+  GetAppsWithPageResp,
   GetDebugConversationMessagesWithPageResp,
   GetDebugConversionSummaryResp,
   GetDraftAppConfigResp,
@@ -60,6 +61,29 @@ class AppsApi {
   static deleteApp(appId: string) {
     return post({
       url: `/apps/${appId}/delete`,
+    })
+  }
+
+  /**
+   * 复制应用
+   * @param appId 应用ID
+   * @returns 返回复制应用的响应结果
+   */
+  static copyApp(appId: string) {
+    return post({
+      url: `/apps/${appId}/copy`,
+    })
+  }
+
+  /**
+   * 分页获取应用列表
+   * @param params 分页参数
+   * @returns 返回应用列表的响应结果
+   */
+  static getAppsWithPage(params: PaginatorParams) {
+    return get<GetAppsWithPageResp>({
+      url: '/apps',
+      params,
     })
   }
 

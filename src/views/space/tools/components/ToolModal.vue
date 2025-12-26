@@ -157,7 +157,7 @@ const headersColumns = [
  */
 const handleSchemaBlur = debounce(async () => {
   // 如果数据没有变化，则直接返回
-  if (store.isOpenEditToolModal && initialToolProvider.openapi_schema == formData.openapi_schema)
+  if (store.toolModal.isEditMode && initialToolProvider.openapi_schema == formData.openapi_schema)
     return
 
   if (formData.openapi_schema)
@@ -269,7 +269,7 @@ const handleSubmit = async ({
     let message: string
 
     // 根据是否是编辑模式执行不同的操作
-    if (store.isOpenEditToolModal) {
+    if (store.toolModal.isEditMode) {
       // 编辑模式：执行更新操作
       message = await handleUpdate()
     } else {
@@ -348,7 +348,7 @@ const handleDeleteTool = async () => {
  */
 const handleCloseModal = () => {
   resetForm() // 重置表单数据，清空所有输入和验证状态
-  emit('update:visible', false) // 关闭模态框
+  store.closeModal('tool') // 关闭创建工具的模态框
 }
 
 const updateFormData = (data: {
@@ -466,10 +466,10 @@ const handleRemove = (): boolean => {
 watch(
   () => props.visible,
   (newVal) => {
-    if (newVal && !store.isOpenEditToolModal) {
+    if (newVal && store.toolModal.isCreateMode) {
       resetForm()
     }
-    if (store.isOpenEditToolModal && newVal) {
+    if (store.toolModal.isEditMode && newVal) {
       handleUpdateToolProvider(props.provider!)
     }
   },
@@ -480,7 +480,7 @@ watch(
   <a-modal
     :visible="visible"
     :width="680"
-    :title="store.isOpenEditToolModal ? '编辑插件' : '新建插件'"
+    :title="store.toolModal.isEditMode ? '编辑插件' : '新建插件'"
     title-align="start"
     :footer="false"
     modal-class="rounded-xl"
@@ -599,7 +599,7 @@ watch(
         <div class="flex justify-between">
           <div class="">
             <a-button
-              v-if="store.isOpenEditToolModal"
+              v-if="store.toolModal.isOpen"
               type="outline"
               status="danger"
               class="border-gray-300"

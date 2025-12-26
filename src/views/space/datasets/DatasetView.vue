@@ -2,6 +2,7 @@
 import DatasetApi from '@/services/api/dataset'
 import type { GetDatasetsWithPage } from '@/services/api/dataset/types'
 import type { Paginator } from '@/services/types'
+import { useAccountStore } from '@/stores/account'
 import { formatDate } from '@/utils/format-util'
 import LoadingStatus from '@/views/components/LoadingStatus.vue'
 import PageCard from '@/views/components/PageCard.vue'
@@ -30,6 +31,8 @@ const paginator = ref<Paginator>({
 })
 // 空间状态管理store，用于管理空间相关的状态
 const store = useSpaceStore()
+// 用户状态管理store，用于管理用户相关的状态
+const accountStore = useAccountStore()
 // 知识库状态管理store，用于管理知识库相关的状态
 const datasetStore = useDatasetStore()
 // 滚动容器的模板引用，用于实现无限滚动功能
@@ -126,7 +129,7 @@ const getSubLabel = (dataset: GetDatasetsWithPage) => {
  * @returns 返回格式化后的字符串，包含文档数、千字符数和关联应用数
  */
 const getDate = (dataset: GetDatasetsWithPage) => {
-  return `User • 最近编辑 ${formatDate(dataset.created_at, 'MM-DD HH:mm')}`
+  return `${accountStore.account.name} • 最近编辑 ${formatDate(dataset.updated_at, 'MM-DD HH:mm')}`
 }
 
 /**
@@ -193,13 +196,19 @@ const handelToDocument = (dataset: GetDatasetsWithPage) => {
   })
 }
 
+// 组件挂载完成后执行的生命周期钩子
+// 在这里调用fetchData获取初始数据，确保页面加载时显示数据列表
 onMounted(() => {
   fetchData()
 })
 
+/**
+ * 组件卸载时的生命周期钩子
+ * 执行清理操作，防止内存泄漏和状态污染
+ */
 onUnmounted(() => {
-  stop()
-  store.$reset()
+  stop() // 停止watch监听，避免内存泄漏
+  store.$reset() // 重置store状态，清除组件相关的数据
 })
 </script>
 
@@ -246,7 +255,7 @@ onUnmounted(() => {
       />
 
       <DatasetModal
-        v-model:visible="store.openDatasetModal"
+        v-model:visible="store.datasetModal.isOpen"
         :dataset="selectedDataset"
         @success="fetchData()"
       />

@@ -62,7 +62,7 @@ const handleSubmit = async () => {
   loading.value = true
   let message = ''
   try {
-    if (store.isOpenEditDatasetModal && props.dataset) {
+    if (store.datasetModal.isEditMode && props.dataset) {
       const resp = await DatasetApi.updateDataset(props.dataset.id, {
         icon: formData.icon,
         name: formData.name,
@@ -70,7 +70,7 @@ const handleSubmit = async () => {
       })
       message = resp.message
     }
-    if (store.isOpenCreateDatasetModal) {
+    if (store.datasetModal.isCreateMode) {
       const resp = await DatasetApi.createDataset({
         icon: formData.icon,
         name: formData.name,
@@ -109,7 +109,7 @@ const resetForm = () => {
  */
 const handleCloseModal = () => {
   resetForm() // 重置表单数据，清空所有输入和验证状态
-  emit('update:visible', false) // 关闭模态框
+  store.closeModal('dataset') // 关闭模态框
 }
 
 /**
@@ -157,11 +157,11 @@ watch(
   () => props.visible,
   (newVal) => {
     // 如果模态框打开且不是创建模式，则重置表单
-    if (newVal && !store.isOpenCreateDatasetModal) {
+    if (newVal && !store.datasetModal.isCreateMode) {
       resetForm()
     }
     // 如果是编辑模式且模态框打开，则填充表单数据
-    if (store.isOpenEditDatasetModal && newVal) {
+    if (store.datasetModal.isEditMode && newVal) {
       Object.assign(formData, {
         fileList: [{ uid: '1', url: props.dataset?.icon }], // 设置图标文件列表
         icon: props.dataset?.icon, // 设置图标URL
@@ -177,7 +177,7 @@ watch(
   <a-modal
     :visible="visible"
     :width="520"
-    :title="store.isOpenEditToolModal ? '编辑插件' : '新建插件'"
+    :title="store.datasetModal.isEditMode ? '编辑插件' : '新建插件'"
     title-align="start"
     :footer="false"
     modal-class="rounded-xl"
