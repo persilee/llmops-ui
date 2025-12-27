@@ -63,7 +63,7 @@ const router = createRouter({
         {
           path: 'store/apps',
           name: 'store-apps',
-          component: () => import('@/views/store/apps/ListView.vue'),
+          component: () => import('@/views/store/apps/AppStoreView.vue'),
         },
         {
           path: 'store/tools',

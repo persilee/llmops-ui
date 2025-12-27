@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   title: string
-  buttonText: string
+  buttonText?: string
 }>()
 
 const emits = defineEmits(['onButtonClick'])
@@ -16,6 +16,7 @@ const emits = defineEmits(['onButtonClick'])
       <div class="text-xl font-medium text-gray-900">{{ title }}</div>
     </div>
     <a-button
+      v-if="buttonText"
       @click="emits('onButtonClick')"
       type="primary"
       class="h-10 rounded-[10px] px-5 text-sm font-bold text-blue-700 bg-blue-100"

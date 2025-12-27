@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import type { GetBuiltinAppCategoriesResp } from '@/services/api/builtin-app/types'
 import type { GetCategoriesResp } from '@/services/api/builtin-tool/types'
 import InputSearch from '@/views/components/InputSearch.vue'
 
-const categories = defineModel<GetCategoriesResp[]>('categories', { default: () => [] })
+const props = defineProps<{
+  placeholder?: string
+  categories: GetCategoriesResp[] | GetBuiltinAppCategoriesResp[]
+}>()
+
 const selectedCategory = defineModel<string>('selectedCategory', { default: () => '' })
 const searchWord = defineModel<string>('searchWord', { default: () => '' })
 </script>
@@ -27,7 +32,7 @@ const searchWord = defineModel<string>('searchWord', { default: () => '' })
         {{ item.name }}
       </a-button>
     </div>
-    <InputSearch v-model="searchWord" placeholder="搜索插件" />
+    <InputSearch v-model:search-word="searchWord" :placeholder="placeholder ?? '搜索插件'" />
   </div>
 </template>
 

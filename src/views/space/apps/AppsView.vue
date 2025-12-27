@@ -12,7 +12,6 @@ import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import { useAppStore } from './AppView.store'
-import AppModel from './components/AppModel.vue'
 
 // 空间相关的状态管理store实例
 const store = useSpaceStore()
@@ -205,24 +204,6 @@ const handelDelete = async (app: GetAppsWithPage) => {
   })
 }
 
-/**
- * 处理应用创建或编辑成功后的回调函数
- * @param appId 应用ID，如果存在则表示是编辑已有应用，如果为空则表示是新建应用
- */
-const handleSuccess = async (appId: string) => {
-  if (appId) {
-    // 如果有appId，说明是编辑已有应用
-    // 1. 获取最新的应用信息
-    await appStore.getApp(appId)
-    // 2. 跳转到应用详情页
-    router.push({ name: 'space-apps-detail', params: { appId: appId } })
-  } else {
-    // 如果没有appId，说明是新建应用
-    // 重新获取应用列表以显示新创建的应用
-    await fetchData()
-  }
-}
-
 // 判断是否需要显示手动加载按钮
 const showLoadMoreBtn = computed(() => {
   if (!scrollContainerRef.value) return false
@@ -317,7 +298,6 @@ onMounted(() => {
         @load-more="fetchData(true)"
       />
     </a-spin>
-    <AppModel v-model:visible="store.appModal.isOpen" @success="handleSuccess" />
   </div>
 </template>
 

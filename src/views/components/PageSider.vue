@@ -16,6 +16,8 @@ import PageRouterLink from '@/views/components/PageRouterLink.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSpaceStore } from '../space/SpaceView.store'
+import { useAppStore } from '../space/apps/AppView.store'
+import AppModel from '../space/apps/components/AppModel.vue'
 
 // 获取当前路由信息
 const route = useRoute()
@@ -25,6 +27,8 @@ const router = useRouter()
 const store = useAccountStore()
 // 获取空间状态管理store实例
 const spaceStore = useSpaceStore()
+// 获取应用状态管理store实例
+const appStore = useAppStore()
 // 控制账号设置弹窗显示状态的响应式变量
 const visible = ref(false)
 
@@ -42,6 +46,17 @@ const handleAccountSetting = () => {
 // 打开创建应用弹窗
 const handleCreateApp = () => {
   spaceStore.openCreateAppModal()
+}
+
+/**
+ * 处理应用创建成功后的回调函数
+ * @param appId - 新创建的应用ID
+ */
+const handleSuccess = async (appId: string) => {
+  // 获取新创建的应用详细信息
+  await appStore.getApp(appId)
+  // 跳转到应用详情页面
+  router.push({ name: 'space-apps-detail', params: { appId: appId } })
 }
 
 // 组件挂载时获取用户账户信息
@@ -144,6 +159,11 @@ onMounted(() => {
       </a-dropdown>
     </div>
     <AccountSetting v-model:visible="visible" />
+    <AppModel
+      v-model:visible="spaceStore.appModal.isOpen"
+      :app="appStore.app"
+      @success="handleSuccess"
+    />
   </a-layout-sider>
 </template>
 

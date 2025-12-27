@@ -8,9 +8,9 @@ import ToolModal from '@/views/space/tools/components/ToolModal.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
 import PageCard from '../../components/PageCard.vue'
-import ToolHeader from '../../components/PageHeader.vue'
+import PageHeader from '../../components/PageHeader.vue'
 import ToolDetailDrawer from '../../components/ToolDetailDrawer.vue'
-import ToolFilter from './components/ToolFilter.vue'
+import StoreFilter from '../components/StoreFilter.vue'
 
 // 工具类别列表
 const categories = ref<Array<GetCategoriesResp>>([])
@@ -45,7 +45,7 @@ const filterProviders = computed(() => {
     const matchCategory = category.value === 'all' || item.category === category.value
     // 搜索关键词匹配：搜索框为空或工具标签包含搜索关键词（不区分大小写）
     const matchSearchWord =
-      searchWord.value === '' || item.label.toLowerCase().includes(searchWord.value)
+      searchWord.value === '' || item.label.toLowerCase().includes(searchWord.value.toLowerCase())
 
     // 同时满足类别和搜索关键词条件
     return matchCategory && matchSearchWord
@@ -173,10 +173,10 @@ onMounted(() => {
   <a-spin :loading="loading" class="block h-full w-full bg-gray-50">
     <div class="flex flex-col p-6">
       <!-- 页面头部 -->
-      <ToolHeader title="插件广场" button-text="创建自定义插件" @click="handleCreateTool" />
+      <PageHeader title="插件广场" button-text="创建自定义插件" @click="handleCreateTool" />
 
       <!-- 筛选区域 -->
-      <ToolFilter
+      <StoreFilter
         v-model:selected-category="category"
         v-model:search-word="searchWord"
         :categories="categories"
