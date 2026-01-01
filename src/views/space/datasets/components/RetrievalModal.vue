@@ -57,7 +57,7 @@ const handleSubmit = () => {
           default-value="semantic"
           :options="[
             { label: '混合策略', value: 'hybrid' },
-            { label: '全问检索', value: 'full_text' },
+            { label: '全文检索', value: 'full_text' },
             { label: '相似性检索', value: 'semantic' },
           ]"
         ></a-radio-group>

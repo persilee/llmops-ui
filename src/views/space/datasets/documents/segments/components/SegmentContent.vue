@@ -89,7 +89,16 @@ const showLoadMoreBtn = computed(() => {
       @scroll="handleScroll"
     >
       <a-row :gutter="[20, 20]">
-        <a-col :span="6" v-for="segment in segments" :key="segment.id">
+        <a-col
+          :xs="8"
+          :sm="8"
+          :md="8"
+          :lg="8"
+          :xl="6"
+          :xxl="4"
+          v-for="segment in segments"
+          :key="segment.id"
+        >
           <!-- 卡片内容 -->
           <a-card hoverable class="cursor-pointer rounded-lg" @click="handelSegmentClick(segment)">
             <div class="flex flex-col">

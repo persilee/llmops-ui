@@ -217,7 +217,16 @@ onUnmounted(() => {
     <a-spin :loading="loading" class="block h-full w-full overflow-scroll scrollbar-w-none">
       <!-- 知识库列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
-        <a-col :span="6" v-for="dataset in datasets" :key="dataset.id">
+        <a-col
+          :xs="8"
+          :sm="8"
+          :md="8"
+          :lg="8"
+          :xl="6"
+          :xxl="4"
+          v-for="dataset in datasets"
+          :key="dataset.id"
+        >
           <PageCard
             :icon="dataset.icon"
             background="#ffffff"

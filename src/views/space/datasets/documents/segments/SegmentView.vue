@@ -325,7 +325,7 @@ onUnmounted(() => {})
 </script>
 
 <template>
-  <div class="flex flex-col p-6 h-full">
+  <div class="flex flex-col p-6 h-full w-full">
     <!-- 返回、标题、标签 -->
     <SegmentHeader :loading="headerLoading" :document="document" @back-click="handleBackClick" />
     <!-- 搜索、可用、添加片段-->

@@ -144,7 +144,16 @@ onMounted(() => {
 
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
-        <a-col :span="6" v-for="(builtinApp, idx) in filterBuiltinApps" :key="builtinApp.id">
+        <a-col
+          :xs="8"
+          :sm="8"
+          :md="8"
+          :lg="8"
+          :xl="6"
+          :xxl="4"
+          v-for="(builtinApp, idx) in filterBuiltinApps"
+          :key="builtinApp.id"
+        >
           <PageCard
             :icon="builtinApp.icon"
             background="#fff"

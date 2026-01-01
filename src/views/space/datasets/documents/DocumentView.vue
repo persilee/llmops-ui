@@ -9,6 +9,7 @@ import InputSearch from '@/views/components/InputSearch.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useDatasetStore } from '../DatasetView.store'
 import DocumentModal from '../components/DocumentModal.vue'
 import DocumentTable from '../components/DocumentTable.vue'
@@ -18,6 +19,7 @@ import HitModal from '../components/HitModal.vue'
 const store = useDatasetStore()
 // 加载状态，用于控制表格加载动画
 const loading = ref(false)
+// 知识库详细信息，包含知识库的基本信息、文档数量、命中次数等数据
 const dataset = ref<GetDatasetResp>()
 // 文档列表数据，类型为GetDocumentsWithPage数组
 const documents = ref<GetDocumentsWithPage[]>([])
@@ -38,6 +40,8 @@ const pagination = reactive({
 const visible = ref(false)
 // 召回测试模态框的显示状态
 const hitVisible = ref(false)
+// 获取当前路由信息
+const route = useRoute()
 
 /**
  * 获取文档列表数据
@@ -231,7 +235,7 @@ const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
   router.push({
     name: 'space-datasets-documents-segments', // 目标路由名称
     params: {
-      datasetId: store?.dataset?.id, // 知识库ID，用于标识所属知识库
+      datasetId: store.dataset?.id ?? route.params.datasetId, // 知识库ID，用于标识所属知识库
       documentId: row.id, // 文档ID，用于标识具体的文档
     },
   })
@@ -248,7 +252,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6">
+  <div class="p-6 w-full h-full">
     <!-- 返回、标题、标签 -->
     <div class="flex items-center w-full gap-2 mb-6">
       <!-- 返回按钮 -->

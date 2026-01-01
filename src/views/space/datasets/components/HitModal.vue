@@ -50,7 +50,7 @@ const btnName = computed(() => {
   if (hitForm.value.retrieval_strategy == 'hybrid') {
     return '混合策略' // 混合检索策略
   } else if (hitForm.value.retrieval_strategy == 'full_text') {
-    return '全问检索' // 全文检索策略
+    return '全文检索' // 全文检索策略
   } else {
     return '相似性检索' // 默认语义检索策略
   }

@@ -188,7 +188,16 @@ onUnmounted(() => {
     <a-spin :loading="loading" class="block h-full w-full overflow-scroll scrollbar-w-none">
       <!-- 工具列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
-        <a-col :span="6" v-for="(provider, idx) in providers" :key="provider.name">
+        <a-col
+          :xs="8"
+          :sm="8"
+          :md="8"
+          :lg="8"
+          :xl="6"
+          :xxl="4"
+          v-for="(provider, idx) in providers"
+          :key="provider.name"
+        >
           <PageCard
             :icon="provider.icon"
             background="#ffffff"

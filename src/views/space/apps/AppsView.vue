@@ -259,7 +259,7 @@ onMounted(() => {
     <a-spin :loading="loading" class="block h-full w-full overflow-scroll scrollbar-w-none">
       <!-- 知识库列表 -->
       <a-row :gutter="[20, 20]" class="flex-1">
-        <a-col :span="6" v-for="app in apps" :key="app.id">
+        <a-col :xs="8" :sm="8" :md="8" :lg="8" :xl="6" :xxl="4" v-for="app in apps" :key="app.id">
           <PageCard
             :icon="app.icon"
             background="#ffffff"

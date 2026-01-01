@@ -328,7 +328,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col p-6 h-full">
+  <div class="flex flex-col p-6 h-full w-full">
     <!-- 返回按钮和标题 -->
     <div class="flex items-center mb-6 gap-4">
       <a-button type="text" class="text-gray-700" @click="handleConfirmOrBackClick">
