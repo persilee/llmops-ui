@@ -12,16 +12,16 @@ const route = useRoute()
 const store = useSpaceStore()
 
 /**
- * 根据当前路由名称获取对应的按钮文本
+ * 根据当前路由名称获取对应的文本
  * @returns {string} 返回对应路由的按钮文本，如果没有匹配的路由则返回空字符串
  */
-const getButtonText = () => {
+const getText = (prefix: string) => {
   // 定义路由名称与按钮文本的映射关系
   const buttonTextMap: Record<string, string> = {
-    'space-apps': '创建AI应用', // AI应用页面的按钮文本
-    'space-tools': '创建自定义插件', // 插件页面的按钮文本
-    'space-workflows': '创建工作流', // 工作流页面的按钮文本
-    'space-datasets': '创建知识库', // 知识库页面的按钮文本
+    'space-apps': `${prefix}AI应用`, // AI应用页面的按钮文本
+    'space-tools': `${prefix}自定义插件`, // 插件页面的按钮文本
+    'space-workflows': `${prefix}工作流`, // 工作流页面的按钮文本
+    'space-datasets': `${prefix}知识库`, // 知识库页面的按钮文本
   }
   // 根据当前路由名称返回对应的按钮文本，如果没有匹配则返回空字符串
   return buttonTextMap[route.name as string] || ''
@@ -40,8 +40,9 @@ const handleClick = () => {
   else if ((route.name as string) == 'space-tools') {
     store.openCreateToolModal()
   }
-  // 工作流页面：暂未实现
+  // 工作流页面：打开创建工作流模态框
   else if ((route.name as string) == 'space-workflows') {
+    store.openCreateWorkflowModal()
   }
   // 知识库页面：打开创建知识库模态框
   else if ((route.name as string) == 'space-datasets') {
@@ -59,7 +60,7 @@ const handleSearch = (value: string) => {
   <div class="flex flex-col h-full w-full px-6 overflow-hidden">
     <div class="pt-6 sticky top-0 z-6">
       <!-- 页面的头部 -->
-      <PageHeader title="个人空间" :button-text="getButtonText()" @on-button-click="handleClick()">
+      <PageHeader title="个人空间" :button-text="getText('创建')" @on-button-click="handleClick()">
         <IconSpace />
       </PageHeader>
       <!-- 页面导航+搜索框 -->
@@ -74,7 +75,7 @@ const handleSearch = (value: string) => {
         <!-- 搜索框 -->
         <InputSearch
           :search-word="store.searchWord"
-          placeholder="搜索知识库"
+          :placeholder="getText('搜索')"
           @update:searchWord="handleSearch"
         />
       </div>

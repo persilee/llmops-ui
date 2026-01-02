@@ -8,7 +8,7 @@ import LoadingStatus from '@/views/components/LoadingStatus.vue'
 import PageCard from '@/views/components/PageCard.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import { useAppStore } from './AppView.store'
@@ -114,8 +114,8 @@ const handleSelect = async (v: string, app: GetAppsWithPage) => {
   else if (v === 'edit') {
     // 获取应用详细信息并存储到store中
     await appStore.getApp(app.id)
-    // 跳转到应用详情页面进行编辑
-    router.push({ name: 'space-apps-detail', params: { appId: app.id } })
+    // 打开编辑应用模态框
+    store.openEditAppModal()
   }
   // 删除功能：删除当前应用
   else if (v === 'delete') {
@@ -251,6 +251,12 @@ const stop = watch(
 // 在这里调用fetchData获取初始数据，确保页面加载时显示数据列表
 onMounted(() => {
   fetchData()
+})
+
+// 组件卸载前执行，清理副作用
+onUnmounted(() => {
+  // 停止watch监听器，避免内存泄漏
+  stop()
 })
 </script>
 

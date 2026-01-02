@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 // 定义模态框类型
-type ModalType = 'app' | 'tool' | 'dataset'
+type ModalType = 'app' | 'tool' | 'dataset' | 'workflow'
 type ModalMode = 'create' | 'edit'
 
 interface ModalState {
@@ -21,6 +21,7 @@ export const useSpaceStore = defineStore(
       app: { mode: null, isOpen: false },
       tool: { mode: null, isOpen: false },
       dataset: { mode: null, isOpen: false },
+      workflow: { mode: null, isOpen: false },
     })
 
     // 打开模态框 - 通用方法
@@ -71,6 +72,11 @@ export const useSpaceStore = defineStore(
     const openEditDatasetModal = () => openModal('dataset', 'edit')
     const datasetModal = getModalState('dataset')
 
+    // 快捷访问方法 - 工作流模态框
+    const openCreateWorkflowModal = () => openModal('workflow', 'create')
+    const openEditWorkflowModal = () => openModal('workflow', 'edit')
+    const workflowModal = getModalState('workflow')
+
     // 重置状态
     const $reset = () => {
       searchWord.value = ''
@@ -100,6 +106,11 @@ export const useSpaceStore = defineStore(
       openCreateDatasetModal,
       openEditDatasetModal,
       datasetModal,
+      // 工作流模态框
+      openCreateWorkflowModal,
+      openEditWorkflowModal,
+      workflowModal,
+
       getModalState,
 
       // 重置方法

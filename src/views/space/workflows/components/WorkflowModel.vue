@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppsApi from '@/services/api/apps'
-import type { CreateAppReq, GetAppResp } from '@/services/api/apps/types'
 import UploadApi from '@/services/api/upload-file'
+import WorkFlowApi from '@/services/api/workflow'
+import type { CreateWorkflowReq, GetWorkflowsWithPage } from '@/services/api/workflow/types'
 import {
   Message,
   type FileItem,
@@ -12,74 +12,44 @@ import { isEmpty, isEqual, omit, pick } from 'lodash-es'
 import { onUnmounted, ref, watch } from 'vue'
 import { useSpaceStore } from '../../SpaceView.store'
 
-/**
- * 组件属性定义
- * @property {GetAppResp|null} app - 可选的应用信息对象，用于编辑模式下填充表单数据
- */
-const props = defineProps<{
-  app?: GetAppResp | null
-}>()
-
-/**
- * 表单数据的响应式引用
- * @type {import('vue').Ref<CreateAppReq>}
- * @property {FileItem[]} fileList - 上传的文件列表
- * @property {string} description - 应用描述
- * @property {string} icon - 应用图标URL
- * @property {string} name - 应用名称
- */
-const formData = ref<CreateAppReq>({
-  fileList: <FileItem>[],
-  description: '',
-  icon: '',
-  name: '',
-})
-
-/**
- * 加载状态的响应式引用
- * @type {import('vue').Ref<boolean>}
- * @description 用于控制表单提交时的加载状态
- */
-const loading = ref(false)
-
-/**
- * 模态框可见性的双向绑定
- * @type {import('vue').ModelRef<boolean>}
- * @description 控制模态框的显示和隐藏状态
- */
-const visible = defineModel('visible', { type: Boolean, default: false })
-
-/**
- * 组件事件发射器
- * @description 用于向父组件发送事件通知
- * @event {string} success - 操作成功时触发，可传递应用ID
- */
-const emits = defineEmits(['success'])
-
-/**
- * 空间状态管理器实例
- * @description 用于管理空间相关的状态，如创建/编辑模式的切换
- */
+// 使用空间状态管理store
 const store = useSpaceStore()
-
+// 定义组件props，接收工作流数据
+const props = defineProps<{
+  workflow: GetWorkflowsWithPage | undefined
+}>()
+// 定义组件事件，用于通知父组件操作成功
+const emits = defineEmits(['success'])
+// 定义模态框显示状态的响应式变量
+const visible = defineModel('visible', { type: Boolean, default: false })
+// 定义加载状态的响应式变量，用于控制提交时的loading效果
+const loading = ref(false)
+// 定义表单数据的响应式变量，包含工作流的所有字段
+const formData = ref<CreateWorkflowReq & { fileList: FileItem[] }>({
+  fileList: <FileItem>[], // 文件列表，用于上传图标
+  description: '', // 工作流描述
+  icon: '', // 工作流图标URL
+  name: '', // 工作流名称
+  tool_call_name: '', // 工作流英文名称，用于大模型调用
+})
 /**
- * 处理模态框关闭操作
- * @description
- * 1. 设置模态框可见状态为false，关闭模态框
- * 2. 调用resetForm()重置表单数据到初始状态
- * @returns {void} 无返回值
+ * 处理模态框关闭事件
+ * 1. 关闭模态框
+ * 2. 重置store中的模态框状态
+ * 3. 重置表单数据
  */
 const handleCloseModal = () => {
   visible.value = false
-  store.closeModal('app')
+  store.closeModal('workflow')
   resetForm()
 }
 
 /**
- * 处理表单提交
+ * 处理工作流表单提交
  * @param {Object} params - 参数对象
- * @param {Record<string, any>} params.values - 表单数据
- * @param {Record<string, ValidatedError> | undefined} params.errors - 表单验证错误
+ * @param {Record<string, any>} params.values - 表单提交的值
+ * @param {Record<string, ValidatedError> | undefined} params.errors - 表单验证错误信息
+ * @returns {Promise<void>} 无返回值的异步函数
  */
 const handleSubmit = async ({
   values,
@@ -93,7 +63,10 @@ const handleSubmit = async ({
 
   // 检查表单数据是否与原始数据相同
   if (
-    isEqual(pick(props.app, ['name', 'icon', 'description']), omit(formData.value, ['fileList']))
+    isEqual(
+      pick(props.workflow, ['name', 'icon', 'description']),
+      omit(formData.value, ['fileList']),
+    )
   ) {
     Message.warning('请修改数据后再提交')
     return
@@ -102,26 +75,26 @@ const handleSubmit = async ({
   // 开始加载状态
   loading.value = true
   let message = '' // 用于存储操作结果消息
-  let appId = '' // 用于存储新创建的应用ID
   try {
-    // 编辑模式：更新现有应用
-    if (store.appModal.isEditMode && !isEmpty(props.app)) {
-      const resp = await AppsApi.updateApp(props.app.id, {
+    // 编辑模式：更新现有工作流
+    if (!isEmpty(props.workflow)) {
+      const resp = await WorkFlowApi.updateWorkflow(props.workflow.id, {
         icon: formData.value.icon,
         name: formData.value.name,
         description: formData.value.description,
+        tool_call_name: formData.value.tool_call_name,
       })
       message = resp.message
     }
-    // 创建模式：创建新应用
-    if (store.appModal.isCreateMode) {
-      const resp = await AppsApi.createApp({
+    // 创建模式：创建新工作流
+    else {
+      const resp = await WorkFlowApi.createWorkflow({
         icon: formData.value.icon,
         name: formData.value.name,
         description: formData.value.description,
+        tool_call_name: formData.value.tool_call_name,
       })
       message = '创建智能体应用成功'
-      appId = resp.data.id
     }
 
     // 显示成功消息
@@ -129,7 +102,7 @@ const handleSubmit = async ({
     // 关闭模态框
     handleCloseModal()
     // 触发成功事件，传递应用ID
-    emits('success', appId)
+    emits('success')
   } finally {
     // 无论成功失败，都关闭加载状态
     loading.value = false
@@ -137,17 +110,12 @@ const handleSubmit = async ({
 }
 
 /**
- * 处理应用图标上传
- * @param {RequestOption} option 上传配置选项
- * @param {FileItem} option.fileItem 上传的文件项
- * @param {Function} option.onSuccess 上传成功回调函数
- * @param {Function} option.onError 上传失败回调函数
- * @returns {Promise<void>} 无返回值的Promise
- * @description
- * 1. 从上传选项中解构出文件项和回调函数
- * 2. 调用UploadApi.uploadImage上传图片
- * 3. 根据响应状态执行相应的回调函数
- * 4. 处理上传过程中的异常情况
+ * 处理文件上传
+ * @param {RequestOption} option - 上传选项对象
+ * @param {FileItem} option.fileItem - 要上传的文件项
+ * @param {Function} option.onSuccess - 上传成功回调函数
+ * @param {Function} option.onError - 上传失败回调函数
+ * @returns {Promise<void>} 无返回值的异步函数
  */
 const handleUpload = async (option: RequestOption) => {
   try {
@@ -173,9 +141,8 @@ const handleUpload = async (option: RequestOption) => {
 }
 
 /**
- * 处理应用图标删除操作
- * 当用户点击删除图标时触发此函数
- * @returns {boolean} 返回true表示允许删除操作，返回false表示阻止删除操作
+ * 处理文件删除操作
+ * @returns {boolean} 返回true表示允许删除操作
  */
 const handleRemove = () => {
   formData.value.icon = '' // 清空表单中的图标URL
@@ -183,14 +150,16 @@ const handleRemove = () => {
 }
 
 /**
- * 重置应用表单数据
- * 将表单中的所有字段恢复到初始状态
+ * 重置工作流表单数据
+ * 将表单中的所有字段重置为初始空值状态
+ * @returns {void} 无返回值
  */
 const resetForm = () => {
   Object.assign(formData.value, {
     icon: '', // 重置应用图标URL为空
     name: '', // 重置应用名称为空
     description: '', // 重置应用描述为空
+    tool_call_name: '', // 重置工具调用名称为空
   })
 }
 
@@ -201,28 +170,24 @@ const stop = watch(
     // 当模态框打开时
     if (newVal) {
       // 如果是创建模式，重置表单数据
-      if (store.appModal.isCreateMode) {
+      if (store.workflowModal.isCreateMode) {
         resetForm()
       }
       // 如果是编辑模式，用现有应用数据填充表单
-      if (store.appModal.isEditMode) {
+      if (store.workflowModal.isEditMode && !isEmpty(props.workflow)) {
         Object.assign(formData.value, {
-          fileList: [{ uid: '1', url: props.app?.icon }], // 设置图标文件列表
-          icon: props.app?.icon, // 设置图标URL
-          name: props.app?.name, // 设置应用名称
-          description: props.app?.description, // 设置应用描述
+          fileList: [{ uid: '1', url: props.workflow?.icon }],
+          icon: props.workflow?.icon,
+          name: props.workflow?.name,
+          description: props.workflow?.description,
+          tool_call_name: props.workflow.tool_call_name,
         })
       }
     }
   },
 )
 
-/**
- * 组件卸载时的清理函数
- * @description
- * 在组件卸载时调用stop()函数，清除watch监听器
- * 防止内存泄漏和不必要的监听器执行
- */
+// 组件卸载时清理watch监听器，防止内存泄漏
 onUnmounted(() => {
   stop()
 })
@@ -232,7 +197,7 @@ onUnmounted(() => {
   <a-modal
     :visible="visible"
     :width="520"
-    :title="store.appModal.isCreateMode ? '创建 AI 应用' : '编辑 AI 应用'"
+    :title="store.workflowModal.isEditMode ? '编辑工作流' : '创建工作流'"
     title-align="start"
     :footer="false"
     modal-class="rounded-xl"
@@ -242,7 +207,7 @@ onUnmounted(() => {
     <div class="pt-6">
       <a-form :model="formData" @submit="handleSubmit" layout="vertical">
         <a-spin :loading="loading">
-          <!-- 知识库图标 -->
+          <!-- 工作流图标 -->
           <a-form-item
             field="fileList"
             hide-label
@@ -259,31 +224,49 @@ onUnmounted(() => {
               :on-before-remove="handleRemove"
             ></a-upload>
           </a-form-item>
-          <!-- 知识库名称 -->
+          <!-- 工作流名称 -->
           <a-form-item
             class="text-black"
             field="name"
-            label="应用名称"
+            label="工作流名称"
             asterisk-position="end"
-            :rules="[{ required: true, message: '应用不能为空' }]"
+            :rules="[{ required: true, message: '工作流不能为空' }]"
           >
             <a-input
               v-model="formData.name"
               class="rounded-xs"
-              placeholder="请输入应用名称"
+              placeholder="请输入工作流名称"
               show-word-limit
               :max-length="40"
             />
           </a-form-item>
-          <!-- 知识库描述 -->
-          <a-form-item field="description" label="应用描述">
+          <!-- 工作流英文名称 -->
+          <a-form-item
+            class="text-black"
+            field="tool_call_name"
+            label="工作流英文名称"
+            asterisk-position="end"
+            :rules="[{ required: true, message: '工作流英文不能为空' }]"
+          >
+            <a-input
+              v-model="formData.tool_call_name"
+              class="rounded-xs"
+              placeholder="英文名称将用于被大模型识别及调用"
+              show-word-limit
+              :max-length="40"
+            />
+          </a-form-item>
+          <!-- 工作流描述 -->
+          <a-form-item field="description" label="工作流描述">
             <a-textarea
               v-model="formData.description"
               class="rounded-xs"
               :auto-size="{ minRows: 4, maxRows: 6 }"
               show-word-limit
               :max-length="800"
-              placeholder="请输入应用描述"
+              asterisk-position="end"
+              :rules="[{ required: true, message: '工作流描述不能为空' }]"
+              placeholder="请输入工作流描述"
             ></a-textarea>
           </a-form-item>
         </a-spin>

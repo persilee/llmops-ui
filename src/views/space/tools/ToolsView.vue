@@ -168,7 +168,6 @@ const handleModalSuccess = () => {
 onMounted(() => {
   store.$reset()
   fetchData(true)
-  console.log('aaaaaaaaaa', store)
 })
 
 /**
