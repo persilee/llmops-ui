@@ -158,29 +158,37 @@ onMounted(() => {
             <img :src="store.app?.icon" class="w-[25px] h-[28px]" />
           </div>
           <!-- 标题和信息 -->
-          <div class="flex flex-col justify-between h-[40px]">
+          <div class="flex flex-col justify-between">
             <div class="flex items-center gap-1">
               <div class="text-gray-700 font-bold">{{ store.app?.name }}</div>
-              <a-button type="text" size="mini" @click="handleUpdateApp">
-                <template #icon>
-                  <img src="@/assets/images/icon-edit.png" class="w-3.5 h-3.5" />
-                </template>
-              </a-button>
+              <a-tooltip content="编辑">
+                <a-button type="text" size="mini" @click="handleUpdateApp">
+                  <template #icon>
+                    <img src="@/assets/images/icon-edit.png" class="w-3.5 h-3.5" />
+                  </template>
+                </a-button>
+              </a-tooltip>
             </div>
-            <div class="flex items-center gap-2">
-              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500">
+            <div class="flex items-center gap-2 mt-1">
+              <a-tag
+                size="small"
+                class="rounded h-[16px] leading-[16px] text-[10px] bg-gray-200 text-gray-500"
+              >
                 <template #icon>
-                  <img src="@/assets/images/icon-user-dark.png" class="w-3 h-3" />
+                  <img src="@/assets/images/icon-user-dark.png" class="w-2.5 h-2.5" />
                 </template>
                 个人空间
               </a-tag>
-              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200 text-gray-500">
+              <a-tag
+                size="small"
+                class="rounded h-[16px] leading-[16px] text-[10px] bg-gray-200 text-gray-500"
+              >
                 <template #icon>
-                  <img src="@/assets/images/icon-history.png" class="w-3 h-3" />
+                  <img src="@/assets/images/icon-history.png" class="w-2.5 h-2.5" />
                 </template>
                 {{ isPublished ? '已发布' : '草稿' }}
               </a-tag>
-              <a-tag size="small" class="rounded h-[18px] leading-[18px] bg-gray-200">
+              <a-tag size="small" class="rounded h-[16px] leading-[16px] text-[10px] bg-gray-200">
                 <div v-if="store.loading" class="flex items-center gap-1.5">
                   <a-spin :loading="store.loading" :size="14" class="loading" />
                   <div class="text-gray-500 text-xs">保存中...</div>

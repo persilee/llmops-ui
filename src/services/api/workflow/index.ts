@@ -3,6 +3,7 @@ import type { PaginatorParams } from '@/services/types'
 import type {
   CreateWorkflowReq,
   CreateWorkflowResp,
+  GetDraftGraphResp,
   GetWorkflowResp,
   GetWorkflowsWithPageResp,
   UpdateWorkflowReq,
@@ -61,7 +62,7 @@ class WorkFlowApi {
    * @returns Promise对象，返回工作流草稿图数据
    */
   static getDraftGraph(workflowId: string) {
-    return get({
+    return get<GetDraftGraphResp>({
       url: `/workflows/${workflowId}/draft`,
     })
   }

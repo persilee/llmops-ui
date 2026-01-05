@@ -114,6 +114,11 @@ const router = createRouter({
           ],
         },
         {
+          path: 'space/workflows/:workflowId/detail',
+          name: 'space-workflows-detail',
+          component: () => import('@/views/space/workflows/WorkflowDetail.vue'),
+        },
+        {
           path: 'auth/login',
           name: 'auth-login',
           component: () => import('@/views/auth/LoginView.vue'),

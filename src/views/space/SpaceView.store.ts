@@ -67,7 +67,7 @@ export const useSpaceStore = defineStore(
     const openEditToolModal = () => openModal('tool', 'edit')
     const toolModal = getModalState('tool')
 
-    // 快捷访问方法 - 数据集模态框
+    // 快捷访问方法 - 知识库模态框
     const openCreateDatasetModal = () => openModal('dataset', 'create')
     const openEditDatasetModal = () => openModal('dataset', 'edit')
     const datasetModal = getModalState('dataset')
@@ -102,7 +102,7 @@ export const useSpaceStore = defineStore(
       openEditToolModal,
       toolModal,
 
-      // 数据集模态框
+      // 知识库模态框
       openCreateDatasetModal,
       openEditDatasetModal,
       datasetModal,

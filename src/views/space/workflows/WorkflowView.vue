@@ -9,8 +9,10 @@ import PageCard from '@/views/components/PageCard.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import WorkflowModel from './components/WorkflowModel.vue'
+import { useWorkflowStore } from './Workflow.store'
 
 // 加载状态标志，用于控制数据加载时的UI反馈
 const loading = ref(false)
@@ -20,6 +22,8 @@ const workflows = ref<GetWorkflowsWithPage[]>([])
 const selectedWorkflow = ref<GetWorkflowsWithPage>()
 // 空间状态管理store，处理空间相关的状态和操作
 const store = useSpaceStore()
+// 工作流状态管理store，处理工作流相关的状态和操作
+const workflowStore = useWorkflowStore()
 // 账户状态管理store，处理用户账户相关的状态和操作
 const accountStore = useAccountStore()
 // 分页器配置对象，包含当前页码、每页条数、总页数和总记录数
@@ -31,6 +35,8 @@ const paginator = ref<Paginator>({
 })
 // 滚动容器的模板引用，用于实现无限滚动加载功能
 const scrollContainerRef = useTemplateRef('scrollContainer')
+// 路由对象，用于导航到其他页面
+const router = useRouter()
 
 /**
  * 获取工作流数据
@@ -116,6 +122,7 @@ const handleSelect = async (v: string, workflow: GetWorkflowsWithPage) => {
   if (v == 'edit') {
     // 设置当前选中的工作流
     selectedWorkflow.value = workflow
+    workflowStore.workflow = workflow
     // 打开编辑工作流的模态框
     store.openEditWorkflowModal()
   }
@@ -133,14 +140,16 @@ const handleSelect = async (v: string, workflow: GetWorkflowsWithPage) => {
       // 确认按钮的回调函数
       onOk: async () => {
         try {
-          // 开启加载状态
-          loading.value = true
-          // 调用删除工作流API
-          const resp = await WorkFlowApi.deleteWorkflow(workflow.id)
-          // 显示删除成功的提示信息
-          Message.success(resp.message)
-          // 重新获取工作流列表数据
-          await fetchData()
+          if (workflow.id) {
+            // 开启加载状态
+            loading.value = true
+            // 调用删除工作流API
+            const resp = await WorkFlowApi.deleteWorkflow(workflow.id)
+            // 显示删除成功的提示信息
+            Message.success(resp.message)
+            // 重新获取工作流列表数据
+            await fetchData()
+          }
         } catch (error) {
           // 错误处理：显示错误提示信息
           const errorMessage = error instanceof Error ? error.message : '删除失败'
@@ -176,7 +185,25 @@ const getDate = (workflow: GetWorkflowsWithPage) => {
   return `${accountStore.account.name} • 最近编辑 ${formatDate(workflow.updated_at, 'MM-DD HH:mm')}`
 }
 
-const handleToolCardClick = (idx: number) => {}
+/**
+ * 处理工作流卡片点击事件
+ * @param {number} idx - 被点击的工作流卡片在列表中的索引
+ *
+ * 该函数执行以下操作：
+ * 1. 将被点击的工作流对象存储到workflowStore中，以便在其他组件中访问
+ * 2. 使用Vue Router导航到工作流详情页面，并传递工作流ID作为路由参数
+ */
+const handleToolCardClick = (idx: number) => {
+  // 将被点击的工作流对象存储到状态管理store中
+  workflowStore.workflow = workflows.value[idx]
+  // 导航到工作流详情页面，并传递工作流ID作为参数
+  router.push({
+    name: 'space-workflows-detail',
+    params: {
+      workflowId: workflows.value[idx].id,
+    },
+  })
+}
 
 // 判断是否需要显示手动加载按钮
 const showLoadMoreBtn = computed(() => {
