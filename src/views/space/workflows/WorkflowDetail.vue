@@ -88,6 +88,7 @@ onMounted(() => {
           :max-zoom="2"
           :zoom-on-scroll="store.workflow.mode == 'mouse'"
           :pan-on-scroll="store.workflow.mode == 'pan'"
+          :pan-on-drag="store.workflow.mode == 'mouse'"
           @pane-click.prevent="handlePaneClick"
           @viewport-change="handleViewportChange"
         >
