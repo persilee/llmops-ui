@@ -1,5 +1,75 @@
 <script setup lang="ts">
-const addNode = (nodeType: string) => {}
+import { Message } from '@arco-design/web-vue'
+import { useVueFlow } from '@vue-flow/core'
+import { v4 } from 'uuid'
+import { useWorkflowStore } from '../Workflow.store'
+
+// 从 Vue Flow 中解构获取 nodes 对象
+// nodes 包含了流程图中所有节点的状态信息，包括位置、数据、选中状态等
+const { nodes } = useVueFlow()
+
+// 获取工作流状态管理实例
+// store 用于管理整个工作流的全局状态，包括节点数据、连接关系、执行状态等
+const store = useWorkflowStore()
+
+/**
+ * 统计数组中特定类型元素的数量
+ * @param {any[]} items - 要统计的数组
+ * @param {string} type - 要统计的元素类型
+ * @returns {number} 匹配类型的元素数量
+ */
+const countByType = (items: any[], type: string) =>
+  items.filter((item) => item.type === type).length
+
+/**
+ * 向工作流中添加新节点
+ * @param {string} nodeType - 要添加的节点类型
+ * @returns {void}
+ */
+const addNode = (nodeType: string) => {
+  // 检查是否为开始节点
+  if (nodeType === 'start') {
+    // 如果已存在开始节点，则报错并返回
+    if (nodes.value.some((node) => node.type === 'start')) {
+      Message.warning('工作流中只允许有一个开始节点')
+      return
+    }
+  } else if (nodeType === 'end') {
+    // 如果已存在结束节点，则报错并返回
+    if (nodes.value.some((node) => node.type === 'end')) {
+      Message.warning('工作流中只允许有一个结束节点')
+      return
+    }
+  }
+
+  // 获取当前节点总数
+  const nodeCount = nodes.value.length
+  // 计算所有节点的位置总和
+  const total = nodes.value.reduce(
+    (acc, item) => {
+      acc.xSum += item.position.x
+      acc.ySum += item.position.y
+      return acc
+    },
+    { xSum: 0, ySum: 0 },
+  )
+  // 计算节点的平均位置，如果没有节点则默认为(0,0)
+  const xAverage = nodeCount > 0 ? total.xSum / nodeCount : 0
+  const yAverage = nodeCount > 0 ? total.ySum / nodeCount : 0
+
+  // 获取节点类型对应的基础数据
+  const nodeData = store.NODE_DATA_MAP[nodeType]
+  // 创建新节点并添加到图中
+  store.draftGraph.nodes.push({
+    id: v4(), // 生成唯一ID
+    type: nodeType, // 设置节点类型
+    position: { x: xAverage, y: yAverage }, // 设置节点位置为平均位置
+    data: {
+      ...nodeData, // 复制节点基础数据
+      title: `${nodeData.title}_${countByType(nodes.value, nodeType)}`,
+    },
+  })
+}
 </script>
 
 <template>

@@ -9,7 +9,7 @@ import {
 import { computed } from 'vue'
 
 // 定义组件属性
-const props = defineProps<EdgeProps>()
+const props = defineProps<EdgeProps & { highlighted: boolean }>()
 
 const isHovered = defineModel('isHovered', { type: Boolean, default: false })
 
@@ -49,7 +49,7 @@ const handleMouseOut = () => {
     :style="style"
     :path="path[0]"
     :marker-end="markerEnd"
-    :class="`custom-edge-path ${isHovered ? 'hovered' : ''}`"
+    :class="`custom-edge-path ${isHovered ? 'hovered' : ''} ${highlighted ? 'highlighted' : ''}`"
   />
 
   <!-- 加号按钮 - 只在hover时显示 -->

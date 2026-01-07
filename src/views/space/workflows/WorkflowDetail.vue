@@ -9,6 +9,7 @@ import {
   type EdgeMouseEvent,
   type GraphNode,
   type NodeChange,
+  type NodeMouseEvent,
   type ViewportTransform,
   type VueFlowStore,
 } from '@vue-flow/core'
@@ -18,27 +19,19 @@ import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/minimap/dist/style.css'
 import { debounce } from 'lodash-es'
 import { v4 } from 'uuid'
-import { markRaw, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import ControlsPanel from './components/ControlsPanel.vue'
 import EdgeWithPlus from './components/EdgeWithPlus.vue'
 import HelperLines from './components/HelperLines.vue'
-import CodeNode from './components/nodes/CodeNode.vue'
-import DatasetRetrievalNode from './components/nodes/DatasetRetrievalNode.vue'
-import EndNode from './components/nodes/EndNode.vue'
-import HttpRequestNode from './components/nodes/HttpRequestNode.vue'
-import IterationNode from './components/nodes/IterationNode.vue'
-import LLMNode from './components/nodes/LLMNode.vue'
-import QuestionClassifierNode from './components/nodes/QuestionClassifierNode.vue'
-import StartNode from './components/nodes/StartNode.vue'
-import TemplateTransformNode from './components/nodes/TemplateTransformNode.vue'
-import ToolNode from './components/nodes/ToolNode.vue'
+
 import WorkflowHeader from './components/WorkflowHeader.vue'
 import WorkflowModel from './components/WorkflowModel.vue'
 import { useWorkflowStore } from './Workflow.store'
 
-const { onPaneReady, vueFlowRef, onConnect, findNode, nodes, applyNodeChanges } = useVueFlow()
+const { onPaneReady, vueFlowRef, onConnect, findNode, nodes, applyNodeChanges, getConnectedEdges } =
+  useVueFlow()
 const loading = ref(false)
 const headerLoading = ref(false)
 const store = useWorkflowStore()
@@ -50,6 +43,7 @@ const hoveredEdgeId = ref<string | null>(null)
 const isInit = ref(true)
 const helperLineHorizontal = ref<number | undefined>(undefined)
 const helperLineVertical = ref<number | undefined>(undefined)
+const highlightedEdges = ref<string[]>([])
 
 const fetchData = async () => {
   try {
@@ -88,19 +82,6 @@ const handleViewportChange = (viewport: ViewportTransform) => {
   debounce(() => {
     zoomValue.value = Number(viewport.zoom)
   }, 360)()
-}
-
-const NOTE_TYPES = {
-  start: markRaw(StartNode),
-  llm: markRaw(LLMNode),
-  tool: markRaw(ToolNode),
-  dataset_retrieval: markRaw(DatasetRetrievalNode),
-  template_transform: markRaw(TemplateTransformNode),
-  http_request: markRaw(HttpRequestNode),
-  code: markRaw(CodeNode),
-  question_classifier: markRaw(QuestionClassifierNode),
-  iteration: markRaw(IterationNode),
-  end: markRaw(EndNode),
 }
 
 function updateHelperLines(changes: NodeChange[], nodes: GraphNode[]) {
@@ -146,7 +127,7 @@ onConnect((connection) => {
 
   // 检查是否连接统一节点
   if (source === target) {
-    Message.error('不能将节点连接到本身')
+    Message.warning('不能将节点连接到本身')
     return
   }
 
@@ -161,25 +142,34 @@ onConnect((connection) => {
 
   // 如果已经连接，则提示用户并阻止连接
   if (isAlreadyConnected) {
-    Message.error('这两个节点已有连接，无需重复添加')
+    Message.warning('这两个节点已有连接，无需重复添加')
     return
   }
 
   // 获取边的起点和终点类型
-  const source_node = findNode(source)
-  const target_node = findNode(target)
+  const sourceNode = findNode(source)
+  const targetNode = findNode(target)
 
   // 将数据添加到edges
   store.draftGraph.edges.push({
     ...connection,
     id: v4(),
-    source_type: source_node?.type,
+    source_type: sourceNode?.type,
     source_handle_id: connection?.sourceHandle,
-    target_type: target_node?.type,
+    target_type: targetNode?.type,
     animated: true,
     type: 'custom',
   })
 })
+
+const handleNodeMouseEnter = (event: NodeMouseEvent) => {
+  const connectedEdges = getConnectedEdges(event.node.id)
+  highlightedEdges.value = connectedEdges.map((edge) => edge.id)
+}
+
+const handleNodeMouseLeave = () => {
+  highlightedEdges.value = []
+}
 
 const handleUpdate = () => {
   if (isInit.value) return
@@ -208,7 +198,7 @@ onMounted(async () => {
         <vue-flow
           v-model:nodes="store.draftGraph.nodes"
           v-model:edges="store.draftGraph.edges"
-          :node-types="NOTE_TYPES"
+          :node-types="store.NOTE_TYPES"
           :min-zoom="0.25"
           :max-zoom="2"
           :zoom-on-scroll="store.mode == 'mouse'"
@@ -221,6 +211,8 @@ onMounted(async () => {
           @viewport-change="handleViewportChange"
           @edge-mouse-enter="handleEdgeMouseEnter"
           @edge-mouse-leave="handleEdgeMouseLeave"
+          @node-mouse-enter="handleNodeMouseEnter"
+          @node-mouse-leave="handleNodeMouseLeave"
           @update:edges="handleUpdate"
           @update:nodes="handleUpdate"
           @node-drag-stop="handleUpdate"
@@ -251,7 +243,11 @@ onMounted(async () => {
           />
           <!-- 自定义边 -->
           <template #edge-custom="edgeProps">
-            <EdgeWithPlus v-bind="edgeProps" :is-hovered="hoveredEdgeId === edgeProps.id" />
+            <EdgeWithPlus
+              v-bind="edgeProps"
+              :is-hovered="hoveredEdgeId === edgeProps.id"
+              :highlighted="highlightedEdges.includes(edgeProps.id)"
+            />
           </template>
         </vue-flow>
       </a-spin>
@@ -274,6 +270,12 @@ onMounted(async () => {
 :deep(.vue-flow__edge-path) {
   stroke-width: 2px;
   stroke: #9ca3af;
+}
+
+:deep(.custom-edge-path.highlighted) {
+  stroke: #1447e6 !important;
+  stroke-width: 2px !important;
+  transition: stroke-width 0.3s ease-in-out;
 }
 
 :deep(.hovered.vue-flow__edge-path) {

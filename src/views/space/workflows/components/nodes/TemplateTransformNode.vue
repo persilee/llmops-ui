@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Handle, type NodeProps, Position } from '@vue-flow/core'
+import { type NodeProps, Position } from '@vue-flow/core'
+import NodeHandle from './NodeHandle.vue'
 
 // 1.定义自定义组件所需数据
 const props = defineProps<NodeProps>()
@@ -96,25 +97,8 @@ const props = defineProps<NodeProps>()
       </div>
     </div>
     <!-- 模板转换节点-连接句柄 -->
-    <handle
-      type="source"
-      :position="Position.Right"
-      class="w-3 h-3 bg-blue-700 flex border-2 border-white shadow-sm items-center justify-center group-hover:w-4 group-hover:h-4 group-hover:border-2 group-hover:shadow-md duration-360 hover:h-6.5 hover:w-6.5 handle hover:border-3 hover:shadow-lg"
-    >
-      <icon-plus
-        class="pointer-events-none text-white font-bold duration-360"
-        size="12"
-        :stroke-width="8"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </handle>
-    <handle
-      type="target"
-      :position="Position.Left"
-      class="w-3 h-3 bg-blue-700 flex border-2 border-white shadow-sm items-center justify-center group-hover:w-4 group-hover:h-4 group-hover:border-2 group-hover:shadow-md duration-360 cursor-default"
-    >
-    </handle>
+    <NodeHandle type="source" :position="Position.Right" />
+    <NodeHandle type="target" :position="Position.Left" :node-id="props.id"/>
   </div>
 </template>
 
@@ -125,12 +109,6 @@ const props = defineProps<NodeProps>()
 
 .flow-node__bg {
   background: linear-gradient(#00d49210 0%, transparent 80%);
-}
-.handle > svg {
-  opacity: 0;
-}
-.handle:hover > svg {
-  opacity: 1 !important;
 }
 
 .selected .flow-node {

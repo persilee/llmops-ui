@@ -222,3 +222,24 @@ export const formatNumberWithChineseUnit = (num: number, decimalPlaces: number =
 
   return num.toString()
 }
+
+/**
+ * 生成指定长度的随机字符串
+ * @param length - 要生成的字符串长度，必须为正整数
+ * @returns 返回生成的随机字符串，包含大小写字母和数字
+ *
+ * @example
+ * generateRandomString(8) // 'aB3xY9pQ'
+ * generateRandomString(16) // 'Kj8mN2pQ5rS7tW9x'
+ */
+export const generateRandomString = (length: number): string => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length)
+    result += characters[randomIndex]
+  }
+
+  return result
+}

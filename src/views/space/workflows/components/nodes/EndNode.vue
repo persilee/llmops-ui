@@ -77,12 +77,6 @@ const props = defineProps<NodeProps>()
 .flow-node__bg {
   background: linear-gradient(#c1000710 0%, transparent 80%);
 }
-.handle > svg {
-  opacity: 0;
-}
-.handle:hover > svg {
-  opacity: 1 !important;
-}
 
 .selected .flow-node {
   border: 1px solid #1447e6 !important;

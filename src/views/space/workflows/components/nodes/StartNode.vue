@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Handle, Position, type NodeProps } from '@vue-flow/core'
+import { Position, type NodeProps } from '@vue-flow/core'
+import NodeHandle from './NodeHandle.vue'
 
 const props = defineProps<NodeProps>()
 </script>
@@ -7,7 +8,7 @@ const props = defineProps<NodeProps>()
 <template>
   <div class="">
     <div
-    class="flex flex-col gap-3 rounded-xl p-3 bg-white shadow-xs hover:shadow-lg w-[360px] flow-node duration-160 group relative"
+      class="flex flex-col gap-3 rounded-xl p-3 bg-white shadow-xs hover:shadow-lg w-[360px] flow-node duration-160 group relative"
     >
       <div class="flow-node__bg w-full h-[80px] absolute top-0 left-0 rounded-xl z-0"></div>
       <!-- 节点标题信息 -->
@@ -84,19 +85,7 @@ const props = defineProps<NodeProps>()
         </div>
       </div>
       <!-- 工具节点-连接句柄 -->
-      <Handle
-        type="source"
-        :position="Position.Right"
-        class="w-3 h-3 bg-blue-700 flex border-2 border-white shadow-sm items-center justify-center group-hover:w-4 group-hover:h-4 group-hover:border-2 group-hover:shadow-md duration-360 hover:h-6.5 hover:w-6.5 handle hover:border-3 hover:shadow-lg"
-      >
-        <icon-plus
-          class="pointer-events-none text-white font-bold duration-360"
-          size="12"
-          :stroke-width="8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </Handle>
+      <NodeHandle type="source" :position="Position.Right" />
     </div>
   </div>
 </template>
@@ -108,12 +97,6 @@ const props = defineProps<NodeProps>()
 
 .flow-node__bg {
   background: linear-gradient(#1449e610 0%, transparent 80%);
-}
-.handle > svg {
-  opacity: 0;
-}
-.handle:hover > svg {
-  opacity: 1 !important;
 }
 
 .selected .flow-node {
