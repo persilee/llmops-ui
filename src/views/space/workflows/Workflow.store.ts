@@ -1,20 +1,18 @@
 import WorkFlowApi from '@/services/api/workflow'
 import type { GetWorkflowsWithPage } from '@/services/api/workflow/types'
-import type { Edge, Node } from '@vue-flow/core'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useWorkflowStore = defineStore(
   'workflow',
   () => {
-    const workflow = ref<GetWorkflowsWithPage & { mode?: string; isShowMap?: boolean }>({
-      mode: 'mouse',
-      isShowMap: false,
-    })
+    const workflow = ref<GetWorkflowsWithPage>()
+    const mode = ref('mouse')
+    const isShowMap = ref(false)
     const loading = ref(false)
     const draftGraph = ref({
-      nodes: <Node[]>[],
-      edges: <Edge[]>[],
+      nodes: <any[]>[],
+      edges: <any[]>[],
     })
 
     const getWorkflow = async (workflowId: string) => {
@@ -36,19 +34,57 @@ export const useWorkflowStore = defineStore(
             return {
               ...edge,
               animated: true,
-              style: { strokeWidth: 2, stroke: '#9ca3af' },
+              style: { fill: 'none' },
+              type: 'custom',
             }
           }),
         }
       } catch (error) {}
     }
 
+    const convertGraphToReq = (nodes: Record<string, any>[], edges: Record<string, any>[]) => {
+      return {
+        nodes: nodes.map((node) => {
+          return {
+            id: node.id,
+            node_type: node.type,
+            position: node.position,
+            ...node.data,
+          }
+        }),
+        edges: edges.map((edge) => {
+          return {
+            id: edge.id,
+            source: edge.source,
+            source_type: edge.source_type,
+            target: edge.target,
+            target_type: edge.target_type,
+          }
+        }),
+      }
+    }
+
+    const updateDraftGraph = async (workflowId: string, req: Record<string, any>) => {
+      try {
+        loading.value = true
+        const convertReq = convertGraphToReq(req.nodes, req.edges)
+        await WorkFlowApi.updateDraftGraph(workflowId, convertReq)
+        await getWorkflow(workflowId)
+      } catch (error) {
+      } finally {
+        loading.value = false
+      }
+    }
+
     return {
       workflow,
+      mode,
+      isShowMap,
       draftGraph,
       loading,
       getWorkflow,
       getDraftGraph,
+      updateDraftGraph,
     }
   },
   {

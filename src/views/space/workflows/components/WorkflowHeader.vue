@@ -62,7 +62,7 @@ const handleCancelPublishClick = () => {}
           <div class="flex items-center gap-2 mt-1">
             <a-tag size="small" class="rounded h-[16px] leading-[16px] bg-gray-200 text-[10px]">
               <div v-if="store.loading" class="flex items-center gap-1.5">
-                <a-spin :loading="store.loading" :size="14" class="loading" />
+                <a-spin :loading="store.loading" :size="12" class="loading" />
                 <div class="text-gray-500">保存中...</div>
               </div>
               <div v-else class="text-gray-500">

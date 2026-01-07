@@ -29,7 +29,7 @@ const imageOptions = <{ label: string; value: ImageType }[]>[
 ]
 const handleSelectMode = (m: string) => {
   mode.value = m
-  store.workflow.mode = m
+  store.mode = m
 }
 
 const handleSelectZoom = (option: { label: string; value: number | string }) => {
@@ -58,8 +58,11 @@ const handleDownloadImage = async (option: { label: string; value: ImageType }) 
     await capture(props.vueFlowRef, {
       shouldDownload: true,
       type: option.value,
+      skipFonts: false,
+      pixelRatio: window.devicePixelRatio || 2,
       filter,
     })
+    Message.success('导出成功')
   } catch (error) {
     Message.error('导出失败')
   } finally {
@@ -135,7 +138,7 @@ onBeforeUnmount(() => {
           @click.stop
         >
           <a-tooltip
-            :content="store.workflow.mode == 'mouse' ? '鼠标友好模式' : '触摸板友好模式'"
+            :content="store.mode == 'mouse' ? '鼠标友好模式' : '触摸板友好模式'"
             :class="`${isTriggerModeVisible ? 'hidden' : 'block'}`"
           >
             <a-button type="text" size="mini" class="px-1 mr-2">
@@ -211,12 +214,12 @@ onBeforeUnmount(() => {
           <a-button
             type="text"
             size="small"
-            :class="`${store.workflow.isShowMap ? 'bg-blue-200 text-blue-600' : ''}`"
-            @click="store.workflow.isShowMap = !store.workflow.isShowMap"
+            :class="`${store.isShowMap ? 'bg-blue-200 text-blue-600' : ''}`"
+            @click="store.isShowMap = !store.isShowMap"
           >
             <template #icon>
               <icon-layers
-                :class="`w-4 h-4 ${store.workflow.isShowMap ? 'text-blue-600' : 'text-gray-700'}`"
+                :class="`w-4 h-4 ${store.isShowMap ? 'text-blue-600' : 'text-gray-700'}`"
             /></template>
           </a-button>
         </a-tooltip>
