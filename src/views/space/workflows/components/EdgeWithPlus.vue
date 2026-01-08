@@ -6,10 +6,12 @@ import {
   useVueFlow,
   type EdgeProps,
 } from '@vue-flow/core'
-import { computed } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import AddNode from './AddNode.vue'
 
 // 定义组件属性
 const props = defineProps<EdgeProps & { highlighted: boolean }>()
+const isTriggerNodeVisible = ref(false)
 
 const isHovered = defineModel('isHovered', { type: Boolean, default: false })
 
@@ -29,17 +31,26 @@ const path = computed(() =>
   }),
 )
 
-// 加号按钮点击事件
-const handlePlusClick = () => {
-  console.log('Plus button clicked on edge:', props.id)
-}
-
 const handleMouseOver = () => {
   isHovered.value = true
 }
 const handleMouseOut = () => {
+  if (isTriggerNodeVisible.value) return
   isHovered.value = false
 }
+
+const stop = watch(
+  () => isTriggerNodeVisible.value,
+  (val) => {
+    if (!val) {
+      isHovered.value = false
+    }
+  },
+)
+
+onUnmounted(() => {
+  stop()
+})
 </script>
 
 <template>
@@ -49,34 +60,50 @@ const handleMouseOut = () => {
     :style="style"
     :path="path[0]"
     :marker-end="markerEnd"
-    :class="`custom-edge-path ${isHovered ? 'hovered' : ''} ${highlighted ? 'highlighted' : ''}`"
+    :class="`custom-edge-path ${isHovered || isTriggerNodeVisible ? 'hovered' : ''} ${highlighted ? 'highlighted' : ''}`"
   />
 
   <!-- 加号按钮 - 只在hover时显示 -->
   <EdgeLabelRenderer>
     <div
-      :class="`edge-plus-button duration-300 ${isHovered ? 'hovered' : ''}`"
+      :class="`edge-plus-button duration-300 ${isHovered || isTriggerNodeVisible ? 'hovered' : ''}`"
       :style="{
         transform: `translate(-50%, -50%) translate(${path[1]}px, ${path[2]}px)`,
       }"
       @mouseover.stop="handleMouseOver"
       @mouseout.stop="handleMouseOut"
     >
-      <a-button
-        type="text"
-        :class="`w-[26px] h-[26px] rounded-full bg-blue-700 border-2 border-white shadow-md hover:transform hover:scale-130 duration-300`"
-        @click.stop="handlePlusClick"
+      <a-trigger
+        v-model:popup-visible="isTriggerNodeVisible"
+        trigger="click"
+        show-arrow
+        :unmount-on-close="false"
+        :popup-translate="[6, 0]"
+        position="right"
+        @click.stop
       >
-        <template #icon>
-          <icon-plus
-            class="pointer-events-none text-white font-bold"
-            size="12"
-            :stroke-width="8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <a-button
+          type="text"
+          :class="`w-[26px] h-[26px] rounded-full bg-blue-700 border-2 border-white shadow-md hover:transform hover:scale-130 duration-300`"
+        >
+          <template #icon>
+            <icon-plus
+              class="pointer-events-none text-white font-bold"
+              size="12"
+              :stroke-width="8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </template>
+        </a-button>
+        <template #content>
+          <AddNode
+            v-model:visible="isTriggerNodeVisible"
+            :add-node-type="'edge'"
+            :edge-id="props.id"
           />
         </template>
-      </a-button>
+      </a-trigger>
     </div>
   </EdgeLabelRenderer>
 </template>

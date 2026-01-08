@@ -77,17 +77,19 @@ const handleSubmit = async ({
   let message = '' // 用于存储操作结果消息
   try {
     // 编辑模式：更新现有工作流
-    if (!isEmpty(props.workflow)) {
-      const resp = await WorkFlowApi.updateWorkflow(props.workflow.id, {
-        icon: formData.value.icon,
-        name: formData.value.name,
-        description: formData.value.description,
-        tool_call_name: formData.value.tool_call_name,
-      })
-      message = resp.message
+    if (store.workflowModal.isEditMode) {
+      if (props.workflow && props.workflow.id) {
+        const resp = await WorkFlowApi.updateWorkflow(props.workflow.id, {
+          icon: formData.value.icon,
+          name: formData.value.name,
+          description: formData.value.description,
+          tool_call_name: formData.value.tool_call_name,
+        })
+        message = resp.message
+      }
     }
     // 创建模式：创建新工作流
-    else {
+    else if (store.workflowModal.isCreateMode) {
       const resp = await WorkFlowApi.createWorkflow({
         icon: formData.value.icon,
         name: formData.value.name,

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { type NodeProps, Position } from '@vue-flow/core'
+import { ref } from 'vue'
+import AddNode from '../AddNode.vue'
 import NodeHandle from './NodeHandle.vue'
 
 // 1.定义自定义组件所需数据
 const props = defineProps<NodeProps>()
+
 </script>
 
 <template>
@@ -85,7 +88,7 @@ const props = defineProps<NodeProps>()
       </div>
     </div>
     <!-- 代码节点-连接句柄 -->
-    <NodeHandle type="source" :position="Position.Right" />
+      <NodeHandle type="source" :position="Position.Right" />
     <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>

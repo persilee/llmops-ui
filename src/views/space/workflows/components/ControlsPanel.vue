@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
             添加节点
           </a-button>
           <template #content>
-            <AddNode />
+            <AddNode v-model:visible="isTriggerNodeVisible" />
           </template>
         </a-trigger>
         <a-divider direction="vertical" />
