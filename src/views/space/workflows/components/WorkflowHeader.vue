@@ -24,7 +24,9 @@ const handleCancelPublishClick = () => {}
 
 <template>
   <!-- 顶部导航 -->
-  <header class="h-[76px] bg-gray-100 p-4 flex items-center justify-between relative">
+  <header
+    class="h-[66px] bg-gray-50 p-4 flex items-center justify-between border-b border-gray-100 shadow-sm relative"
+  >
     <!-- 左边标题和返回按钮 -->
     <div class="flex-1 flex items-center gap-2">
       <!-- 返回按钮 -->

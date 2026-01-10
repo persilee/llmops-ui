@@ -153,7 +153,7 @@ const addNode = (nodeType: string) => {
       position: { x: xPosition, y: yPosition }, // 设置节点位置为平均位置
       data: {
         ...nodeData, // 复制节点基础数据
-        title: `${nodeData.title}_${countByType(nodes.value, nodeType)}`,
+        title: nodeTitle,
       },
     })
 
@@ -170,6 +170,7 @@ const addNode = (nodeType: string) => {
         target_type: nodeType,
         animated: true,
         type: 'custom',
+        style: { fill: 'none' },
       },
       {
         id: v4(),
@@ -179,6 +180,7 @@ const addNode = (nodeType: string) => {
         target_type: targetNode?.type,
         animated: true,
         type: 'custom',
+        style: { fill: 'none' },
       },
     )
     // 修复节点重叠
@@ -219,6 +221,7 @@ const addNode = (nodeType: string) => {
       target_type: nodeType,
       animated: true,
       type: 'custom',
+      style: { fill: 'none' },
     })
     // 修复节点重叠
     setTimeout(async () => {

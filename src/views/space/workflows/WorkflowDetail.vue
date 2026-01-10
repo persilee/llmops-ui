@@ -17,20 +17,23 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/minimap/dist/style.css'
-import { debounce } from 'lodash-es'
+import { cloneDeep, debounce } from 'lodash-es'
 import { v4 } from 'uuid'
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import ControlsPanel from './components/ControlsPanel.vue'
 import EdgeWithPlus from './components/EdgeWithPlus.vue'
 import HelperLines from './components/HelperLines.vue'
 
+import DebugModel from './components/DebugModel.vue'
+import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInfo.vue'
+import StartNodeInfo from './components/infos/StartNodeInfo.vue'
 import WorkflowHeader from './components/WorkflowHeader.vue'
 import WorkflowModel from './components/WorkflowModel.vue'
 import { useWorkflowStore } from './Workflow.store'
 
-const { onPaneReady, vueFlowRef, onConnect, findNode, nodes, applyNodeChanges, getConnectedEdges } =
+const { vueFlowRef, nodes, onPaneReady, onConnect, findNode, applyNodeChanges, getConnectedEdges } =
   useVueFlow()
 const loading = ref(false)
 const headerLoading = ref(false)
@@ -44,6 +47,9 @@ const isInit = ref(true)
 const helperLineHorizontal = ref<number | undefined>(undefined)
 const helperLineVertical = ref<number | undefined>(undefined)
 const highlightedEdges = ref<string[]>([])
+const debugModelVisible = ref(false)
+const selectNode = ref<any>(null)
+const nodeInfoVisible = ref(false)
 
 const fetchData = async () => {
   try {
@@ -76,7 +82,19 @@ onPaneReady((vueFlowInstance) => {
   flowInstance.value.zoomTo(1)
 })
 
-const handlePaneClick = (paneMouseEvent: MouseEvent) => {}
+const handlePaneClick = (event: MouseEvent) => {
+  handleCloseNodeInfo()
+}
+const handleEdgeClick = (event: EdgeMouseEvent) => {
+  handleCloseNodeInfo()
+}
+const handleNodeClick = (event: NodeMouseEvent) => {
+  debugModelVisible.value = false
+  if (!selectNode.value || selectNode.value.id !== event.node.id) {
+    selectNode.value = event.node
+    nodeInfoVisible.value = true
+  }
+}
 
 const handleViewportChange = (viewport: ViewportTransform) => {
   debounce(() => {
@@ -159,6 +177,7 @@ onConnect((connection) => {
     target_type: targetNode?.type,
     animated: true,
     type: 'custom',
+    style: { fill: 'none' },
   })
 })
 
@@ -171,7 +190,7 @@ const handleNodeMouseLeave = () => {
   highlightedEdges.value = []
 }
 
-const handleUpdate = () => {
+const handleUpdateGraph = () => {
   if (isInit.value) return
 
   if (store.workflow && store.workflow.id && flowInstance.value) {
@@ -182,9 +201,66 @@ const handleUpdate = () => {
   }
 }
 
+const handleUpdateNode = (node_data: Record<string, any>) => {
+  // 获取该节点对应的索引
+  const idx = nodes.value.findIndex((item: any) => item.id === node_data.id)
+
+  // 检测是否存在数据，如果存在则更新
+  if (idx !== -1) {
+    nodes.value[idx].data = {
+      ...nodes.value[idx].data,
+      ...node_data,
+    }
+
+    // 检测节点类型是否为意图识别，如果是则同步更新edges边信息
+    if ('classes' in node_data) {
+      // 提取意图世界节点中存在的source_handle_id列表
+      const source_handle_ids = node_data.classes.map((item: any) => item.source_handle_id)
+      const cloneEdges = cloneDeep(store.draftGraph.edges)
+
+      // 循环遍历所有边并剔除
+      for (let i = cloneEdges.length - 1; i >= 0; i--) {
+        const edge = cloneEdges[i]
+        if (edge.source === node_data.id && source_handle_ids.indexOf(edge.sourceHandle) === -1) {
+          // 分类被剔除，则删除对应的边信息
+          cloneEdges.splice(i, 1)
+        }
+      }
+
+      // 重新赋值edges信息
+      store.draftGraph.edges = cloneEdges
+    }
+  }
+
+  if (store.workflow && store.workflow.id && flowInstance.value) {
+    store.updateDraftGraph(store.workflow?.id, {
+      edges: store.draftGraph.edges,
+      nodes: store.draftGraph.nodes,
+    })
+  }
+}
+
+const handleCloseNodeInfo = () => {
+  selectNode.value = null
+  nodeInfoVisible.value = false
+}
+
+const handleDocumentClick = () => {}
+
+const handleDebugClick = () => {
+  selectNode.value = null
+  nodeInfoVisible.value = false
+  debugModelVisible.value = true
+}
+
 onMounted(async () => {
+  document.addEventListener('click', handleDocumentClick)
   await fetchData()
   isInit.value = false
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -193,7 +269,7 @@ onMounted(async () => {
     <!-- 顶部导航 -->
     <WorkflowHeader :header-loading="headerLoading" />
     <!-- 工作流图 -->
-    <div class="flex-1">
+    <div class="flex-1 relative">
       <a-spin :loading="loading" class="w-full h-full">
         <vue-flow
           v-model:nodes="store.draftGraph.nodes"
@@ -208,14 +284,16 @@ onMounted(async () => {
           :connection-mode="ConnectionMode.Strict"
           @nodes-change="onNodesChange"
           @pane-click.prevent="handlePaneClick"
+          @node-click="handleNodeClick"
+          @edge-click="handleEdgeClick"
           @viewport-change="handleViewportChange"
           @edge-mouse-enter="handleEdgeMouseEnter"
           @edge-mouse-leave="handleEdgeMouseLeave"
           @node-mouse-enter="handleNodeMouseEnter"
           @node-mouse-leave="handleNodeMouseLeave"
-          @update:edges="handleUpdate"
-          @update:nodes="handleUpdate"
-          @node-drag-stop="handleUpdate"
+          @update:edges="handleUpdateGraph"
+          @update:nodes="handleUpdateGraph"
+          @node-drag-stop="handleUpdateGraph"
         >
           <!-- 背景 -->
           <background variant="dots" :size="1.2" :gap="20" />
@@ -240,6 +318,7 @@ onMounted(async () => {
             :flow-instance="flowInstance"
             :vue-flow-ref="vueFlowRef"
             :zoom-value="zoomValue"
+            @debug-click="handleDebugClick"
           />
           <!-- 自定义边 -->
           <template #edge-custom="edgeProps">
@@ -251,6 +330,21 @@ onMounted(async () => {
           </template>
         </vue-flow>
       </a-spin>
+      <DebugModel v-model:visible="debugModelVisible" />
+      <StartNodeInfo
+        v-if="selectNode && selectNode.type == 'start'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <DatasetRetrievalNodeInfo
+        v-if="selectNode && selectNode.type == 'dataset_retrieval'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
     </div>
 
     <!-- 工作流信息弹窗（更新工作流） -->

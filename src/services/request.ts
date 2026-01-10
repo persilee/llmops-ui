@@ -214,6 +214,11 @@ export const ssePost = async (
   // 发起fetch请求并处理响应流
   const resp = await globalThis.fetch(urlWithPrefix, options as RequestInit)
 
+  const contentType = resp.headers.get('Content-Type')
+  if (contentType?.includes('application/json')) {
+    return await resp.json()
+  }
+
   return await handleStream(resp, onData)
 }
 

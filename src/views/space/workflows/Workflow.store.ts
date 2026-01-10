@@ -1,5 +1,6 @@
 import WorkFlowApi from '@/services/api/workflow'
 import type { GetWorkflowsWithPage } from '@/services/api/workflow/types'
+import type { GraphEdge, GraphNode } from '@vue-flow/core'
 import { defineStore } from 'pinia'
 import { markRaw, ref } from 'vue'
 import CodeNode from './components/nodes/CodeNode.vue'
@@ -44,7 +45,7 @@ export const useWorkflowStore = defineStore(
             return {
               ...edge,
               animated: true,
-              style: { fill: 'none' },
+              style: { fill: 'none', strokeWidth: 2, stroke: '#9ca3af' },
               type: 'custom',
             }
           }),
@@ -84,6 +85,134 @@ export const useWorkflowStore = defineStore(
       } finally {
         loading.value = false
       }
+    }
+
+    /**
+     * 构建图的逆邻接表
+     * @param edges 图的边集合，每条边包含源节点和目标节点信息
+     * @returns 返回一个Map，其中key是节点ID，value是该节点的所有前置节点ID数组
+     */
+    const buildReverseAdjList = (edges: GraphEdge[]): Map<string, string[]> => {
+      // 初始化逆邻接表，用于存储每个节点的所有前置节点
+      const reverseAdjList = new Map<string, string[]>()
+
+      // 遍历所有边，构建逆邻接关系
+      edges.forEach((edge) => {
+        // 如果目标节点还未在逆邻接表中，则初始化其前置节点数组
+        if (!reverseAdjList.has(edge.target)) {
+          reverseAdjList.set(edge.target, [])
+        }
+        // 将当前边的源节点添加到目标节点的前置节点列表中
+        reverseAdjList.get(edge.target)?.push(edge.source)
+      })
+
+      return reverseAdjList
+    }
+
+    /**
+     * 获取指定节点的所有前置节点
+     * @param reverseAdjList 图的逆邻接表，key为节点ID，value为该节点的所有前置节点ID数组
+     * @param targetNodeId 目标节点ID
+     * @returns 返回目标节点的所有前置节点ID数组
+     */
+    const getPredecessorsByNodeId = (
+      reverseAdjList: Map<string, string[]>,
+      targetNodeId: string,
+    ): string[] => {
+      // 创建一个Set集合，用于记录已经访问过的节点，避免重复访问和循环
+      const visited = new Set<string>()
+
+      // 创建一个数组，用于存储找到的所有前置节点
+      const predecessors: string[] = []
+
+      /**
+       * 深度优先搜索函数，用于递归遍历节点
+       * @param nodeId 当前正在访问的节点ID
+       */
+      const dfs = (nodeId: string): void => {
+        // 如果当前节点未被访问过
+        if (!visited.has(nodeId)) {
+          // 将当前节点标记为已访问
+          visited.add(nodeId)
+
+          // 如果当前节点不是目标节点，则将其添加到前置节点列表中
+          if (nodeId !== targetNodeId) {
+            predecessors.push(nodeId)
+          }
+
+          // 获取当前节点的所有前置节点（即逆邻接表中的邻居节点）
+          const neighbors = reverseAdjList.get(nodeId) || []
+          // 递归访问每个前置节点
+          neighbors.forEach((neighbor) => {
+            dfs(neighbor)
+          })
+        }
+      }
+
+      // 从目标节点开始，启动深度优先搜索
+      dfs(targetNodeId)
+
+      // 返回找到的所有前置节点
+      return predecessors
+    }
+
+    /**
+     * 获取工作流中可引用的变量列表
+     * @param nodes 工作流中的所有节点
+     * @param edges 工作流中的所有边
+     * @param target_node_id 目标节点ID，需要获取该节点可引用的前置节点变量
+     * @returns 返回一个数组，包含所有可引用的变量信息，每个元素代表一个节点的变量组
+     *          格式为：[{ isGroup: boolean, label: string, options: Array }]
+     */
+    const getReferencedVariables = (
+      nodes: GraphNode[],
+      edges: GraphEdge[],
+      target_node_id: string,
+    ): Record<string, any>[] => {
+      // 构建逆邻接表，用于快速查找节点的前置节点
+      const reverseAdjList = buildReverseAdjList(edges)
+
+      // 获取当前节点的所有前置节点ID
+      const predecessors = getPredecessorsByNodeId(reverseAdjList, target_node_id)
+
+      // 根据前置节点ID筛选出对应的前置节点对象
+      const predecessorNodes = nodes.filter((node) => predecessors.includes(node.id))
+
+      // 初始化结果数组，用于存储所有可引用的变量
+      const options: any[] = []
+      predecessorNodes.forEach((node) => {
+        // 为每个前置节点创建变量组对象
+        const node_variables = {
+          isGroup: true, // 标记这是一个变量组
+          label: node.data.title, // 使用节点标题作为组名
+          options: [] as any, // 存储该节点的具体变量
+        }
+
+        // 根据节点类型处理变量：
+        // - 开始节点：处理输入变量
+        // - 其他节点：处理输出变量
+        if (node.type === 'start') {
+          // 处理开始节点的输入变量
+          node.data?.inputs.forEach((variable: any) => {
+            node_variables.options.push({
+              label: variable.name, // 变量显示名称
+              value: `${node.id}/${variable.name}`, // 变量唯一标识
+            })
+          })
+        } else {
+          // 处理其他节点的输出变量
+          node.data?.outputs.forEach((variable: any) => {
+            node_variables.options.push({
+              label: `${variable.name}`, // 变量显示名称
+              value: `${node.id}/${variable.name}`, // 变量唯一标识
+            })
+          })
+        }
+        // 将当前节点的变量组添加到结果数组
+        options.push(node_variables)
+      })
+
+      return options
     }
 
     const NOTE_TYPES = {
@@ -144,14 +273,14 @@ export const useWorkflowStore = defineStore(
         dataset_ids: [],
         retrieval_config: {
           retrieval_strategy: 'semantic',
-          k: 4,
+          k: 5,
           score: 0,
         },
         inputs: [
           {
             name: 'query',
             type: 'string',
-            value: { type: 'ref', content: { ref_node_id: '', ref_var_name: '' } },
+            value: { type: 'ref', content: '' },
           },
         ],
         outputs: [
@@ -221,6 +350,8 @@ export const useWorkflowStore = defineStore(
     }
 
     return {
+      NODE_DATA_MAP,
+      NOTE_TYPES,
       workflow,
       mode,
       isShowMap,
@@ -229,8 +360,9 @@ export const useWorkflowStore = defineStore(
       getWorkflow,
       getDraftGraph,
       updateDraftGraph,
-      NODE_DATA_MAP,
-      NOTE_TYPES,
+      buildReverseAdjList,
+      getPredecessorsByNodeId,
+      getReferencedVariables,
     }
   },
   {

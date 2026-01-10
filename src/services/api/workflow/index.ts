@@ -1,4 +1,4 @@
-import { get, post } from '@/services/request'
+import { get, post, ssePost } from '@/services/request'
 import type { PaginatorParams } from '@/services/types'
 import type {
   CreateWorkflowReq,
@@ -82,13 +82,22 @@ class WorkFlowApi {
 
   /**
    * 调试工作流
-   * @param workflowId 工作流ID
-   * @returns Promise对象
+   * @param params 参数对象
+   * @param params.workflowId 工作流ID
+   * @param params.req 调试请求参数
+   * @param params.onData 接收服务器发送事件的回调函数
+   * @returns Promise对象，返回调试结果
    */
-  static debugWorkflow(workflowId: string) {
-    return post({
-      url: `/workflows/${workflowId}/debug`,
-    })
+  static debugWorkflow({
+    workflowId,
+    req,
+    onData,
+  }: {
+    workflowId: string
+    req: Record<string, any>
+    onData: (event_response: { [key: string]: any }) => void
+  }) {
+    return ssePost(`/workflows/${workflowId}/debug`, { body: { ...req } }, onData)
   }
 
   /**

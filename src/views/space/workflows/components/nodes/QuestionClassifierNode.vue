@@ -8,11 +8,11 @@ const props = defineProps<NodeProps>()
 
 <template>
   <div
-    class="flex flex-col gap-3 rounded-xl p-3 bg-white shadow-xs hover:shadow-lg w-[360px] flow-node duration-160 group relative"
+    class="flex flex-col gap-1.5 rounded-xl py-3 px-4 bg-white shadow-xs hover:shadow-lg w-[360px] flow-node duration-160 group relative"
   >
-    <div class="flow-node__bg w-full h-[80px] absolute top-0 left-0 rounded-xl z-0"></div>
+    <div class="flow-node__bg w-full h-[160px] absolute top-0 left-0 rounded-xl z-0"></div>
     <!-- 节点标题信息 -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 mb-1">
       <a-avatar shape="square" :size="24" class="bg-green-700 rounded-lg flex-shrink-0">
         <icon-mind-mapping :size="16" />
       </a-avatar>

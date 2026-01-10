@@ -15,6 +15,7 @@ const props = defineProps<{
   vueFlowRef: HTMLElement | null
   zoomValue: number
 }>()
+const emits = defineEmits(['debugClick'])
 const mode = defineModel('mode', { type: String, default: 'mouse' })
 const imageLoading = ref(false)
 const isTriggerModeVisible = ref(false)
@@ -243,7 +244,12 @@ onBeforeUnmount(() => {
           </template>
         </a-trigger>
         <a-divider direction="vertical" />
-        <a-button type="text" class="rounded-md pl-1 pr-2" size="small">
+        <a-button
+          type="text"
+          class="rounded-md pl-1 pr-2"
+          size="small"
+          @click.stop="emits('debugClick')"
+        >
           <template #icon><icon-play-arrow-fill /></template>
           调试
         </a-button>
