@@ -143,8 +143,8 @@ watch(
         <!-- 顶部标题信息 -->
         <div class="flex items-center justify-between gap-3 mb-2">
           <!-- 左侧标题 -->
-          <div class="flex items-center gap-2 mb-1">
-            <a-avatar :size="30" shape="square" class="bg-red-700 rounded-lg flex-shrink-0">
+          <div class="flex items-center gap-1 mb-1">
+            <a-avatar :size="26" shape="square" class="bg-red-700 rounded-lg flex-shrink-0">
               <icon-filter />
             </a-avatar>
             <div class="text-gray-700 font-semibold text-base">结束节点</div>

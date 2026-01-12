@@ -157,7 +157,7 @@ onMounted(() => {})
       @click.stop
     >
       <div class="flow-node-info__bg w-full h-[120px] absolute top-0 left-0 rounded-xl z-0"></div>
-      <div class="z-10">
+      <div class="z-100 h-full">
         <!-- 顶部标题信息 -->
         <div class="flex items-center justify-between gap-3 mb-2">
           <!-- 左侧标题 -->
@@ -455,9 +455,5 @@ onMounted(() => {})
 :deep(textarea.arco-textarea) {
   font-size: 12px !important;
   color: #6a7282 !important;
-}
-
-:deep(.arco-select-dropdown .arco-select-option) {
-  font-size: 12px !important;
 }
 </style>

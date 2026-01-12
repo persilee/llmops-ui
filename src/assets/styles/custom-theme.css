@@ -34,3 +34,7 @@
   border-radius: 8px !important;
   filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.1)) !important;
 }
+
+.arco-select-dropdown .arco-select-option {
+  font-size: 12px !important;
+}

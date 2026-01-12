@@ -59,7 +59,23 @@ const props = defineProps<NodeProps>()
             </div>
           </div>
         </div>
-        <div v-if="!props.data?.inputs?.length" class="text-gray-500 text-xs px-0.5">-</div>
+        <div v-if="!props.data?.inputs?.length" class="text-gray-500 text-xs mt-1">暂无数据</div>
+      </div>
+    </div>
+    <div class="flex items-center py-2">
+      <div class="text-gray-700 text-xs font-semibold mr-2">模型</div>
+      <div class="flex items-center gap-1 text-xs">
+        <!-- 左侧图标 -->
+        <a-avatar
+          :size="16"
+          shape="square"
+          :image-url="`/language-models/${props.data.language_model_config.provider}/icon`"
+        />
+        <!-- 右侧名称 -->
+        <div class="text-gray-700">
+          {{ props.data.language_model_config.model }} ·
+          {{ (props.data.language_model_config.parameters.max_tokens / 1000).toFixed(1) }}k
+        </div>
       </div>
     </div>
     <!-- 提示词 -->
@@ -69,9 +85,10 @@ const props = defineProps<NodeProps>()
         <div class="text-xs font-semibold">提示词</div>
       </div>
       <!-- 内容 -->
-      <div class="text-xs text-gray-700 leading-5 line-clamp-3">
-        {{ props.data?.prompt ?? '暂无数据' }}
+      <div v-if="props.data?.prompt" class="text-xs text-gray-700 leading-5 line-clamp-3">
+        {{ props.data?.prompt }}
       </div>
+      <div v-else class="text-xs text-gray-500 leading-5 line-clamp-3">暂无数据</div>
     </div>
     <!-- 输出变量列表 -->
     <div class="flex flex-col items-start py-2">

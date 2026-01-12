@@ -132,7 +132,7 @@ watch(
             <div
               v-for="(input, idx) in form.inputs"
               :key="idx"
-              class="flex items-center justify-between border border-gray-200 py-1 pr-2 pl-1 rounded-md cursor-pointer hover:shadow-sm group duration-150"
+              class="flex items-center justify-between border border-gray-200 py-0.5 pr-2 pl-1 rounded-md cursor-pointer hover:shadow-sm group duration-150"
             >
               <div class="flex items-center gap-0.5">
                 <img src="@/assets/images/icon-var.svg" class="w-5.5 h-5.5" />

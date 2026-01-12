@@ -76,8 +76,6 @@ const handleRun = async () => {
       result.value = resp
     }
   } catch (error) {
-    // 错误处理：打印错误信息到控制台
-    console.log(error)
   } finally {
     // 无论成功失败，最后都要重置加载状态
     loading.value = false
