@@ -68,11 +68,11 @@ const props = defineProps<NodeProps>()
         <div class="text-xs font-semibold">关联知识库</div>
       </div>
       <!-- 关联知识库列表 -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 w-full">
         <div
           v-for="dataset in props.data?.meta?.datasets ?? []"
           :key="dataset.id"
-          class="flex items-center gap-2 text-xs"
+          class="flex items-center gap-2 text-xs bg-gray-50 border border-gray-100 p-1.5 rounded-md"
         >
           <!-- 左侧知识库图标 -->
           <a-avatar :size="16" shape="square" :image-url="dataset?.icon" />
@@ -105,7 +105,7 @@ const props = defineProps<NodeProps>()
       </div>
     </div>
     <!-- 大模型节点-连接句柄 -->
-    <NodeHandle type="source" :position="Position.Right" />
+    <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
     <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>

@@ -3,9 +3,10 @@ import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import { computed, onMounted, ref, watch, type PropType } from 'vue'
 
-import type { GetDatasetsWithPage } from '@/services/api/dataset/types'
-import { Message, type TextareaInstance } from '@arco-design/web-vue'
+import type { Dataset } from '@/services/api/apps/types'
+import { type TextareaInstance } from '@arco-design/web-vue'
 import { useWorkflowStore } from '../../Workflow.store'
+import AddDatasetModal from './AddDatasetModal.vue'
 
 // 1.定义自定义组件所需数据
 const props = defineProps({
@@ -13,7 +14,6 @@ const props = defineProps({
     type: Object as PropType<Record<string, any>> | null,
     default: () => {},
   },
-  loading: { type: Boolean, required: false, default: false },
 })
 const visible = defineModel('visible', { type: Boolean, default: false })
 const emits = defineEmits(['updateNode', 'closeNodeInfo'])
@@ -21,7 +21,6 @@ const datasetsModalVisible = ref(false)
 const form = ref<Record<string, any>>({})
 const { nodes, edges } = useVueFlow()
 const store = useWorkflowStore()
-const datasets = ref<GetDatasetsWithPage[]>([])
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
 
@@ -30,38 +29,15 @@ const inputRefOptions = computed(() => {
   return store.getReferencedVariables(cloneDeep(nodes.value), cloneDeep(edges.value), props.node.id)
 })
 
-// 3.定义滚动数据分页处理器
-const handleScroll = async (event: UIEvent) => {}
-
 // 4.定义取消关联知识库函数
 const removeDataset = (idx: number) => {
   form.value.datasets.splice(idx, 1)
+  handleUpdateNodeInfo()
 }
 
-// 5.知识库选择处理器
-const handleSelectDataset = (idx: number) => {
-  // 5.1 提取对应的知识库id
-  const dataset = datasets.value[idx]
-
-  // 5.2 检测id是否选中，如果是选中则删除
-  if (form.value.datasets.some((activateDataset: any) => activateDataset.id === dataset.id)) {
-    form.value.datasets = form.value.datasets.filter(
-      (activateDataset: any) => activateDataset.id !== dataset.id,
-    )
-  } else {
-    // 5.3 检测已关联的知识库数量
-    if (form.value.datasets.length >= 5) {
-      Message.warning('关联知识库已超过5个，无法继续关联')
-      return
-    }
-    // 5.4 添加数据到激活知识库列表
-    form.value.datasets.push({
-      id: dataset.id,
-      name: dataset.name,
-      icon: dataset.icon,
-      description: dataset.description,
-    })
-  }
+const updateNodeDatasets = (datasets: Dataset[]) => {
+  form.value.datasets = datasets
+  handleUpdateNodeInfo()
 }
 
 const handleClickDescription = () => {
@@ -200,7 +176,7 @@ onMounted(() => {})
           <a-button
             type="text"
             size="mini"
-            class="rounded-full hover:shadow-sm"
+            class="rounded-full bg-transparent hover:shadow-sm"
             @click="emits('closeNodeInfo')"
           >
             <template #icon>
@@ -405,20 +381,20 @@ onMounted(() => {})
               <div
                 v-for="(dataset, idx) in form.datasets"
                 :key="dataset.id"
-                class="flex items-center justify-between bg-white p-3 rounded-lg cursor-pointer hover:shadow-sm group border"
+                class="flex items-center justify-between bg-white px-2 py-1.5 rounded-lg cursor-pointer hover:shadow-sm hover:bg-gray-100 duration-150 group border border-gray-200"
               >
                 <!-- 左侧知识库信息 -->
                 <div class="flex items-center gap-2">
                   <!-- 图标 -->
                   <a-avatar
-                    :size="36"
+                    :size="30"
                     shape="square"
                     class="rounded flex-shrink-0"
                     :image-url="dataset.icon"
                   />
                   <!-- 名称与描述信息 -->
-                  <div class="flex flex-col flex-1 gap-1 h-9">
-                    <div class="text-gray-700 font-bold leading-[18px] line-clamp-1 break-all">
+                  <div class="flex flex-col flex-1 gap-1">
+                    <div class="text-gray-700 font-bold text-xs line-clamp-1 break-all">
                       {{ dataset.name }}
                     </div>
                     <div class="text-gray-500 text-xs line-clamp-1 break-all">
@@ -430,7 +406,7 @@ onMounted(() => {})
                 <a-button
                   size="mini"
                   type="text"
-                  class="hidden group-hover:block flex-shrink-0 ml-2 !text-red-700 rounded"
+                  class="hidden group-hover:block flex-shrink-0 ml-2 text-red-600 rounded"
                   @click="() => removeDataset(Number(idx))"
                 >
                   <template #icon>
@@ -463,6 +439,11 @@ onMounted(() => {})
         </a-form>
       </div>
     </div>
+    <AddDatasetModal
+      v-model:visible="datasetsModalVisible"
+      :node-datasets="form.datasets"
+      @update-node-datasets="updateNodeDatasets"
+    />
   </div>
 </template>
 

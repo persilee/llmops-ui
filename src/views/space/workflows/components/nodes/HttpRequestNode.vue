@@ -83,8 +83,8 @@ const props = defineProps<NodeProps>()
       </div>
     </div>
     <!-- Http节点-连接句柄 -->
-    <NodeHandle type="source" :position="Position.Right" />
-    <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
+    <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
+    <NodeHandle type="target" :position="Position.Left" />
   </div>
 </template>
 

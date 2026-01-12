@@ -10,7 +10,6 @@ const props = defineProps({
     type: Object as PropType<Record<string, any>> | null,
     default: () => {},
   },
-  loading: { type: Boolean, required: false, default: false },
 })
 const visible = defineModel('visible', { type: Boolean, default: false })
 const emits = defineEmits(['updateNode', 'closeNodeInfo'])
@@ -82,13 +81,13 @@ watch(
             <a-avatar shape="square" :size="26" class="bg-blue-700 rounded-lg flex-shrink-0">
               <icon-home />
             </a-avatar>
-            <div class="text-gray-700 font-semibold text-base">开始</div>
+            <div class="text-gray-700 font-semibold text-base">开始节点</div>
           </div>
           <!-- 右侧关闭按钮 -->
           <a-button
             type="text"
             size="mini"
-            class="rounded-full hover:shadow-sm"
+            class="rounded-full bg-transparent hover:shadow-sm"
             @click="emits('closeNodeInfo')"
           >
             <template #icon>

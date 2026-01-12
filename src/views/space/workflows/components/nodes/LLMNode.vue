@@ -92,7 +92,7 @@ const props = defineProps<NodeProps>()
       </div>
     </div>
     <!-- 边起点句柄位置在右侧 -->
-    <NodeHandle type="source" :position="Position.Right" />
+    <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
     <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>

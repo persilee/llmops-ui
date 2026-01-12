@@ -28,6 +28,7 @@ import HelperLines from './components/HelperLines.vue'
 
 import DebugModel from './components/DebugModel.vue'
 import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInfo.vue'
+import EndNodeInfo from './components/infos/EndNodeInfo.vue'
 import StartNodeInfo from './components/infos/StartNodeInfo.vue'
 import WorkflowHeader from './components/WorkflowHeader.vue'
 import WorkflowModel from './components/WorkflowModel.vue'
@@ -330,7 +331,9 @@ onBeforeUnmount(() => {
           </template>
         </vue-flow>
       </a-spin>
+      <!-- 调试面板 -->
       <DebugModel v-model:visible="debugModelVisible" />
+      <!-- 开始节点面板 -->
       <StartNodeInfo
         v-if="selectNode && selectNode.type == 'start'"
         v-model:visible="nodeInfoVisible"
@@ -338,8 +341,17 @@ onBeforeUnmount(() => {
         @close-node-info="handleCloseNodeInfo"
         @update-node="handleUpdateNode"
       />
+      <!-- 知识库面板 -->
       <DatasetRetrievalNodeInfo
         v-if="selectNode && selectNode.type == 'dataset_retrieval'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 结束节点 -->
+      <EndNodeInfo
+        v-if="selectNode && selectNode.type == 'end'"
         v-model:visible="nodeInfoVisible"
         :node="selectNode"
         @close-node-info="handleCloseNodeInfo"

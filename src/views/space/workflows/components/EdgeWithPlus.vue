@@ -76,7 +76,6 @@ onUnmounted(() => {
       <a-trigger
         v-model:popup-visible="isTriggerNodeVisible"
         trigger="click"
-        show-arrow
         :unmount-on-close="false"
         :popup-translate="[6, 0]"
         position="right"

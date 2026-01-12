@@ -11,13 +11,14 @@ interface GetHelperLinesResult {
 export function getHelperLines(
   change: NodePositionChange,
   nodes: GraphNode[],
-  distance = 5,
+  distance = 16,
 ): GetHelperLinesResult {
   const defaultResult = {
     horizontal: undefined,
     vertical: undefined,
     snapPosition: { x: undefined, y: undefined },
   }
+
   const nodeA = nodes.find((node) => node.id === change.id)
 
   if (!nodeA || !change.position) {
@@ -29,6 +30,8 @@ export function getHelperLines(
     right: change.position.x + ((nodeA.dimensions.width as number) ?? 0),
     top: change.position.y,
     bottom: change.position.y + ((nodeA.dimensions.height as number) ?? 0),
+    xCenter: change.position.x + ((nodeA.dimensions.width as number) ?? 0) / 2,
+    yCenter: change.position.y + ((nodeA.dimensions.height as number) ?? 0) / 2,
     width: (nodeA.dimensions.width as number) ?? 0,
     height: (nodeA.dimensions.height as number) ?? 0,
   }
@@ -36,7 +39,7 @@ export function getHelperLines(
   let horizontalDistance = distance
   let verticalDistance = distance
 
-  return nodes
+  const edgeResult = nodes
     .filter((node) => node.id !== nodeA.id)
     .reduce<GetHelperLinesResult>((result, nodeB) => {
       const nodeBBounds = {
@@ -44,6 +47,8 @@ export function getHelperLines(
         right: nodeB.position.x + ((nodeB.dimensions.width as number) ?? 0),
         top: nodeB.position.y,
         bottom: nodeB.position.y + ((nodeB.dimensions.height as number) ?? 0),
+        xCenter: nodeB.position.x + ((nodeB.dimensions.width as number) ?? 0) / 2,
+        yCenter: nodeB.position.y + ((nodeB.dimensions.height as number) ?? 0) / 2,
         width: nodeB.width ?? 0,
         height: nodeB.height ?? 0,
       }
@@ -162,6 +167,37 @@ export function getHelperLines(
         horizontalDistance = distanceTopBottom
       }
 
+      //
+      //  |‾‾‾‾‾‾‾‾‾‾‾|        |‾‾‾‾‾‾‾‾‾‾‾|
+      //  |     A     | ______ |     B     |
+      //  |___________|        |___________|
+      const distanceXCenter = Math.abs(nodeABounds.yCenter - nodeBBounds.yCenter)
+
+      if (distanceXCenter < horizontalDistance) {
+        result.snapPosition.y = nodeBBounds.yCenter - nodeABounds.height / 2
+        result.horizontal = nodeABounds.yCenter
+        horizontalDistance = distanceXCenter
+      }
+
+      //  |‾‾‾‾‾‾‾‾‾‾‾|
+      //  |     B     |
+      //  |___________|
+      //        |
+      //        |
+      //        |
+      //  |‾‾‾‾‾‾‾‾‾‾‾|
+      //  |     A     |
+      //  |___________|
+      const distanceYCenter = Math.abs(nodeABounds.xCenter - nodeBBounds.xCenter)
+
+      if (distanceYCenter < verticalDistance) {
+        result.snapPosition.x = nodeBBounds.xCenter - nodeABounds.width / 2
+        result.vertical = nodeABounds.xCenter
+        horizontalDistance = distanceYCenter
+      }
+
       return result
     }, defaultResult)
+
+  return edgeResult
 }

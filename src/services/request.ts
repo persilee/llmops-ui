@@ -1,7 +1,7 @@
 import { BASE_URL, TIME_OUT } from '@/config'
-import router from '@/router'
 import { useCredentialStore } from '@/stores/credential'
 import { Message } from '@arco-design/web-vue'
+import { useRouter } from 'vue-router'
 import { HttpCode } from './http-code'
 import type { BaseResponse } from './types'
 
@@ -117,7 +117,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
           else if (data.code === HttpCode.Unauthorized) {
             store.reset()
             Message.error('登录已过期，请重新登录')
-            router.push({ name: 'auth-login' })
+            useRouter().push({ name: 'auth-login' })
           }
           // 处理其他错误响应
           else {

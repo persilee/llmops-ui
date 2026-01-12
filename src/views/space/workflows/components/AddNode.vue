@@ -197,9 +197,10 @@ const addNode = (nodeType: string) => {
      * 5. 修复节点重叠
      */
     const node = findNode(props.nodeId)
+
     if (!node) return
 
-    xPosition = node.position.x + NODE_WIDTH + NODE_SPACING
+    xPosition = node.position.x + NODE_WIDTH
     yPosition = node.position.y
     const nodeId = v4()
     // 创建新节点并添加到图中

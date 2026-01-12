@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import router from '@/router'
 import DatasetApi from '@/services/api/dataset'
 import DocumentsApi from '@/services/api/dataset/documents'
 import type { GetDocumentsWithPage } from '@/services/api/dataset/documents/type'
@@ -9,7 +8,7 @@ import InputSearch from '@/views/components/InputSearch.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDatasetStore } from '../DatasetView.store'
 import DocumentModal from '../components/DocumentModal.vue'
 import DocumentTable from '../components/DocumentTable.vue'
@@ -42,6 +41,7 @@ const visible = ref(false)
 const hitVisible = ref(false)
 // 获取当前路由信息
 const route = useRoute()
+const router = useRouter()
 
 /**
  * 获取文档列表数据

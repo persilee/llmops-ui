@@ -153,13 +153,13 @@ watch(
                     v-if="input.type === 'string'"
                     v-model="form[input.name]"
                     placeholder="请输入参考值"
-                    class="!rounded-lg"
+                    class="rounded-md"
                   />
                   <a-input-number
                     v-else-if="['int', 'float'].includes(input.type)"
                     v-model="form[input.name]"
                     placeholder="请输入参考值"
-                    class="!rounded-lg"
+                    class="rounded-md"
                   />
                   <a-radio-group v-else-if="input.type === 'boolean'" v-model="form[input.name]">
                     <a-radio :value="true">是</a-radio>

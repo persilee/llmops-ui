@@ -16,12 +16,14 @@ const isTriggerNodeVisible = ref(false)
 const { getConnectedEdges } = useVueFlow()
 // 计算属性：判断是否显示添加按钮
 const isShowAdd = computed(() => {
-  // 如果没有节点ID，默认显示添加按钮
-  if (!props.nodeId) return true
+  // 如果没有节点ID，不做处理
+  if (!props.nodeId) return
   // 获取当前节点的所有连接边
   const connectedEdges = getConnectedEdges(props.nodeId)
-  // 检查是否存在连接到当前节点的边，如果不存在则显示添加按钮
-  return !connectedEdges.some((edge) => edge.targetNode.id === props.nodeId)
+  // 如果当前节点没有连接边，则显示添加按钮
+  if (connectedEdges.length == 0) return true
+  // 如果是 source 手柄, 则显示添加按钮
+  return props.type == 'source'
 })
 
 const handleDocumentClick = () => {
