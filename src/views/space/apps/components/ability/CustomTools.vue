@@ -5,6 +5,7 @@ import type { Paginator } from '@/services/types'
 import { formatDate } from '@/utils/format-util'
 import { typeMap } from '@/utils/util'
 import LoadingStatus from '@/views/components/LoadingStatus.vue'
+import { useWorkflowStore } from '@/views/space/workflows/Workflow.store'
 import { computed, useTemplateRef } from 'vue'
 import { useAppStore } from '../../AppView.store'
 
@@ -14,6 +15,7 @@ const props = defineProps<{
   loadMorLoading: boolean // 加载更多时的加载状态
   providers: GetAPIToolProvidersWithPage[] // 工具提供商列表
   paginator: Paginator // 分页信息
+  source?: string // 工具来源
 }>()
 
 // 当前选中的工具索引
@@ -22,7 +24,8 @@ const selectIndex = defineModel('selectIndex', { type: Number, default: -1 })
 const emit = defineEmits(['handleScroll', 'loadMore', 'addTool'])
 // 获取应用状态管理store
 const store = useAppStore()
-// 定义当前选中的工具提供商索引
+// 工作流状态管理store，用于管理工作流的创建和更新
+const workflowStore = useWorkflowStore()
 
 // 获取滚动容器的模板引用
 const scrollContainerRef = useTemplateRef('scrollContainer')
@@ -39,11 +42,26 @@ const showLoadMoreBtn = computed(() => {
 })
 
 /**
+ * 获取已添加的工具数量
+ * @param tool 待添加的工具对象
+ */
+const getSelectedToolCount = (tool: Tool) => {
+  return workflowStore.draftGraph.nodes.filter((node: any) => node.data?.meta?.tool?.id == tool.id)
+    .length
+}
+
+/**
  * 检查工具是否已被添加
  * @param tool 待检查的工具对象
  * @returns {boolean} 如果工具已被添加返回true，否则返回false
  */
 const isAdded = (tool: Tool) => {
+  if (props.source == 'workflow') {
+    return workflowStore.draftGraph.nodes.some((node: any) => {
+      return node.data?.meta?.tool?.id == tool.id
+    })
+  }
+
   return store
     .getExistingTools() // 获取已添加的工具列表
     .some((draftConfigTool: DraftConfigTool) => draftConfigTool.tool_id == tool.id) // 检查是否存在匹配的工具ID
@@ -169,6 +187,30 @@ const handleSelect = (idx: number) => {
                 >
                   <template #icon><icon-plus /></template>
                   添加
+                </a-button>
+                <a-button
+                  v-else-if="source == 'workflow'"
+                  type="outline"
+                  size="mini"
+                  class="border border-gray-200 bg-white text-blue-600 self-center"
+                  @click="emit('addTool', provider, tool)"
+                >
+                  <div class="flex items-center gap-1">
+                    <icon-plus /> 添加
+                    <a-badge
+                      :count="getSelectedToolCount(tool)"
+                      :dotStyle="{
+                        background: '#155dfc',
+                        color: '#fff',
+                        minWidth: '14px',
+                        height: '14px',
+                        fontSize: '8px',
+                        lineHeight: '14px',
+                        padding: '0px',
+                      }"
+                      class="mt-[1px]"
+                    />
+                  </div>
                 </a-button>
                 <a-button
                   v-else

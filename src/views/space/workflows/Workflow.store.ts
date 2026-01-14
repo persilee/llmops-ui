@@ -25,6 +25,7 @@ export const useWorkflowStore = defineStore(
       nodes: <any[]>[],
       edges: <any[]>[],
     })
+    const showedAddNode = ref('')
 
     const getWorkflow = async (workflowId: string) => {
       try {
@@ -255,7 +256,7 @@ export const useWorkflowStore = defineStore(
       tool: {
         title: '扩展插件',
         description: '调用插件广场或自定义API插件，支持能力扩展和复用',
-        tool_type: '',
+        type: '',
         provider_id: '',
         tool_id: '',
         params: {},
@@ -357,6 +358,7 @@ export const useWorkflowStore = defineStore(
       isShowMap,
       draftGraph,
       loading,
+      showedAddNode,
       getWorkflow,
       getDraftGraph,
       updateDraftGraph,

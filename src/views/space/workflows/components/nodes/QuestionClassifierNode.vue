@@ -42,7 +42,7 @@ const props = defineProps<NodeProps>()
       该节点暂未添加问题分类信息
     </div>
     <!-- 意图识别节点-连接句柄 -->
-    <NodeHandle type="target" :position="Position.Left" />
+    <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>
 

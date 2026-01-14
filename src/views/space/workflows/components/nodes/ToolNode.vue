@@ -13,10 +13,17 @@ const props = defineProps<NodeProps>()
     <div class="flow-node__bg w-full h-[160px] absolute top-0 left-0 rounded-xl z-0"></div>
     <!-- 节点标题信息 -->
     <div class="flex items-center gap-2 mb-1">
-      <a-avatar shape="square" :size="24" class="bg-orange-500 rounded-lg flex-shrink-0">
+      <a-avatar
+        v-if="props.data.meta?.provider?.icon"
+        :size="24"
+        shape="square"
+        class="rounded-lg flex-shrink-0 bg-transparent"
+        :image-url="props.data.meta?.provider?.icon"
+      />
+      <a-avatar v-else shape="square" :size="24" class="bg-orange-500 rounded-lg flex-shrink-0">
         <icon-tool :size="16" />
       </a-avatar>
-      <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
+      <div class="text-gray-700 font-semibold">{{ props.data.title }}</div>
     </div>
     <!-- 输入变量列表 -->
     <div class="flex flex-col items-start py-2">
@@ -56,12 +63,12 @@ const props = defineProps<NodeProps>()
             >
               引用 / {{ input.value.content.ref_var_name }}
             </div>
-            <div v-else class="text-gray-500 inline-block px-1 py-0.5">
+            <div v-else class="text-gray-500 inline-block py-0.5">
               {{ input.value.content }}
             </div>
           </div>
         </div>
-        <div v-if="!props.data?.inputs?.length" class="text-gray-500 text-xs px-0.5">暂无数据</div>
+        <div v-if="!props.data?.inputs?.length" class="text-gray-500 text-xs mt-1">暂无数据</div>
       </div>
     </div>
     <!-- 输出变量列表 -->
@@ -84,7 +91,7 @@ const props = defineProps<NodeProps>()
     </div>
     <!-- 工具节点-连接句柄 -->
     <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
-    <NodeHandle type="target" :position="Position.Left" />
+    <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>
 

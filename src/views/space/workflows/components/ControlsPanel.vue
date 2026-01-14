@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { useScreenshot, type ImageType } from '@/utils/el-to-image'
 import { Message } from '@arco-design/web-vue'
-import { Panel, type VueFlowStore } from '@vue-flow/core'
+import { Panel, useVueFlow, type VueFlowStore } from '@vue-flow/core'
 import dagre from 'dagre'
 import { cloneDeep } from 'lodash-es'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useWorkflowStore } from '../Workflow.store'
 import AddNode from './AddNode.vue'
 import ZoomDropdown from './ZoomDropdown.vue'
 
+const { onPaneClick, onNodeClick, onEdgeClick } = useVueFlow()
 const store = useWorkflowStore()
 const props = defineProps<{
   flowInstance: VueFlowStore | undefined
@@ -105,25 +106,30 @@ const autoLayout = () => {
   })
 }
 
-const handleDocumentClick = () => {
+const resetValue = () => {
   isTriggerModeVisible.value = false
   isTriggerImageVisible.value = false
   isTriggerNodeVisible.value = false
   isdisabledNodeVisible.value = false
 }
 
+onPaneClick(() => {
+  resetValue()
+})
+
+onNodeClick(() => {
+  resetValue()
+})
+
+onEdgeClick(() => {
+  resetValue()
+})
+
 const handleTriggerNodeVisibleChange = (v: boolean) => {
   if (v) {
     isdisabledNodeVisible.value = true
   }
 }
-
-onMounted(() => {
-  document.addEventListener('click', handleDocumentClick)
-})
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleDocumentClick)
-})
 </script>
 
 <template>
@@ -227,20 +233,26 @@ onBeforeUnmount(() => {
         <a-divider direction="vertical" />
         <a-trigger
           v-model:popup-visible="isTriggerNodeVisible"
-          trigger="hover"
+          trigger="click"
           :disabled="isdisabledNodeVisible"
           :unmount-on-close="false"
           :popup-translate="[0, -16]"
+          :click-outside-to-close="false"
           position="top"
           @popup-visible-change="handleTriggerNodeVisibleChange"
           @click.stop
         >
-          <a-button type="primary" class="rounded-md" size="small">
+          <a-button
+            type="primary"
+            class="rounded-md"
+            size="small"
+            @click="store.showedAddNode = 'bottomControlsPanel'"
+          >
             <template #icon><icon-plus /></template>
             添加节点
           </a-button>
           <template #content>
-            <AddNode v-model:visible="isTriggerNodeVisible" />
+            <AddNode v-model:visible="isTriggerNodeVisible" :id="'bottomControlsPanel'" />
           </template>
         </a-trigger>
         <a-divider direction="vertical" />

@@ -79,7 +79,7 @@ const props = defineProps<NodeProps>()
           <!-- 右侧知识库名称 -->
           <div class="text-gray-700">{{ dataset?.name }}</div>
         </div>
-        <div v-if="!props.data?.meta?.datasets?.length" class="text-gray-500 text-xs px-0.5">
+        <div v-if="!props.data?.meta?.datasets?.length" class="text-gray-500 text-xs mt-1">
           暂无数据
         </div>
       </div>

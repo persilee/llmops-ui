@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { Handle, useVueFlow, type HandleType, type Position } from '@vue-flow/core'
+import { Handle, Position, useVueFlow, type HandleType } from '@vue-flow/core'
 
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useWorkflowStore } from '../../Workflow.store'
 import AddNode from '../AddNode.vue'
 
 // 定义组件的props类型
 const props = defineProps<{
   type: HandleType
   position: Position
-  nodeId?: string
+  nodeId: string
 }>()
 const isTriggerNodeVisible = ref(false)
+const store = useWorkflowStore()
 
 // 从VueFlow中获取获取连接边的方法
-const { getConnectedEdges } = useVueFlow()
+const { getConnectedEdges, onEdgeClick, onNodeClick, onPaneClick } = useVueFlow()
 // 计算属性：判断是否显示添加按钮
 const isShowAdd = computed(() => {
   // 如果没有节点ID，不做处理
@@ -25,16 +27,16 @@ const isShowAdd = computed(() => {
   // 如果是 source 手柄, 则显示添加按钮
   return props.type == 'source'
 })
-
-const handleDocumentClick = () => {
+onEdgeClick(() => {
   isTriggerNodeVisible.value = false
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleDocumentClick)
 })
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleDocumentClick)
+
+onNodeClick(() => {
+  isTriggerNodeVisible.value = false
+})
+
+onPaneClick(() => {
+  isTriggerNodeVisible.value = false
 })
 </script>
 
@@ -42,17 +44,17 @@ onBeforeUnmount(() => {
   <a-trigger
     v-model:popup-visible="isTriggerNodeVisible"
     trigger="click"
-    show-arrow
+    :click-outside-to-close="false"
     :unmount-on-close="false"
-    :popup-translate="[6, 0]"
-    position="right"
+    :popup-translate="position == Position.Right ? [6, 0] : [-6, 0]"
+    :position="position"
     @click.stop
   >
     <handle
       :type="type"
       :position="position"
       :class="`w-3 h-3 bg-blue-700 flex border-2 border-white shadow-sm items-center justify-center group-hover:w-4 group-hover:h-4 group-hover:border-2 group-hover:shadow-md duration-360  ${isShowAdd ? 'hover:h-6.5 hover:w-6.5 handle hover:border-3 hover:shadow-lg pointer-events-auto' : 'pointer-events-none cursor-default'}`"
-      @click.stop
+      @click.stop="store.showedAddNode = nodeId + type"
     >
       <icon-plus
         v-if="isShowAdd"
@@ -64,7 +66,12 @@ onBeforeUnmount(() => {
       />
     </handle>
     <template #content>
-      <AddNode v-model:visible="isTriggerNodeVisible" :add-node-type="'handle'" :node-id="nodeId" />
+      <AddNode
+        v-model:visible="isTriggerNodeVisible"
+        :add-node-type="'handle'"
+        :node-id="nodeId"
+        :id="nodeId + type"
+      />
     </template>
   </a-trigger>
 </template>

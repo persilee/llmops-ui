@@ -19,7 +19,7 @@ import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/minimap/dist/style.css'
 import { cloneDeep, debounce } from 'lodash-es'
 import { v4 } from 'uuid'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import ControlsPanel from './components/ControlsPanel.vue'
@@ -31,6 +31,7 @@ import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInf
 import EndNodeInfo from './components/infos/EndNodeInfo.vue'
 import LLMNodeInfo from './components/infos/LLMNodeInfo.vue'
 import StartNodeInfo from './components/infos/StartNodeInfo.vue'
+import ToolNodeInfo from './components/infos/ToolNodeInfo.vue'
 import WorkflowHeader from './components/WorkflowHeader.vue'
 import WorkflowModel from './components/WorkflowModel.vue'
 import { useWorkflowStore } from './Workflow.store'
@@ -247,8 +248,6 @@ const handleCloseNodeInfo = () => {
   nodeInfoVisible.value = false
 }
 
-const handleDocumentClick = () => {}
-
 const handleDebugClick = () => {
   selectNode.value = null
   nodeInfoVisible.value = false
@@ -256,13 +255,8 @@ const handleDebugClick = () => {
 }
 
 onMounted(async () => {
-  document.addEventListener('click', handleDocumentClick)
   await fetchData()
   isInit.value = false
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -342,7 +336,7 @@ onBeforeUnmount(() => {
         @close-node-info="handleCloseNodeInfo"
         @update-node="handleUpdateNode"
       />
-      <!-- 知识库详情-->
+      <!-- 知识库节点详情-->
       <DatasetRetrievalNodeInfo
         v-if="selectNode && selectNode.type == 'dataset_retrieval'"
         v-model:visible="nodeInfoVisible"
@@ -350,7 +344,7 @@ onBeforeUnmount(() => {
         @close-node-info="handleCloseNodeInfo"
         @update-node="handleUpdateNode"
       />
-      <!-- 大语言模型详情 -->
+      <!-- 大语言模型节点详情 -->
       <LLMNodeInfo
         v-if="selectNode && selectNode.type == 'llm'"
         v-model:visible="nodeInfoVisible"
@@ -358,7 +352,15 @@ onBeforeUnmount(() => {
         @close-node-info="handleCloseNodeInfo"
         @update-node="handleUpdateNode"
       />
-      <!-- 结束详情 -->
+      <!-- 工具节点详情 -->
+      <ToolNodeInfo
+        v-if="selectNode && selectNode.type == 'tool'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 结束节点详情 -->
       <EndNodeInfo
         v-if="selectNode && selectNode.type == 'end'"
         v-model:visible="nodeInfoVisible"

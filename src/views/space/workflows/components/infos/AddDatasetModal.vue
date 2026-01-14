@@ -319,10 +319,7 @@ onUnmounted(() => {
             <img :src="dataset.icon" class="w-10 h-10 rounded-lg bg-white flex-shrink-0" />
             <div class="flex-1 flex flex-col min-w-0">
               <div class="text-gray-600 font-bold">{{ dataset.name }}</div>
-              <div class="text-gray-600 text-xs mt-1 line-clamp-1 overflow-ellipsis">
-                {{ dataset.description }}
-              </div>
-              <div class="flex gap-2 mt-2.5">
+              <div class="flex gap-2 mt-0.5">
                 <a-popover
                   @popup-visible-change="(visible: boolean) => getDocuments(visible, dataset)"
                 >
@@ -379,11 +376,16 @@ onUnmounted(() => {
           />
         </div>
         <!-- 底部按钮 -->
-        <div class="flex justify-end items-end mt-4">
-          <a-button type="outline" class="border-gray-300 text-gray-500 mr-3" @click="handleClose"
-            >取消</a-button
-          >
-          <a-button :loading="loading" type="primary" @click="handleSave">保存</a-button>
+        <div class="flex justify-between items-center mt-4">
+          <div class="text-gray-800 font-bold text-[15px]">
+            {{ selectedDatasets.length }} 个知识库被选中
+          </div>
+          <div class="">
+            <a-button type="outline" class="border-gray-300 text-gray-500 mr-3" @click="handleClose"
+              >取消</a-button
+            >
+            <a-button :loading="loading" type="primary" @click="handleSave">保存</a-button>
+          </div>
         </div>
       </div>
     </a-spin>

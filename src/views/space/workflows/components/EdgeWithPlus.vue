@@ -7,16 +7,18 @@ import {
   type EdgeProps,
 } from '@vue-flow/core'
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { useWorkflowStore } from '../Workflow.store'
 import AddNode from './AddNode.vue'
 
 // 定义组件属性
 const props = defineProps<EdgeProps & { highlighted: boolean }>()
 const isTriggerNodeVisible = ref(false)
+const store = useWorkflowStore()
 
 const isHovered = defineModel('isHovered', { type: Boolean, default: false })
 
-// 获取vue-flow实例
-const { addNodes, addEdges } = useVueFlow()
+// 解构出 onEdgeClick, onNodeClick, onPaneClick 方法，用于处理点击事件
+const { onEdgeClick, onNodeClick, onPaneClick } = useVueFlow()
 
 // 计算edge路径和中心位置
 const path = computed(() =>
@@ -37,6 +39,22 @@ const handleMouseOver = () => {
 const handleMouseOut = () => {
   if (isTriggerNodeVisible.value) return
   isHovered.value = false
+}
+
+onEdgeClick(() => {
+  isTriggerNodeVisible.value = false
+})
+
+onNodeClick(() => {
+  isTriggerNodeVisible.value = false
+})
+
+onPaneClick(() => {
+  isTriggerNodeVisible.value = false
+})
+
+const handleClick = (e: MouseEvent) => {
+  store.showedAddNode = props.id
 }
 
 const stop = watch(
@@ -76,6 +94,7 @@ onUnmounted(() => {
       <a-trigger
         v-model:popup-visible="isTriggerNodeVisible"
         trigger="click"
+        :click-outside-to-close="false"
         :unmount-on-close="false"
         :popup-translate="[6, 0]"
         position="right"
@@ -84,6 +103,7 @@ onUnmounted(() => {
         <a-button
           type="text"
           :class="`w-[26px] h-[26px] rounded-full bg-blue-700 border-2 border-white shadow-md hover:transform hover:scale-130 duration-300`"
+          @click="handleClick"
         >
           <template #icon>
             <icon-plus
@@ -100,6 +120,7 @@ onUnmounted(() => {
             v-model:visible="isTriggerNodeVisible"
             :add-node-type="'edge'"
             :edge-id="props.id"
+            :id="props.id"
           />
         </template>
       </a-trigger>

@@ -84,7 +84,7 @@ const props = defineProps<NodeProps>()
     </div>
     <!-- 代码节点-连接句柄 -->
     <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
-    <NodeHandle type="target" :position="Position.Left" />
+    <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
   </div>
 </template>
 

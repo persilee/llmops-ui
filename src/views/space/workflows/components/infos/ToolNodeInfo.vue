@@ -1,42 +1,34 @@
 <script setup lang="ts">
-import { type TextareaInstance } from '@arco-design/web-vue'
+import type { TextareaInstance } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import { computed, ref, watch, type PropType } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
-import LLMModelConfig from './LLMModelConfig.vue'
 
-// 1.定义自定义组件所需数据
+// 定义自定义组件所需数据
 const props = defineProps({
   node: {
     type: Object as PropType<Record<string, any>> | null,
     default: () => {},
   },
 })
-const emits = defineEmits(['updateNode', 'closeNodeInfo'])
+const emits = defineEmits(['closeNodeInfo', 'updateNode'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 const { nodes, edges } = useVueFlow()
-const form = ref<Record<string, any>>({})
 const store = useWorkflowStore()
+const form = ref<Record<string, any>>({})
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
+const defaultToolMeta = {
+  type: 'api_tool',
+  provider: { id: '', name: '', label: '', icon: '', description: '' },
+  tool: { id: '', name: '', label: '', description: '', params: {} },
+}
 
 // 定义节点可引用的变量选项
 const inputRefOptions = computed(() => {
   return store.getReferencedVariables(cloneDeep(nodes.value), cloneDeep(edges.value), props.node.id)
 })
-
-// 定义添加表单输入字段函数
-const addFormInputField = () => {
-  // [功能升级] 内容默认设置为null避免字段类型切换错误
-  form.value?.inputs.push({ name: '', type: 'string', content: null, ref: '' })
-}
-
-// 定义移除表单输入字段函数
-const removeFormInputField = (idx: number) => {
-  form.value?.inputs?.splice(idx, 1)
-  handleUpdateNodeInfo()
-}
 
 const handleClickDescription = () => {
   descriptionVisible.value = true
@@ -54,26 +46,34 @@ const handleUpdateNodeInfo = () => {
   const node = nodeToFrom(props.node)
   if (isEqual(node, form.value)) return
 
-  // 4.2 深度拷贝表单数据内容
+  // 深度拷贝表单数据内容
   const cloneInputs = cloneDeep(form.value.inputs)
+  const cloneParams = cloneDeep(form.value.params)
+  const params: Record<string, any> = {}
+  cloneParams.forEach((param: Record<string, any>) => {
+    params[param.key] = param.value
+  })
 
-  // 4.3 数据校验通过，通过事件触发数据更新
+  // 数据校验通过，通过事件触发数据更新
   emits('updateNode', {
     id: props.node.id,
     title: form.value.title,
     description: form.value.description,
-    prompt: form.value.prompt,
-    model_config: form.value.model_config,
-    inputs: cloneInputs.map((input: any) => {
+    type: form.value.tool?.type,
+    provider_id: form.value.tool?.provider.id,
+    tool_id: form.value.tool?.tool.name,
+    meta: cloneDeep(form.value.tool),
+    params: params, // 将列表转换成字典
+    inputs: cloneInputs.map((input: Record<string, any>) => {
       return {
         name: input.name,
         description: '',
         required: true,
-        type: input.type === 'ref' ? 'string' : input.type,
+        type: input.value_type === 'ref' ? 'string' : input.type,
         value: {
-          type: input.type === 'ref' ? 'ref' : 'literal',
+          type: input.value_type === 'ref' ? 'ref' : 'literal',
           content:
-            input.type === 'ref'
+            input.value_type === 'ref'
               ? {
                   ref_node_id: input.ref.split('/')[0] || '',
                   ref_var_name: input.ref.split('/')[1] || '',
@@ -89,22 +89,25 @@ const handleUpdateNodeInfo = () => {
 
 const nodeToFrom = (newNode: any) => {
   const cloneInputs = cloneDeep(newNode.data.inputs)
-
+  const cloneParams = cloneDeep(newNode.data.params)
   return {
     id: newNode.id,
     type: newNode.type,
     title: newNode.data.title,
     description: newNode.data.description,
-    prompt: newNode.data.prompt,
-    model_config: newNode.data.language_model_config,
+    tool: cloneDeep(newNode.data.meta) ?? defaultToolMeta,
+    params: Object.entries(cloneParams).map(([key, value]) => ({
+      key: key,
+      value: value,
+    })), // 将字典转换成列表
     inputs: cloneInputs.map((input: any) => {
-      // 5.1 计算引用的变量值信息
+      // 计算引用的变量值信息
       const ref =
         input.value.type === 'ref'
           ? `${input.value.content.ref_node_id}/${input.value.content.ref_var_name}`
           : ''
 
-      // 5.2 判断引用的变量值信息是否存在，如果不存在则设置为空
+      // 判断引用的变量值信息是否存在，如果不存在则设置为空
       let refExists = false
       if (input.value.type === 'ref') {
         for (const inputRefOption of inputRefOptions.value) {
@@ -118,16 +121,17 @@ const nodeToFrom = (newNode: any) => {
       }
       return {
         name: input.name, // 变量名
-        type: input.value.type === 'literal' ? input.type : 'ref', // 数据类型(涵盖ref/string/int/float/boolean
+        type: input.type,
+        value_type: input.value.type === 'literal' ? input.type : 'ref', // 数据类型(涵盖ref/string/int/float/boolean
         content: input.value.type === 'literal' ? input.value.content : '', // 变量值内容
         ref: input.value.type === 'ref' && refExists ? ref : '', // 变量引用信息，存储引用节点id+引用变量名
       }
     }),
-    outputs: [{ name: 'output', type: 'string', value: { type: 'generated', content: '' } }],
+    outputs: [{ name: 'text', type: 'string', value: { type: 'generated', content: '' } }],
   }
 }
 
-// 5.监听数据，将数据映射到表单模型上
+// 监听数据，将数据映射到表单模型上
 watch(
   () => props.node,
   (newNode) => {
@@ -150,8 +154,20 @@ watch(
         <div class="flex items-center justify-between gap-3 mb-2">
           <!-- 左侧标题 -->
           <div class="flex items-center gap-1 flex-1">
-            <a-avatar shape="square" :size="26" class="bg-sky-500 rounded-lg flex-shrink-0">
-              <icon-language :size="16" />
+            <a-avatar
+              v-if="form?.tool?.provider?.icon"
+              :size="26"
+              shape="square"
+              class="rounded flex-shrink-0 bg-transparent"
+              :image-url="form?.tool?.provider?.icon"
+            />
+            <a-avatar
+              v-else
+              :size="26"
+              shape="square"
+              class="bg-orange-500 rounded-lg flex-shrink-0"
+            >
+              <icon-tool />
             </a-avatar>
             <a-input
               v-model="form.title"
@@ -177,7 +193,7 @@ watch(
           ref="descriptionRef"
           v-show="descriptionVisible"
           :auto-size="{ minRows: 3, maxRows: 5 }"
-          v-model="form.description"
+          v-model="form.tool.tool.description"
           class="rounded-lg bg-transparent"
           placeholder="输入描述..."
           @blur="handleUpdateDesc"
@@ -187,28 +203,12 @@ watch(
           class="text-xs text-gray-500"
           @click="handleClickDescription"
         >
-          {{ form.description }}
+          {{ form.tool.tool.description || '添加描述' }}
         </div>
         <!-- 分隔符 -->
         <a-divider class="my-3.5" />
         <!-- 表单信息 -->
         <a-form size="mini" :model="form" layout="vertical">
-          <!-- 模型选择 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">语言模型配置</div>
-                <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧选择模型 -->
-              <LLMModelConfig v-model:model_config="form.model_config" />
-            </div>
-          </div>
-          <a-divider class="my-4" />
           <!-- 输入参数 -->
           <div class="flex flex-col gap-2">
             <!-- 标题&操作按钮 -->
@@ -222,66 +222,35 @@ watch(
                   <icon-question-circle />
                 </a-tooltip>
               </div>
-              <!-- 右侧新增字段按钮 -->
-              <a-button
-                type="text"
-                size="mini"
-                class="!text-gray-700"
-                @click="() => addFormInputField()"
-              >
-                <template #icon>
-                  <icon-plus />
-                </template>
-              </a-button>
             </div>
             <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[30%]">参数名</div>
-              <div class="w-[25%]">类型</div>
-              <div class="w-[37%]">值</div>
-              <div class="w-[8%]"></div>
+            <div class="flex items-center gap-1 text-xs text-gray-500 mb-1 mt-1">
+              <div class="w-[20%]">参数名</div>
+              <div class="w-[35%]">类型</div>
+              <div class="w-[45%]">值</div>
             </div>
             <!-- 循环遍历字段列表 -->
             <div v-for="(input, idx) in form?.inputs" :key="idx" class="flex items-center gap-1">
-              <div class="w-[30%] flex-shrink-0">
-                <a-input
-                  v-model="input.name"
-                  size="mini"
-                  placeholder="请输入参数名"
-                  class="!px-2"
-                  @blur="handleUpdateNodeInfo"
-                />
+              <div class="w-[20%] flex-shrink-0">
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                  <div class="">{{ input.name }}</div>
+                </div>
               </div>
-              <div class="w-[25%] flex-shrink-0">
+              <div class="w-[30%] flex-shrink-0">
                 <a-select
                   size="mini"
-                  v-model="input.type"
+                  v-model="input.value_type"
                   class="px-2"
-                  @change="handleUpdateNodeInfo"
                   :options="[
                     { label: '引用', value: 'ref' },
-                    { label: 'STRING', value: 'string' },
-                    { label: 'INT', value: 'int' },
-                    { label: 'FLOAT', value: 'float' },
-                    { label: 'BOOLEAN', value: 'boolean' },
-                    { label: 'LIST[STRING]', value: 'list[string]' },
-                    { label: 'LIST[INT]', value: 'list[int]' },
-                    { label: 'LIST[FLOAT]', value: 'list[float]' },
-                    { label: 'LIST[BOOLEAN]', value: 'list[boolean]' },
+                    { label: '直接输入', value: 'literal' },
                   ]"
+                  @change="handleUpdateNodeInfo"
                 />
               </div>
-              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                <a-input-tag
-                  v-if="input.type.startsWith('list')"
-                  size="mini"
-                  v-model="input.content"
-                  :default-value="[]"
-                  placeholder="请输入参数值，按回车结束"
-                  @blur="handleUpdateNodeInfo"
-                />
+              <div class="w-[50%] flex-shrink-0 flex items-center gap-1">
                 <a-input
-                  v-else-if="input.type !== 'ref'"
+                  v-if="input.value_type !== 'ref'"
                   size="mini"
                   v-model="input.content"
                   placeholder="请输入参数值"
@@ -297,41 +266,44 @@ watch(
                   @change="handleUpdateNodeInfo"
                 />
               </div>
-              <div class="w-[8%] text-right">
-                <icon-minus-circle
-                  class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
-                  @click="() => removeFormInputField(Number(idx))"
-                />
-              </div>
             </div>
             <!-- 空数据状态 -->
             <a-empty v-if="form?.inputs.length <= 0" class="my-4">该节点暂无输入数据</a-empty>
           </div>
           <a-divider class="my-4" />
-          <!-- 提示词 -->
+          <!-- PARAMS参数 -->
           <div class="flex flex-col gap-2">
             <!-- 标题&操作按钮 -->
             <div class="flex items-center justify-between">
               <!-- 左侧标题 -->
               <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">提示词</div>
-                <a-tooltip
-                  content="作为人类消息传递给大语言模型，可以使用{{参数名}}插入引用/创建的变量。"
-                >
+                <div class="">PARAMS参数</div>
+                <a-tooltip content="内置工具使用的PARAMS参数，用于初始化内置工具。">
                   <icon-question-circle />
                 </a-tooltip>
               </div>
             </div>
-            <!-- 提示词输入框 -->
-            <a-form-item field="prompt" hide-label hide-asterisk required>
-              <a-textarea
-                :auto-size="{ minRows: 5, maxRows: 10 }"
-                v-model="form.prompt"
-                placeholder="编写大模型的提示词，使大模型实现对应的功能。通过插入{{参数名}}可以引用对应的参数值。"
-                class="rounded-lg bg-gray-100"
-                @blur="handleUpdateNodeInfo"
-              />
-            </a-form-item>
+            <!-- 字段名 -->
+            <div
+              v-if="form?.params?.length > 0"
+              class="flex items-center gap-1 text-xs text-gray-500 mb-2"
+            >
+              <div class="w-[20%]">参数名</div>
+              <div class="w-[80%]">值</div>
+            </div>
+            <!-- 循环遍历字段列表 -->
+            <div v-for="(param, idx) in form?.params" :key="idx" class="flex items-center gap-1">
+              <div class="w-[20%] flex-shrink-0">
+                <div class="flex items-center gap-1 text-xs text-gray-500">
+                  <div class="">{{ param.key }}</div>
+                </div>
+              </div>
+              <div class="w-[80%] flex-shrink-0">
+                <a-input size="mini" v-model="param.value" placeholder="请输入参数值" />
+              </div>
+            </div>
+            <!-- 空数据状态 -->
+            <a-empty v-if="form?.params.length <= 0" class="my-4">该工具暂无PARAMS数据</a-empty>
           </div>
           <a-divider class="my-4" />
           <!-- 输出参数 -->
@@ -344,7 +316,9 @@ watch(
             <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
               <div class="flex items-center gap-2">
                 <div class="text-gray-700">{{ output.name }}</div>
-                <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded">{{ output.type }}</div>
+                <div class="text-gray-500 text-xs bg-gray-100 px-1 py-0.5 rounded">
+                  {{ output.type }}
+                </div>
               </div>
             </div>
           </div>
@@ -356,7 +330,7 @@ watch(
 
 <style scoped>
 .flow-node-info__bg {
-  background: linear-gradient(#00a6f416 0%, transparent 80%);
+  background: linear-gradient(#ff690010 0%, transparent 80%);
 }
 
 :deep(textarea.arco-textarea) {

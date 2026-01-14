@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { BASE_URL } from '@/config'
 import { Message } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { remove } from 'lodash-es'
 import { v4 } from 'uuid'
+import { ref } from 'vue'
 import { useWorkflowStore } from '../Workflow.store'
+import AddToolModal from './AddToolModal.vue'
 
 const NODE_WIDTH = 360
 const NODE_SPACING = 80
@@ -12,15 +15,22 @@ const props = defineProps<{
   addNodeType?: string
   edgeId?: string
   nodeId?: string
+  id: string
 }>()
 const visible = defineModel('visible', { type: Boolean, default: false })
 // 从 Vue Flow 中解构获取 nodes 对象
 // nodes 包含了流程图中所有节点的状态信息，包括位置、数据、选中状态等
 const { nodes, setNodes, findNode } = useVueFlow()
-
 // 获取工作流状态管理实例
 // store 用于管理整个工作流的全局状态，包括节点数据、连接关系、执行状态等
 const store = useWorkflowStore()
+const addToolModalVisible = ref(false)
+const pythonTypeMap: Record<string, any> = {
+  str: 'string',
+  int: 'int',
+  float: 'float',
+  bool: 'boolean',
+}
 
 /**
  * 统计数组中特定类型元素的数量
@@ -29,7 +39,9 @@ const store = useWorkflowStore()
  * @returns {number} 匹配类型的元素数量
  */
 const countByType = (items: any[], type: string) =>
-  items.filter((item) => item.type === type).length
+  items.filter((item) => {
+    return item.data.title === type
+  }).length
 
 /**
  * 修复节点重叠问题
@@ -96,7 +108,7 @@ const fixNodeOverlap = (newNodeId: string) => {
  * @param {string} nodeType - 要添加的节点类型
  * @returns {void}
  */
-const addNode = (nodeType: string) => {
+const addNode = (nodeType: string, nodeData: any = null) => {
   // 检查是否为开始节点
   if (nodeType === 'start') {
     // 如果已存在开始节点，则报错并返回
@@ -112,14 +124,19 @@ const addNode = (nodeType: string) => {
     }
   }
 
+  // 初始化新节点的位置坐标
   let xPosition = 0
   let yPosition = 0
-  // 获取节点类型对应的基础数据
-  const nodeData = store.NODE_DATA_MAP[nodeType]
+
+  // 如果没有传入节点数据，则从store中获取对应类型的默认节点数据
+  if (!nodeData) {
+    nodeData = store.NODE_DATA_MAP[nodeType]
+  }
+
   // 节点标题
   const nodeTitle =
-    countByType(nodes.value, nodeType) > 0
-      ? `${nodeData.title}_${countByType(nodes.value, nodeType)}`
+    countByType(nodes.value, nodeData.title) > 0
+      ? `${nodeData.title}_${countByType(nodes.value, nodeData.title)}`
       : nodeData.title
 
   /**
@@ -264,12 +281,92 @@ const addNode = (nodeType: string) => {
 
   visible.value = false
 }
+
+const addToolNode = () => {
+  addToolModalVisible.value = true
+}
+
+const handleAddTool = (tool: any) => {
+  const toolData: any = {}
+  if (tool.type == 'api_tool') {
+    toolData.meta = {
+      type: 'api_tool',
+      provider: {
+        id: tool.provider.id,
+        name: tool.provider.name,
+        label: tool.provider.name,
+        icon: tool.provider.icon,
+        description: tool.provider.description,
+      },
+      tool: {
+        id: tool.tool.name,
+        name: tool.tool.name,
+        label: tool.tool.name,
+        description: tool.tool.description,
+        params: {},
+      },
+    }
+    toolData.inputs = tool.tool.inputs.map((item: any) => {
+      return {
+        name: item.name,
+        description: '',
+        required: true,
+        type: pythonTypeMap[item.type],
+        value: { type: 'ref', content: '' },
+        meta: {},
+      }
+    })
+    toolData.type = 'api_tool'
+    toolData.provider_id = tool.provider.id
+    toolData.params = {}
+  } else {
+    toolData.meta = {
+      type: 'builtin_tool',
+      provider: {
+        id: tool.provider.name,
+        name: tool.provider.name,
+        label: tool.provider.label,
+        icon: `${BASE_URL}/builtin-tools/${tool.provider.name}/icon`,
+        description: tool.provider.description,
+      },
+      tool: {
+        id: tool.tool.name,
+        name: tool.tool.name,
+        label: tool.tool.label,
+        description: tool.tool.description,
+        params: tool.tool['params'],
+      },
+    }
+    toolData.inputs = tool.tool.inputs.map((item: any) => {
+      return {
+        name: item.name,
+        description: '',
+        required: true,
+        type: pythonTypeMap[item.type],
+        value: { type: 'ref', content: '' },
+        meta: {},
+      }
+    })
+    toolData.type = 'builtin_tool'
+    toolData.provider_id = tool.provider.name
+    toolData.params = tool.tool['params'].reduce((newObj: any, item: any) => {
+      newObj[item.name] = item.default
+      return newObj
+    }, {})
+  }
+  toolData.outputs = [{ name: 'text', type: 'string', value: { type: 'generated', content: '' } }]
+  toolData.title = tool.tool.name
+  toolData.description = tool.tool.description
+  toolData.tool_id = tool.tool.name
+  addNode('tool', toolData)
+}
 </script>
 
 <template>
   <div
-    v-if="visible"
+    v-if="visible && store.showedAddNode == id"
     class="flex flex-col gap-2 px-2 py-3 bg-white rounded-lg shadow-sm border border-gray-200 w-[320px]"
+    @click.stop
   >
     <div class="flex gap-2">
       <!-- 开始节点 -->
@@ -364,7 +461,7 @@ const addNode = (nodeType: string) => {
         </template>
         <div
           class="flex-1 flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 rounded-md"
-          @click="() => addNode('tool')"
+          @click="() => addToolNode()"
         >
           <a-avatar shape="square" :size="24" class="bg-orange-500 rounded-lg">
             <icon-tool />
@@ -523,6 +620,12 @@ const addNode = (nodeType: string) => {
         </div>
       </a-popover>
     </div>
+    <!-- 插件弹窗 -->
+    <AddToolModal
+      v-model:visible="addToolModalVisible"
+      @add-tool="handleAddTool"
+      @close-modal="visible = false"
+    />
   </div>
 </template>
 

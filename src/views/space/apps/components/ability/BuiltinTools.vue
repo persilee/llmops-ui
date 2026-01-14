@@ -4,18 +4,21 @@ import type { Tool as DraftConfigTool } from '@/services/api/apps/types'
 import type { GetBuiltinToolsResp, Tool } from '@/services/api/builtin-tool/types'
 import { formatDate } from '@/utils/format-util'
 import { typeMap } from '@/utils/util'
+import { useWorkflowStore } from '@/views/space/workflows/Workflow.store'
 import { useAppStore } from '../../AppView.store'
 
 // 定义组件的props接口
 const props = defineProps<{
   loading: boolean // 加载状态，用于控制组件的加载动画显示
   builtinTools: Array<GetBuiltinToolsResp> // 内置工具列表数据，包含工具提供者和工具信息
+  source?: string // 工具来源
 }>()
 // 初始化应用状态管理store，用于管理工具的添加、移除等操作
 const store = useAppStore()
 // 当前选中的工具索引
 const selectIndex = defineModel('selectIndex', { type: Number, default: -1 })
-
+// 工作流状态管理store，用于管理工作流的创建和更新
+const workflowStore = useWorkflowStore()
 // 定义组件的事件，用于向父组件发送添加工具的事件
 const emit = defineEmits(['addTool'])
 
@@ -28,12 +31,23 @@ const getIcon = (provider: GetBuiltinToolsResp) => {
   return `${BASE_URL}/builtin-tools/${provider.name}/icon`
 }
 
+const getSelectedToolCount = (tool: Tool) => {
+  return workflowStore.draftGraph.nodes.filter(
+    (node: any) => node.data?.meta?.tool?.id == tool.name,
+  ).length
+}
+
 /**
  * 检查工具是否已被添加到应用中
  * @param tool - 要检查的工具对象，包含工具的名称等信息
  * @returns boolean - 如果工具已被添加返回true，否则返回false
  */
 const isAdded = (tool: Tool) => {
+  if (props.source == 'workflow') {
+    return workflowStore.draftGraph.nodes.some((node: any) => {
+      return node.data?.meta?.tool?.id == tool.name
+    })
+  }
   return store
     .getExistingTools()
     .some((draftConfigTool: DraftConfigTool) => draftConfigTool.tool_id == tool.name)
@@ -60,7 +74,7 @@ const handleSelect = (idx: number) => {
 <template>
   <a-spin :loading="loading" class="flex flex-col w-full h-full">
     <!-- 标题 -->
-    <div class="text-lg font-bold text-gray-900 mb-4">自定义插件</div>
+    <div class="text-lg font-bold text-gray-900 mb-4">内置插件</div>
     <!-- 内容 -->
     <div ref="scrollContainer" class="flex-1 flex flex-col overflow-y-scroll scrollbar-w-none">
       <div class="flex flex-col w-full mb-2" v-for="(provider, idx) in builtinTools" :key="idx">
@@ -154,6 +168,30 @@ const handleSelect = (idx: number) => {
                 >
                   <template #icon><icon-plus /></template>
                   添加
+                </a-button>
+                <a-button
+                  v-else-if="source == 'workflow'"
+                  type="outline"
+                  size="mini"
+                  class="border border-gray-200 bg-white text-blue-600 self-center"
+                  @click="emit('addTool', provider, tool)"
+                >
+                  <div class="flex items-center gap-1">
+                    <icon-plus /> 添加
+                    <a-badge
+                      :count="getSelectedToolCount(tool)"
+                      :dotStyle="{
+                        background: '#155dfc',
+                        color: '#fff',
+                        minWidth: '14px',
+                        height: '14px',
+                        fontSize: '8px',
+                        lineHeight: '14px',
+                        padding: '0px',
+                      }"
+                      class="mt-[1px]"
+                    />
+                  </div>
                 </a-button>
                 <a-button
                   v-else

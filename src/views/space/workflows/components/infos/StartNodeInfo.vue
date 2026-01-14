@@ -72,7 +72,7 @@ watch(
       class="flex flex-col h-full p-4 bg-white z-50 border border-gray-100 shadow-lg rounded-lg relative"
       @click.stop
     >
-      <div class="flow-node-info__bg w-full h-[120px] absolute top-0 left-0 rounded-xl z-0"></div>
+      <div class="flow-node-info__bg w-full h-[120px] absolute top-0 left-0 rounded-lg z-0"></div>
       <div class="z-100 h-full">
         <!-- 顶部标题信息 -->
         <div class="flex items-center justify-between gap-3 mb-2">

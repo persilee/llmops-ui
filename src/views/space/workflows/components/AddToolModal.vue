@@ -10,15 +10,14 @@ import type {
 } from '@/services/api/builtin-tool/types'
 import type { Paginator } from '@/services/types'
 import { svgToImgData } from '@/utils/util'
+import BuiltinTools from '@/views/space/apps/components/ability/BuiltinTools.vue'
+import CustomTools from '@/views/space/apps/components/ability/CustomTools.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '../../AppView.store'
-import BuiltinTools from './BuiltinTools.vue'
-import CustomTools from './CustomTools.vue'
 
-const store = useAppStore() // 应用状态管理store实例
 const visible = defineModel('visible', { type: Boolean, default: false }) // 控制抽屉组件的显示/隐藏状态
+const emits = defineEmits(['addTool', 'closeModal'])
 const loading = ref(false) // 整体加载状态，用于显示/隐藏加载动画
 const toolsLoading = ref(false) // 内置工具列表加载状态
 const builtinLoading = ref(false) // 自定义工具列表加载状态
@@ -63,11 +62,14 @@ const filterBuiltinTools = computed(() => {
  * 2. 成功添加工具后自动关闭
  * 3. 其他需要关闭抽屉的场景
  */
-const handleClose = () => {
+const handleClose = (isCallBack: boolean = false) => {
   visible.value = false
   btnActive.value = 'customTool'
   category.value = 'all'
   selectIndex.value = -1
+  if (isCallBack) {
+    emits('closeModal')
+  }
 }
 
 /**
@@ -216,33 +218,8 @@ const handleScroll = (e: Event) => {
  * @param tool 要添加的自定义工具对象，包含工具的ID等信息
  */
 const addCustomTool = async (provider: GetAPIToolProvidersWithPage, tool: CustomTool) => {
-  try {
-    // 设置加载状态，显示加载动画
-    loading.value = true
-
-    // 构建更新后的工具列表
-    const updatedTools = [
-      // 展开当前已存在的工具列表
-      ...store.getExistingTools(),
-      // 添加新的自定义工具
-      {
-        params: {}, // 工具参数对象，当前为空对象
-        provider_id: provider.id, // 使用提供者的ID
-        tool_id: tool.id, // 使用工具的ID
-        type: 'api_tool' as const, // 标识为API工具类型
-      },
-    ]
-
-    // 调用store方法更新应用配置
-    await store.updateDraftAppConfig({ tools: updatedTools })
-
-    Message.success('添加扩展插件成功')
-  } catch (error) {
-    // 错误处理：如果添加失败，保持抽屉打开状态
-  } finally {
-    // 无论成功失败，都关闭加载状态
-    loading.value = false
-  }
+  emits('addTool', { type: 'api_tool', provider, tool })
+  handleClose()
 }
 
 /**
@@ -251,38 +228,10 @@ const addCustomTool = async (provider: GetAPIToolProvidersWithPage, tool: Custom
  * @param tool 要添加的内置工具对象
  */
 const addBuiltinTool = async (provider: GetBuiltinToolsResp, tool: BuiltinTool) => {
-  try {
-    // 设置加载状态，显示加载动画
-    loading.value = true
-
-    // 获取当前已存在的工具列表，并添加新工具
-    const updatedTools = [
-      ...store.getExistingTools(),
-      {
-        params: Object.fromEntries(tool.params.map((item: any) => [item.name, item.default])), // 工具参数对象，将内置工具的参数默认值转换为键值对
-        provider_id: provider.name, // 使用提供者名称作为ID
-        tool_id: tool.name, // 使用工具名称作为ID
-        type: 'builtin_tool' as const, // 标识为内置工具类型
-      },
-    ]
-
-    // 调用store方法更新应用配置
-    await store.updateDraftAppConfig({
-      tools: updatedTools,
-    })
-
-    Message.success('添加扩展插件成功')
-  } catch (error) {
-    // 错误处理：如果添加失败，保持抽屉打开状态
-  } finally {
-    // 无论成功失败，都关闭加载状态
-    loading.value = false
-  }
+  emits('addTool', { type: 'builtin_tool', provider, tool })
+  handleClose()
 }
 
-/**
- * 跳转到添加API工具页面
- */
 const toAddApiToolPage = () => {
   const resolved = router.resolve({
     name: 'space-tools',
@@ -317,25 +266,25 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <a-drawer
-    :width="740"
+  <a-modal
+    :width="800"
     v-model:visible="visible"
     :mask-closable="false"
-    :header="false"
     :footer="false"
-    :drawer-style="{ backgroundColor: 'transparent' }"
-    body-class="rounded-lg m-4 p-0"
+    :closable="false"
+    modal-class="rounded-xl p-0"
+    body-class="p-0 rounded-xl"
   >
-    <a-spin :loading="loading" class="w-full h-full">
-      <div class="flex bg-white w-full h-full relative">
+    <a-spin :loading="loading" class="w-full max-h-[660px] h-[60vh]">
+      <div class="flex bg-white w-full h-full relative" @click.stop>
         <!-- 关闭按钮 -->
-        <div class="absolute top-4 right-3">
-          <a-button type="text" size="mini" @click="handleClose" class="rounded-full">
+        <div class="absolute top-3.5 right-3.5">
+          <a-button type="text" size="mini" @click="handleClose(true)" class="rounded-full">
             <template #icon><icon-close class="text-gray-500" /></template>
           </a-button>
         </div>
         <!-- 左边导航 -->
-        <div class="flex flex-col w-[200px] bg-gray-200 px-3 py-4">
+        <div class="flex flex-col w-[200px] bg-gray-200 px-4 py-5">
           <!-- 标题 -->
           <div class="text-lg font-bold text-gray-900 mb-4">添加插件</div>
           <!-- 按钮 -->
@@ -397,13 +346,14 @@ onUnmounted(() => {
           </div>
         </div>
         <!-- 右边内容 -->
-        <div class="flex-1 px-3.5 py-4 bg-white w-[524px] flex-shrink-0">
+        <div class="flex-1 px-3.5 py-5 bg-white w-[524px] flex-shrink-0">
           <CustomTools
             v-if="'customTool' == btnActive"
             :loading="builtinLoading"
             :load-mor-loading="loadMorLoading"
             :providers="providers"
             :paginator="paginator"
+            :source="'workflow'"
             v-model:select-index="selectIndex"
             @handle-scroll="handleScroll"
             @load-more="getToolsData(true)"
@@ -413,13 +363,14 @@ onUnmounted(() => {
             v-if="'builtinTool' == btnActive"
             :loading="toolsLoading"
             :builtin-tools="filterBuiltinTools"
+            :source="'workflow'"
             v-model:select-index="selectIndex"
             @add-tool="addBuiltinTool"
           />
         </div>
       </div>
     </a-spin>
-  </a-drawer>
+  </a-modal>
 </template>
 
 <style scoped></style>

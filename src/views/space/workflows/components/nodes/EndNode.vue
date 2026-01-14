@@ -33,11 +33,13 @@ const props = defineProps<NodeProps>()
         <div
           v-for="output in props.data?.outputs"
           :key="output.name"
-          class="w-full flex items-center text-xs gap-2"
+          class="w-full flex items-center text-xs"
         >
           <!-- 左侧变量信息 -->
           <div class="w-[180px] flex-shrink-0 flex items-center gap-2">
-            <div class="max-w-[120px] text-gray-700 line-clamp-1 break-all">{{ output.name }}</div>
+            <div class="max-w-[120px] text-gray-700 line-clamp-1 break-all">
+              {{ output.name }}
+            </div>
             <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded flex-shrink-0">
               {{ output.type }}
             </div>
@@ -50,7 +52,7 @@ const props = defineProps<NodeProps>()
             >
               引用 / {{ output.value.content.ref_var_name }}
             </div>
-            <div v-else class="text-gray-500 flex-1 px-1 py-0.5 line-clamp-1 break-all">
+            <div v-else class="text-gray-500 flex-1 py-0.5 line-clamp-1 break-all">
               {{ output.value.content }}
             </div>
           </div>
@@ -63,6 +65,7 @@ const props = defineProps<NodeProps>()
       type="target"
       :position="Position.Left"
       class="w-3 h-3 bg-blue-700 flex border-2 border-white shadow-sm items-center justify-center group-hover:w-4 group-hover:h-4 group-hover:border-2 group-hover:shadow-md duration-360 cursor-default"
+      :node-id="props.id"
     >
     </handle>
   </div>

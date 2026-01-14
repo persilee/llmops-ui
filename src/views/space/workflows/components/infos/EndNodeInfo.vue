@@ -138,7 +138,7 @@ watch(
       class="flex flex-col h-full p-4 bg-white z-50 border border-gray-100 shadow-lg rounded-lg relative"
       @click.stop
     >
-      <div class="flow-node-info__bg w-full h-[120px] absolute top-0 left-0 rounded-xl z-0"></div>
+      <div class="flow-node-info__bg w-full h-[120px] absolute top-0 left-0 rounded-lg z-0"></div>
       <div class="z-100 h-full">
         <!-- 顶部标题信息 -->
         <div class="flex items-center justify-between gap-3 mb-2">
@@ -194,14 +194,14 @@ watch(
             </div>
             <!-- 字段名 -->
             <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[20%]">参数名</div>
+              <div class="w-[30%]">参数名</div>
               <div class="w-[25%]">类型</div>
-              <div class="w-[47%]">值</div>
+              <div class="w-[37%]">值</div>
               <div class="w-[8%]"></div>
             </div>
             <!-- 循环遍历字段列表 -->
             <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex items-center gap-1">
-              <div class="w-[20%] flex-shrink-0">
+              <div class="w-[30%] flex-shrink-0">
                 <a-input
                   v-model="output.name"
                   size="mini"
@@ -213,7 +213,7 @@ watch(
               <div class="w-[25%] flex-shrink-0">
                 <a-select size="mini" v-model="output.type" class="px-2" :options="variableTypes" />
               </div>
-              <div class="w-[47%] flex-shrink-0 flex items-center gap-1">
+              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
                 <a-input-tag
                   v-if="output.type.startsWith('list')"
                   size="mini"

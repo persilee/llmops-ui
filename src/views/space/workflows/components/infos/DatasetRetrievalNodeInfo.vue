@@ -8,7 +8,7 @@ import { type TextareaInstance } from '@arco-design/web-vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import AddDatasetModal from './AddDatasetModal.vue'
 
-// 1.定义自定义组件所需数据
+// 定义自定义组件所需数据
 const props = defineProps({
   node: {
     type: Object as PropType<Record<string, any>> | null,
@@ -24,12 +24,12 @@ const store = useWorkflowStore()
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
 
-// 2.定义节点可引用的变量选项
+// 定义节点可引用的变量选项
 const inputRefOptions = computed(() => {
   return store.getReferencedVariables(cloneDeep(nodes.value), cloneDeep(edges.value), props.node.id)
 })
 
-// 4.定义取消关联知识库函数
+// 定义取消关联知识库函数
 const removeDataset = (idx: number) => {
   form.value.datasets.splice(idx, 1)
   handleUpdateNodeInfo()
@@ -220,7 +220,7 @@ onMounted(() => {})
               </div>
             </div>
             <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+            <div class="flex items-center gap-1 text-xs text-gray-500 mb-1 mt-1">
               <div class="w-[20%]">参数名</div>
               <div class="w-[25%]">类型</div>
               <div class="w-[55%]">值</div>
@@ -271,7 +271,7 @@ onMounted(() => {})
             <!-- 标题&操作按钮 -->
             <div class="flex items-center justify-between">
               <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
+              <div class="flex items-center gap-2 text-gray-700 font-semibold mb-1">
                 <div class="">检索设置</div>
                 <a-tooltip content="配置知识库的检索规则，支持相似性检索、混合检索、全文检索。">
                   <icon-question-circle />
@@ -381,7 +381,7 @@ onMounted(() => {})
               <div
                 v-for="(dataset, idx) in form.datasets"
                 :key="dataset.id"
-                class="flex items-center justify-between bg-white px-2 py-1.5 rounded-lg cursor-pointer hover:shadow-sm hover:bg-gray-100 duration-150 group border border-gray-200"
+                class="flex items-center justify-between bg-white px-2 py-1.5 rounded-lg cursor-pointer hover:shadow-sm hover:bg-gray-50 duration-150 group border border-gray-200"
               >
                 <!-- 左侧知识库信息 -->
                 <div class="flex items-center gap-2">
