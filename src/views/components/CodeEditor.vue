@@ -51,6 +51,8 @@ const defaultOptions: EditorOptions = {
   folding: true,
   // 启用多光标编辑
   multiCursorMergeOverlapping: false,
+  // 控制是否启用编辑上下文功能
+  editContext: false,
 }
 
 const editorOptions = merge({}, defaultOptions, props.options)

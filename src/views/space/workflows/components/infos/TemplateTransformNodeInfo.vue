@@ -4,35 +4,33 @@ import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import { computed, ref, watch, type PropType } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
-import LLMModelConfig from './LLMModelConfig.vue'
 
-// 1.定义自定义组件所需数据
+// 定义自定义组件所需数据
 const props = defineProps({
   node: {
     type: Object as PropType<Record<string, any>> | null,
     default: () => {},
   },
 })
-const emits = defineEmits(['updateNode', 'closeNodeInfo'])
 const visible = defineModel('visible', { type: Boolean, default: false })
+const emits = defineEmits(['updateNode', 'closeNodeInfo'])
 const { nodes, edges } = useVueFlow()
 const form = ref<Record<string, any>>({})
 const store = useWorkflowStore()
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
 
-// 定义节点可引用的变量选项
+// 定义输入变量引用选项
 const inputRefOptions = computed(() => {
   return store.getReferencedVariables(cloneDeep(nodes.value), cloneDeep(edges.value), props.node.id)
 })
 
-// 定义添加表单输入字段函数
+// 定义添加表单字段函数
 const addFormInputField = () => {
-  // [功能升级] 内容默认设置为null避免字段类型切换错误
   form.value?.inputs.push({ name: '', type: 'string', content: null, ref: '' })
 }
 
-// 定义移除表单输入字段函数
+// 定义移除表单字段函数
 const removeFormInputField = (idx: number) => {
   form.value?.inputs?.splice(idx, 1)
   handleUpdateNodeInfo()
@@ -54,17 +52,16 @@ const handleUpdateNodeInfo = () => {
   const node = nodeToFrom(props.node)
   if (isEqual(node, form.value)) return
 
-  // 4.2 深度拷贝表单数据内容
+  //  深度拷贝表单数据内容
   const cloneInputs = cloneDeep(form.value.inputs)
 
-  // 4.3 数据校验通过，通过事件触发数据更新
+  //  数据校验通过，通过事件触发数据更新
   emits('updateNode', {
     id: props.node.id,
     title: form.value.title,
     description: form.value.description,
-    prompt: form.value.prompt,
-    model_config: form.value.model_config,
-    inputs: cloneInputs.map((input: any) => {
+    template: form.value.template,
+    inputs: cloneInputs.map((input: Record<string, any>) => {
       return {
         name: input.name,
         description: '',
@@ -75,8 +72,8 @@ const handleUpdateNodeInfo = () => {
           content:
             input.type === 'ref'
               ? {
-                  ref_node_id: input.ref.split('/')[0] || '',
-                  ref_var_name: input.ref.split('/')[1] || '',
+                  ref_node_id: input.ref.split('/', 2)[0] || '',
+                  ref_var_name: input.ref.split('/', 2)[1] || '',
                 }
               : input.content,
         },
@@ -89,22 +86,19 @@ const handleUpdateNodeInfo = () => {
 
 const nodeToFrom = (newNode: any) => {
   const cloneInputs = cloneDeep(newNode.data.inputs)
-
   return {
     id: newNode.id,
     type: newNode.type,
     title: newNode.data.title,
     description: newNode.data.description,
-    prompt: newNode.data.prompt,
-    model_config: newNode.data.language_model_config,
+    template: newNode.data.template,
     inputs: cloneInputs.map((input: any) => {
-      // 5.1 计算引用的变量值信息
+      // 计算引用的变量值信息
       const ref =
         input.value.type === 'ref'
           ? `${input.value.content.ref_node_id}/${input.value.content.ref_var_name}`
           : ''
-
-      // 5.2 判断引用的变量值信息是否存在，如果不存在则设置为空
+      // 判断引用的变量值信息是否存在
       let refExists = false
       if (input.value.type === 'ref') {
         for (const inputRefOption of inputRefOptions.value) {
@@ -119,7 +113,7 @@ const nodeToFrom = (newNode: any) => {
       return {
         name: input.name, // 变量名
         type: input.value.type === 'literal' ? input.type : 'ref', // 数据类型(涵盖ref/string/int/float/boolean
-        content: input.value.type === 'literal' ? input.value.content : '', // 变量值内容
+        content: input.value.type === 'literal' ? input.value.content : null, // 变量值内容
         ref: input.value.type === 'ref' && refExists ? ref : '', // 变量引用信息，存储引用节点id+引用变量名
       }
     }),
@@ -127,7 +121,7 @@ const nodeToFrom = (newNode: any) => {
   }
 }
 
-// 5.监听数据，将数据映射到表单模型上
+// 监听数据，将数据映射到表单模型上
 watch(
   () => props.node,
   (newNode) => {
@@ -150,8 +144,8 @@ watch(
         <div class="flex items-center justify-between gap-3 mb-2">
           <!-- 左侧标题 -->
           <div class="flex items-center gap-1 flex-1">
-            <a-avatar shape="square" :size="26" class="bg-sky-500 rounded-lg flex-shrink-0">
-              <icon-language :size="16" />
+            <a-avatar shape="square" :size="26" class="bg-emerald-400 rounded-lg flex-shrink-0">
+              <icon-branch :size="16" />
             </a-avatar>
             <a-input
               v-model="form.title"
@@ -193,29 +187,13 @@ watch(
         <a-divider class="my-3.5" />
         <!-- 表单信息 -->
         <a-form size="mini" :model="form" layout="vertical">
-          <!-- 模型选择 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">语言模型配置</div>
-                <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧选择模型 -->
-              <LLMModelConfig v-model:model_config="form.model_config" />
-            </div>
-          </div>
-          <a-divider class="my-4" />
           <!-- 输入参数 -->
           <div class="flex flex-col gap-2">
             <!-- 标题&操作按钮 -->
             <div class="flex items-center justify-between">
               <!-- 左侧标题 -->
               <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">输入数据</div>
+                <div class="">输入参数</div>
                 <a-tooltip
                   content="输入给大模型的参数，可在下方提示词中引用。所有输入参数会被转为string输入。"
                 >
@@ -308,32 +286,31 @@ watch(
             <a-empty v-if="form?.inputs.length <= 0" class="my-4">该节点暂无输入数据</a-empty>
           </div>
           <a-divider class="my-4" />
-          <!-- 提示词 -->
+          <!-- 转换模板 -->
           <div class="flex flex-col gap-2">
             <!-- 标题&操作按钮 -->
             <div class="flex items-center justify-between">
               <!-- 左侧标题 -->
               <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">提示词</div>
+                <div class="">转换模板</div>
                 <a-tooltip
-                  content="作为人类消息传递给大语言模型，可以使用{{参数名}}插入引用/创建的变量。"
+                  content="需要处理并转换字符串的模板，格式必须符合jinja2的模板要求，可以使用{{参数名}}引用变量。"
                 >
                   <icon-question-circle />
                 </a-tooltip>
               </div>
             </div>
-            <!-- 提示词输入框 -->
-            <a-form-item field="prompt" hide-label hide-asterisk required>
+            <a-form-item field="template" hide-label hide-asterisk required>
               <a-textarea
                 :auto-size="{ minRows: 5, maxRows: 10 }"
-                v-model="form.prompt"
-                placeholder="编写大模型的提示词，使大模型实现对应的功能。通过插入{{参数名}}可以引用对应的参数值。"
+                v-model="form.template"
+                placeholder="支持使用连接符拼接输入框中输入的参数，组合成字符串输出。通过插入{{参数名}}可以引用对应的参数值。"
                 class="rounded-lg bg-gray-100 text-gray-600"
                 @blur="handleUpdateNodeInfo"
               />
             </a-form-item>
           </div>
-          <a-divider class="mb-4 mt-0" />
+          <a-divider class="my-4" />
           <!-- 输出参数 -->
           <div class="flex flex-col gap-2">
             <!-- 输出标题 -->
@@ -344,7 +321,7 @@ watch(
             <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
               <div class="flex items-center gap-2">
                 <div class="text-gray-700">{{ output.name }}</div>
-                <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded">{{ output.type }}</div>
+                <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">{{ output.type }}</div>
               </div>
             </div>
           </div>
@@ -356,7 +333,7 @@ watch(
 
 <style scoped>
 .flow-node-info__bg {
-  background: linear-gradient(#00a6f416 0%, transparent 80%);
+  background: linear-gradient(#00d49210 0%, transparent 80%);
 }
 
 :deep(textarea.arco-textarea) {

@@ -88,7 +88,7 @@ const props = defineProps<NodeProps>()
       <div v-if="props.data?.prompt" class="text-xs text-gray-700 leading-5 line-clamp-3">
         {{ props.data?.prompt }}
       </div>
-      <div v-else class="text-xs text-gray-500 leading-5 line-clamp-3">暂无数据</div>
+      <div v-else class="text-xs text-gray-500 leading-5">暂无数据</div>
     </div>
     <!-- 输出变量列表 -->
     <div class="flex flex-col items-start py-2">

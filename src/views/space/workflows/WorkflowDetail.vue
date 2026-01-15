@@ -30,8 +30,10 @@ import DebugModel from './components/DebugModel.vue'
 import CodeNodeInfo from './components/infos/CodeNodeInfo.vue'
 import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInfo.vue'
 import EndNodeInfo from './components/infos/EndNodeInfo.vue'
+import HttpRequestNodeInfo from './components/infos/HttpRequestNodeInfo.vue'
 import LLMNodeInfo from './components/infos/LLMNodeInfo.vue'
 import StartNodeInfo from './components/infos/StartNodeInfo.vue'
+import TemplateTransformNodeInfo from './components/infos/TemplateTransformNodeInfo.vue'
 import ToolNodeInfo from './components/infos/ToolNodeInfo.vue'
 import WorkflowHeader from './components/WorkflowHeader.vue'
 import WorkflowModel from './components/WorkflowModel.vue'
@@ -365,6 +367,22 @@ onMounted(async () => {
       <!-- 代码节点详情 -->
       <CodeNodeInfo
         v-if="selectNode && selectNode.type == 'code'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 模版转换节点详情 -->
+      <TemplateTransformNodeInfo
+        v-if="selectNode && selectNode.type == 'template_transform'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 网络请求节点详情 -->
+      <HttpRequestNodeInfo
+        v-if="selectNode && selectNode.type == 'http_request'"
         v-model:visible="nodeInfoVisible"
         :node="selectNode"
         @close-node-info="handleCloseNodeInfo"
