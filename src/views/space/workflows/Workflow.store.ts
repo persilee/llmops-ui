@@ -310,9 +310,44 @@ export const useWorkflowStore = defineStore(
       code: {
         title: 'Python代码执行',
         description: '编写代码，处理输入输出变量来生成返回值',
-        code: '',
-        inputs: [],
-        outputs: [],
+        code: '# 在这里，您可以通过 \'arg1\'和\'arg2\'，\n# 获取节点中的输入变量，并通过 \'result\' 输出结果；\n# 下面是一个示例\ndef main(params):\n    return {\n        "result": params.get("arg1") + params.get("arg2"),\n    }\n    ',
+        inputs: [
+          {
+            meta: {},
+            name: 'arg1',
+            type: 'string',
+            value: {
+              type: 'literal',
+              content: null,
+            },
+            required: true,
+            description: '',
+          },
+          {
+            meta: {},
+            name: 'arg2',
+            type: 'string',
+            value: {
+              type: 'literal',
+              content: null,
+            },
+            required: true,
+            description: '',
+          },
+        ],
+        outputs: [
+          {
+            meta: {},
+            name: 'result',
+            type: 'string',
+            value: {
+              type: 'generated',
+              content: '',
+            },
+            required: true,
+            description: '',
+          },
+        ],
       },
       question_classifier: {
         title: '意图识别',

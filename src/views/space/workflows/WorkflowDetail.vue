@@ -27,6 +27,7 @@ import EdgeWithPlus from './components/EdgeWithPlus.vue'
 import HelperLines from './components/HelperLines.vue'
 
 import DebugModel from './components/DebugModel.vue'
+import CodeNodeInfo from './components/infos/CodeNodeInfo.vue'
 import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInfo.vue'
 import EndNodeInfo from './components/infos/EndNodeInfo.vue'
 import LLMNodeInfo from './components/infos/LLMNodeInfo.vue'
@@ -53,6 +54,7 @@ const highlightedEdges = ref<string[]>([])
 const debugModelVisible = ref(false)
 const selectNode = ref<any>(null)
 const nodeInfoVisible = ref(false)
+const code = ref('')
 
 const fetchData = async () => {
   try {
@@ -355,6 +357,14 @@ onMounted(async () => {
       <!-- 工具节点详情 -->
       <ToolNodeInfo
         v-if="selectNode && selectNode.type == 'tool'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 代码节点详情 -->
+      <CodeNodeInfo
+        v-if="selectNode && selectNode.type == 'code'"
         v-model:visible="nodeInfoVisible"
         :node="selectNode"
         @close-node-info="handleCloseNodeInfo"

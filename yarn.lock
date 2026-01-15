@@ -989,6 +989,11 @@
   resolved "https://registry.npmmirror.com/@types/tough-cookie/-/tough-cookie-4.0.5.tgz"
   integrity sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==
 
+"@types/trusted-types@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.npmmirror.com/@types/trusted-types/-/trusted-types-2.0.7.tgz#baccb07a970b91707df3a3e8ba6896c57ead2d11"
+  integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
+
 "@types/web-bluetooth@^0.0.20":
   version "0.0.20"
   resolved "https://registry.npmmirror.com/@types/web-bluetooth/-/web-bluetooth-0.0.20.tgz#f066abfcd1cbe66267cdbbf0de010d8a41b41597"
@@ -1901,6 +1906,13 @@ detect-libc@^2.0.3, detect-libc@^2.0.4:
   resolved "https://registry.npmmirror.com/detect-libc/-/detect-libc-2.1.0.tgz"
   integrity sha512-vEtk+OcP7VBRtQZ1EJ3bdgzSfBjgnEalLTp5zjJrS+2Z1w2KZly4SBdac/WDU3hhsNAZ9E8SC96ME4Ey8MZ7cg==
 
+dompurify@3.2.7:
+  version "3.2.7"
+  resolved "https://registry.npmmirror.com/dompurify/-/dompurify-3.2.7.tgz#721d63913db5111dd6dfda8d3a748cfd7982d44a"
+  integrity sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==
+  optionalDependencies:
+    "@types/trusted-types" "^2.0.7"
+
 eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.npmmirror.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz"
@@ -2726,6 +2738,11 @@ magic-string@^0.30.17, magic-string@^0.30.18, magic-string@^0.30.4:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.5.5"
 
+marked@14.0.0:
+  version "14.0.0"
+  resolved "https://registry.npmmirror.com/marked/-/marked-14.0.0.tgz#79a1477358a59e0660276f8fec76de2c33f35d83"
+  integrity sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==
+
 memorystream@^0.3.1:
   version "0.3.1"
   resolved "https://registry.npmmirror.com/memorystream/-/memorystream-0.3.1.tgz"
@@ -2796,6 +2813,19 @@ moment@^2.30.1:
   version "2.30.1"
   resolved "https://registry.npmmirror.com/moment/-/moment-2.30.1.tgz"
   integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
+
+monaco-editor-vue3@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.npmmirror.com/monaco-editor-vue3/-/monaco-editor-vue3-1.0.5.tgz#d19d07a8edae8eec1b07cd42010c4dc1094b18da"
+  integrity sha512-1n4ayGcuYpZcQ6A4PUYZYqXuf6n+A/2pUNdLnb8I39WZV0zkhfvSRNau3hB0qzq6vp6wSNZ7MgcjQRCJCiGHWQ==
+
+monaco-editor@^0.55.1:
+  version "0.55.1"
+  resolved "https://registry.npmmirror.com/monaco-editor/-/monaco-editor-0.55.1.tgz#e74c6fe5a6bf985b817d2de3eb88d56afc494a1b"
+  integrity sha512-jz4x+TJNFHwHtwuV9vA9rMujcZRb0CEilTEwG2rRSpe/A7Jdkuj8xPKttCgOh+v/lkHy7HsZ64oj+q3xoAFl9A==
+  dependencies:
+    dompurify "3.2.7"
+    marked "14.0.0"
 
 mrmime@^2.0.0:
   version "2.0.1"
@@ -3574,6 +3604,11 @@ vite-plugin-inspect@^11.3.3:
     sirv "^3.0.1"
     unplugin-utils "^0.3.0"
     vite-dev-rpc "^1.1.0"
+
+vite-plugin-monaco-editor@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmmirror.com/vite-plugin-monaco-editor/-/vite-plugin-monaco-editor-1.1.0.tgz#a6238c2e13d5e98dd54a1bc51f6f189325219de3"
+  integrity sha512-IvtUqZotrRoVqwT0PBBDIZPNraya3BxN/bfcNfnxZ5rkJiGcNtO5eAOWWSgT7zullIAEqQwxMU83yL9J5k7gww==
 
 vite-plugin-vue-devtools@^8.0.0:
   version "8.0.2"
