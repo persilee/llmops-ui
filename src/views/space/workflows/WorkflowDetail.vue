@@ -300,7 +300,7 @@ onMounted(async () => {
           <!-- 缩略图 -->
           <mini-map
             v-if="store.isShowMap"
-            :width="150"
+            :width="160"
             :height="120"
             :node-border-radius="8"
             :node-color="(node) => '#ddd'"

@@ -2,16 +2,21 @@
 import { Message } from '@arco-design/web-vue'
 import { merge } from 'lodash-es'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
+  height?: number
   options?: EditorOptions
   isDark?: boolean
+  placeholder?: string
+  language?: string
 }>()
 const code = defineModel('code', { type: String, default: '' })
-const emits = defineEmits(['blur', 'expand'])
+const emits = defineEmits(['blur', 'change', 'focus', 'layoutChange', 'changeCursorPosition'])
 const isExpand = ref(false)
 const visible = ref(false)
+const hasFocus = ref(false)
+let editorInstance: any = null
 const defaultOptions: EditorOptions = {
   // 编程语言 (javascript, typescript, python, java, html, css, json等)
   language: 'python',
@@ -22,7 +27,7 @@ const defaultOptions: EditorOptions = {
   // 字体大小 (px)
   fontSize: 12,
   // 行高 (可以是像素值或字体倍数)
-  lineHeight: 1.6,
+  lineHeight: '18px',
   // 启用字体连字
   fontLigatures: true,
   // 代码缩略图
@@ -53,14 +58,47 @@ const defaultOptions: EditorOptions = {
   multiCursorMergeOverlapping: false,
   // 控制是否启用编辑上下文功能
   editContext: false,
+  // 自动换行 (off, on, wordWrapColumn, bounded)
+  wordWrap: 'on',
 }
 
 const editorOptions = merge({}, defaultOptions, props.options)
 
+const editorHeight = computed(() =>
+  props.height ? (isExpand.value ? '100%' : props.height - 46) : '100%',
+)
+
+// 计算是否显示placeholder
+const showPlaceholder = computed(() => {
+  // 当编辑器没有内容且没有获得焦点时显示placeholder
+  return !code.value && !hasFocus.value
+})
+
 const handleEditorDidMount = async (editor: any) => {
+  editorInstance = editor
+
   editor.onDidBlurEditorText(() => {
     emits('blur')
+    hasFocus.value = false
   })
+  editor.onDidFocusEditorText(() => {
+    emits('focus')
+    hasFocus.value = true
+  })
+
+  // 监听编辑器尺寸变化
+  editor.onDidLayoutChange(() => {
+    emits('layoutChange', editorInstance)
+  })
+
+  // 监听光标位置变化
+  editor.onDidChangeCursorPosition(() => {
+    emits('changeCursorPosition', editorInstance)
+  })
+}
+
+const handleChange = (value: string, event: any) => {
+  emits('change', value, event)
 }
 
 const copyToClipboard = async (text: string) => {
@@ -86,9 +124,11 @@ const handExpand = () => {
   <div
     :class="`${isDark ? 'vs-dark' : ''} w-full h-full flex flex-col bg-gray-100 px-2 pb-3 ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
   >
-    <div class="flex items-center justify-between py-1.5 gap-1 border-b border-gray-200">
+    <div class="flex items-center justify-between py-1.5 gap-1">
       <div class="flex items-center font-semibold text-gray-700 gap-1 text-sm">
-        <icon-code class="text-base" />{{ String(editorOptions.language).toLocaleUpperCase() }}
+        <icon-code class="text-base" />{{
+          String(language ?? editorOptions.language).toLocaleUpperCase()
+        }}
       </div>
       <div class="flex items-center gap-0.5">
         <a-tooltip content="复制代码">
@@ -113,16 +153,49 @@ const handExpand = () => {
         </slot>
       </div>
     </div>
-    <MonacoCodeEditor
-      v-model:value="code"
-      :options="editorOptions"
-      @editor-did-mount="handleEditorDidMount"
-      @blur="console.log('blur')"
-    />
+    <div class="editor-container">
+      <MonacoCodeEditor
+        v-model:value="code"
+        :height="editorHeight"
+        :options="editorOptions"
+        @editor-did-mount="handleEditorDidMount"
+        @change="handleChange"
+        class="overflow-hidden"
+      />
+      <div
+        v-if="showPlaceholder"
+        :class="`editor-placeholder pl-8 text-[${editorOptions.fontSize}px] text-gray-400 leading-[${editorOptions.lineHeight}]`"
+      >
+        {{ placeholder ?? '请输入代码' }}
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.editor-container {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.editor-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
 .monaco-code-editor :deep(.monaco-editor .margin) {
   background-color: transparent;
 }

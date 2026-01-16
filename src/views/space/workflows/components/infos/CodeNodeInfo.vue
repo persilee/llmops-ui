@@ -163,7 +163,7 @@ watch(
     v-if="visible"
     class="flex absolute left-0 top-0 w-full h-full p-2.5 node-info pointer-events-none"
   >
-    <div class="w-full min-w-0 shrink-1 grow-0">
+    <div class="w-full min-w-0 shrink-1 grow-0 overflow-hidden">
       <CodeEditor
         v-if="isShowCodeEditor"
         v-model:code="form.code"
@@ -183,7 +183,7 @@ watch(
     </div>
     <div class="grow-1 shrink-0 min-w-0">
       <div
-        :class="`flex flex-col h-full w-[400px] bg-white z-50 p-4 border border-gray-100 relative pointer-events-auto ${isShowCodeEditor ? 'rounded-r-lg' : 'shadow-lg rounded-lg'}`"
+        :class="`flex flex-col h-full w-[380px] bg-white z-50 p-4 border border-gray-100 relative pointer-events-auto ${isShowCodeEditor ? 'rounded-r-lg' : 'shadow-lg rounded-lg'}`"
         @click.stop
       >
         <div
@@ -347,9 +347,10 @@ watch(
                 </div>
               </div>
               <a-form-item field="code" hide-label hide-asterisk required>
-                <div class="h-[200px] w-full">
+                <div class="h-[230px] w-full">
                   <CodeEditor
                     v-model:code="form.code"
+                    :height="230"
                     @blur="handleUpdateNodeInfo"
                     class="rounded-lg"
                   >
@@ -366,7 +367,7 @@ watch(
                 </div>
               </a-form-item>
             </div>
-            <a-divider class="my-4" />
+            <a-divider class="mb-4 mt-0.5" />
             <!-- 输出参数 -->
             <div class="flex flex-col gap-2">
               <!-- 标题&操作按钮 -->

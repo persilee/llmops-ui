@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import CodeEditor from '@/views/components/CodeEditor.vue'
 import { type TextareaInstance } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
-import { computed, ref, watch, type PropType } from 'vue'
+import type { editor } from 'monaco-editor'
+import * as monaco from 'monaco-editor'
+import { computed, reactive, ref, useTemplateRef, watch, type PropType } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import LLMModelConfig from './LLMModelConfig.vue'
 
@@ -20,6 +23,14 @@ const form = ref<Record<string, any>>({})
 const store = useWorkflowStore()
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
+const editorContainer = useTemplateRef('editorContainer')
+const isShowVariablesMenu = ref(false)
+const popupPosition = reactive({
+  top: 0,
+  left: 0,
+})
+const cursorPosition = ref<any>(null)
+let editorRef: any = null
 
 // 定义节点可引用的变量选项
 const inputRefOptions = computed(() => {
@@ -127,7 +138,154 @@ const nodeToFrom = (newNode: any) => {
   }
 }
 
-// 5.监听数据，将数据映射到表单模型上
+const addFormInputFieldToCodeEditor = (input: Record<string, any>) => {
+  const existedInput = form.value?.inputs.find((item: any) => item.ref == input.value)
+
+  // 获取编辑器模型
+  const model = editorRef.getModel()
+  if (!model) return
+  // 获取当前行内容
+  const lineContent = model.getLineContent(cursorPosition.value.lineNumber)
+  // 检测光标后是否有单词
+  const cursorIndex = cursorPosition.value.column - 1 // 转换为0-based索引
+  const lineAfterCursor = lineContent.substring(cursorIndex)
+  const wordBoundaryRegex = /\}\}/
+  const match = wordBoundaryRegex.exec(lineAfterCursor)
+
+  let editOperation: editor.IIdentifiedSingleEditOperation
+  if (match && match.index > 0) {
+    // 光标后有单词，进行替换操作
+    const wordEnd = cursorIndex + match.index
+    editOperation = {
+      range: new monaco.Range(
+        cursorPosition.value.lineNumber,
+        cursorPosition.value.column,
+        cursorPosition.value.lineNumber,
+        wordEnd + 1,
+      ),
+      text: existedInput ? existedInput.name : input.label,
+      forceMoveMarkers: true,
+    }
+  } else {
+    const text = existedInput ? existedInput.name : input.label
+    const finalText = match ? text : `${text}\}\}`
+    // 创建编辑操作
+    editOperation = {
+      range: new monaco.Range(
+        cursorPosition.value.lineNumber,
+        cursorPosition.value.column,
+        cursorPosition.value.lineNumber,
+        cursorPosition.value.column,
+      ),
+      text: finalText,
+      forceMoveMarkers: true,
+    }
+  }
+
+  // 执行插入操作
+  editorRef.executeEdits('insert-text', [editOperation])
+  // 插入后移动光标到文本末尾
+  const newPosition = cursorPosition.value.clone()
+  newPosition.column += input.label.length
+  editorRef.setPosition(newPosition)
+
+  // 确保编辑器获得焦点
+  editorRef.focus()
+  cursorPosition.value = null
+
+  if (existedInput) return
+  form.value?.inputs.push({
+    name: input.label,
+    type: 'ref',
+    content: null,
+    ref: input.value,
+  })
+  isShowVariablesMenu.value = false
+}
+
+const handleChangeCursorPosition = (editorInstance: any) => {
+  if (!editorInstance || !editorContainer.value) return
+  if (!editorRef) {
+    editorRef = editorInstance
+  }
+
+  // 获取当前光标位置
+  const position = editorInstance.getPosition()
+
+  if (!position) return
+
+  // 更新行号和列号
+  const currentLineNumber = position.lineNumber
+  const currentColumn = position.column
+
+  // 获取当前行内容
+  const model = editorInstance.getModel()
+  if (model) {
+    const currentLineContent = model.getLineContent(currentLineNumber)
+    const textBeforeCursor = currentLineContent.substring(currentColumn - 3, currentColumn - 1)
+
+    // 将光标位置转换为编辑器中的像素坐标
+    const coordinatesY = editorInstance.getTopForLineNumber(currentLineNumber)
+    const coordinatesX = editorInstance.getOffsetForColumn(currentLineNumber, currentColumn)
+
+    // 获取单行高度
+    const singleLineHeight = editorInstance.getLineHeightForPosition(position)
+
+    // 计算当前行的实际高度（考虑换行）
+    const totalLines = model.getLineCount()
+    const lineNumber = totalLines == 1 ? 1 : 2
+    const nextLineTop = editorInstance.getTopForLineNumber(position.lineNumber + 1)
+    let actualLineHeight
+    if (totalLines == 1) {
+      actualLineHeight = nextLineTop + singleLineHeight - coordinatesY
+    } else {
+      actualLineHeight = nextLineTop - coordinatesY
+    }
+
+    // 判断是否换行
+    const isLineWrapped = actualLineHeight > singleLineHeight
+    // 计算实际显示的行数
+    const actualLineCount = Math.round(actualLineHeight / singleLineHeight)
+
+    // 计算光标在当前行中的垂直偏移（考虑换行）
+    let cursorVerticalOffset = 0
+    if (isLineWrapped) {
+      const cursorIndex = position.column - 1 // 转换为0-based索引
+      const lineLength = currentLineContent.length
+      if (lineLength > 0) {
+        // 计算光标在文本中的水平位置比例
+        const horizontalRatio = Math.min(cursorIndex / lineLength, 1)
+
+        // 计算换行后的垂直偏移
+        // 假设换行是均匀分布的，按比例分配垂直位置
+        cursorVerticalOffset = horizontalRatio * (actualLineHeight - singleLineHeight)
+      }
+    }
+
+    // 计算距离顶部的总距离
+    const distanceEditorTop = coordinatesY + cursorVerticalOffset
+
+    if (textBeforeCursor == '{{') {
+      isShowVariablesMenu.value = true
+      cursorPosition.value = position
+    } else {
+      isShowVariablesMenu.value = false
+    }
+    // 计算弹窗位置
+    popupPosition.top = distanceEditorTop + 60
+    popupPosition.left = coordinatesX - 65
+  }
+}
+
+const handleCodeEditorBlur = () => {
+  if (!cursorPosition.value) {
+    isShowVariablesMenu.value = false
+    cursorPosition.value = null
+  }
+  handleUpdateNodeInfo()
+}
+
+// 监听数据，将数据映射到表单模型上
 watch(
   () => props.node,
   (newNode) => {
@@ -324,13 +482,54 @@ watch(
             </div>
             <!-- 提示词输入框 -->
             <a-form-item field="prompt" hide-label hide-asterisk required>
-              <a-textarea
-                :auto-size="{ minRows: 5, maxRows: 10 }"
-                v-model="form.prompt"
-                placeholder="编写大模型的提示词，使大模型实现对应的功能。通过插入{{参数名}}可以引用对应的参数值。"
-                class="rounded-lg bg-gray-100 text-gray-600"
-                @blur="handleUpdateNodeInfo"
-              />
+              <div
+                ref="editorContainer"
+                :class="`h-[200px] w-full ${isShowVariablesMenu ? 'relative' : 'static'}`"
+              >
+                <CodeEditor
+                  v-model:code="form.prompt"
+                  :height="200"
+                  class="rounded-lg"
+                  language="jinja2"
+                  :placeholder="'输入 \{\{ 插入变量，编写大模型的提示词，使大模型实现对应的功能。通过插入\{\{参数名\}\}可以引用对应的参数值。'"
+                  @change-cursor-position="handleChangeCursorPosition"
+                  @blur="handleCodeEditorBlur"
+                />
+                <div
+                  v-if="isShowVariablesMenu"
+                  class="flex flex-col gap-1.5 bg-white py-3 px-1 rounded-lg w-[220px] max-h-[460px] border border-gray-100 shadow-lg absolute z-1000 overflow-y-scroll scrollbar-w-none"
+                  :style="{
+                    top: `${popupPosition.top}px`,
+                    left: `${popupPosition.left}px`,
+                  }"
+                >
+                  <div v-for="(item, idx) in inputRefOptions" :key="idx" class="">
+                    <div class="flex items-center text-gray-500 text-xs font-semibold px-2 mb-1">
+                      {{ item.label }}
+                    </div>
+                    <div
+                      v-for="option in item.options"
+                      :key="option.value"
+                      class="flex item-center gap-1 px-2 py-0.5 hover:bg-gray-100 rounded-sm cursor-pointer"
+                      @click.stop="addFormInputFieldToCodeEditor(option)"
+                    >
+                      <div class="flex-1 flex items-center gap-1">
+                        <img src="@/assets/images/icon-var.svg" class="w-5 h-5" />
+                        <div
+                          class="text-gray-800 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[110px]"
+                        >
+                          {{ option.label }}
+                        </div>
+                      </div>
+                      <div
+                        class="text-gray-400 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[80px]"
+                      >
+                        {{ String(option.type).toLocaleUpperCase() }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </a-form-item>
           </div>
           <a-divider class="mb-4 mt-0" />
