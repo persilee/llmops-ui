@@ -115,9 +115,9 @@ export interface Dataset {
 }
 
 export interface ModelConfig {
-  model: string
-  parameters: Parameters
-  provider: string
+  model?: string
+  parameters?: Parameters
+  provider?: string
 }
 
 export interface Parameters {
@@ -234,6 +234,6 @@ export interface GetAppsWithPage {
 }
 
 export interface ModelConfig {
-  model: string
-  provider: string
+  model?: string
+  provider?: string
 }

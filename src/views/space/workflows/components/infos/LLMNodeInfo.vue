@@ -65,16 +65,16 @@ const handleUpdateNodeInfo = () => {
   const node = nodeToFrom(props.node)
   if (isEqual(node, form.value)) return
 
-  // 4.2 深度拷贝表单数据内容
+  // 深度拷贝表单数据内容
   const cloneInputs = cloneDeep(form.value.inputs)
 
-  // 4.3 数据校验通过，通过事件触发数据更新
+  // 数据校验通过，通过事件触发数据更新
   emits('updateNode', {
     id: props.node.id,
     title: form.value.title,
     description: form.value.description,
     prompt: form.value.prompt,
-    model_config: form.value.model_config,
+    language_model_config: form.value.language_model_config,
     inputs: cloneInputs.map((input: any) => {
       return {
         name: input.name,
@@ -107,7 +107,7 @@ const nodeToFrom = (newNode: any) => {
     title: newNode.data.title,
     description: newNode.data.description,
     prompt: newNode.data.prompt,
-    model_config: newNode.data.language_model_config,
+    language_model_config: newNode.data.language_model_config,
     inputs: cloneInputs.map((input: any) => {
       // 5.1 计算引用的变量值信息
       const ref =
@@ -233,7 +233,6 @@ const handleChangeCursorPosition = (editorInstance: any) => {
 
     // 计算当前行的实际高度（考虑换行）
     const totalLines = model.getLineCount()
-    const lineNumber = totalLines == 1 ? 1 : 2
     const nextLineTop = editorInstance.getTopForLineNumber(position.lineNumber + 1)
     let actualLineHeight
     if (totalLines == 1) {
@@ -282,6 +281,11 @@ const handleCodeEditorBlur = () => {
     isShowVariablesMenu.value = false
     cursorPosition.value = null
   }
+  handleUpdateNodeInfo()
+}
+
+const handleUpdateModelConfig = (modelConfig: any) => {
+  form.value.language_model_config = modelConfig
   handleUpdateNodeInfo()
 }
 
@@ -353,18 +357,18 @@ watch(
         <a-form size="mini" :model="form" layout="vertical">
           <!-- 模型选择 -->
           <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">语言模型配置</div>
-                <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧选择模型 -->
-              <LLMModelConfig v-model:model_config="form.model_config" />
+            <!-- 标题 -->
+            <div class="flex items-center gap-2 text-gray-700 font-semibold mb-1">
+              <div class="">语言模型配置</div>
+              <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
+                <icon-question-circle />
+              </a-tooltip>
             </div>
+            <!-- 选择模型 -->
+            <LLMModelConfig
+              v-model:model_config="form.language_model_config"
+              @update-model-config="handleUpdateModelConfig"
+            />
           </div>
           <a-divider class="my-4" />
           <!-- 输入参数 -->

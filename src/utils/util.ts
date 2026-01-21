@@ -21,6 +21,12 @@ export const typeMap: { [key: string]: string } = {
   bool: '布尔值',
 }
 
+export const llmTagMap: { [key: string]: string } = {
+  tool_call: '工具调用',
+  agent_thought: '智能推理',
+  image_input: '图片理解',
+}
+
 /**
  * 深度比较两个对象是否相等
  * @param {any} obj1 - 第一个要比较的对象

@@ -110,7 +110,7 @@ const getToolInfo = async (visible: boolean, tool: ToolElement) => {
             <img :src="tool.provider.icon" />
           </a-avatar>
           <div class="flex-1 ml-2 flex flex-col justify-between">
-            <span class="font-bold text-gray-900">{{ tool.tool.name }}</span>
+            <span class="font-bold text-gray-800">{{ tool.tool.name }}</span>
             <span class="text-xs text-gray-500">{{ tool.tool.description }}</span>
           </div>
           <a-popover @popup-visible-change="(visible: boolean) => getToolInfo(visible, tool)">

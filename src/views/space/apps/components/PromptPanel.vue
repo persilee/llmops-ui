@@ -2,7 +2,7 @@
 import DotCursor from '@/components/DotCursor.vue'
 import AIApi from '@/services/api/ai'
 import { Message } from '@arco-design/web-vue'
-import { computed, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
 
 // 用户输入的提示词内容
@@ -241,6 +241,11 @@ const stopPrompt = watch(
     prompt.value = newVal
   },
 )
+
+onMounted(() => {
+  // 组件挂载时，初始化提示词内容
+  prompt.value = store.draftAppConfig.preset_prompt
+})
 
 /**
  * 组件卸载时的生命周期钩子

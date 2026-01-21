@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { BASE_URL } from '@/config'
 import { type NodeProps, Position } from '@vue-flow/core'
 import NodeHandle from './NodeHandle.vue'
 
-// 1.定义自定义组件所需数据
+// 定义自定义组件所需数据
 const props = defineProps<NodeProps>()
 </script>
 
@@ -67,14 +68,14 @@ const props = defineProps<NodeProps>()
       <div class="flex items-center gap-1 text-xs">
         <!-- 左侧图标 -->
         <a-avatar
-          :size="16"
+          :size="13"
           shape="square"
-          :image-url="`/language-models/${props.data.language_model_config.provider}/icon`"
+          :image-url="`${BASE_URL}/llm-models/${props.data.language_model_config.provider}/icon`"
+          style="background-color: transparent"
         />
         <!-- 右侧名称 -->
-        <div class="text-gray-700">
-          {{ props.data.language_model_config.model }} ·
-          {{ (props.data.language_model_config.parameters.max_tokens / 1000).toFixed(1) }}k
+        <div class="text-gray-700 line-clamp-1">
+          {{ props.data.language_model_config.model }}
         </div>
       </div>
     </div>
@@ -85,7 +86,7 @@ const props = defineProps<NodeProps>()
         <div class="text-xs font-semibold">提示词</div>
       </div>
       <!-- 内容 -->
-      <div v-if="props.data?.prompt" class="text-xs text-gray-700 leading-5 line-clamp-3">
+      <div v-if="props.data?.prompt" class="text-xs text-gray-700 leading-5 line-clamp-2">
         {{ props.data?.prompt }}
       </div>
       <div v-else class="text-xs text-gray-500 leading-5">暂无数据</div>

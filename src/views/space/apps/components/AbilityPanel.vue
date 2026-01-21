@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DatasetsCollapse from './ability/DatasetsCollapse.vue'
+import LLMModel from './ability/LLMModel.vue'
 import LongTermMemory from './ability/LongTermMemory.vue'
 import OpeningStatement from './ability/OpeningStatement.vue'
 import ReviewConfig from './ability/ReviewConfig.vue'
@@ -19,6 +20,7 @@ const defaultActiveKey = [
   'Tools',
   'Datasets',
   'Workflows',
+  'LLMModel',
 ]
 </script>
 
@@ -28,6 +30,8 @@ const defaultActiveKey = [
 
     <div class="flex-1 overflow-y-scroll scrollbar-w-none" style="max-height: calc(100% - 118px)">
       <a-collapse :default-active-key="defaultActiveKey" :bordered="false">
+        <!-- 大语言模型 -->
+        <LLMModel />
         <!-- 扩展插件 -->
         <ToolsExpand />
         <!-- 工作流 -->

@@ -3,8 +3,10 @@ import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 import { defineConfig } from 'vite'
-import monacoEditorPlugin from 'vite-plugin-monaco-editor'
+import monacoEditorPluginModule from 'vite-plugin-monaco-editor'
 import vueDevTools from 'vite-plugin-vue-devtools'
+
+const monacoEditorPlugin = (monacoEditorPluginModule as any).default || monacoEditorPluginModule
 
 // https://vite.dev/config/
 export default defineConfig({
