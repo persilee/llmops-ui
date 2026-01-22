@@ -61,10 +61,8 @@ const code = ref('')
 const fetchData = async () => {
   try {
     loading.value = true
-    if (!store.workflow) {
-      headerLoading.value = true
-      await store.getWorkflow(route.params.workflowId as string)
-    }
+    headerLoading.value = true
+    await store.getWorkflow(route.params.workflowId as string)
     await store.getDraftGraph(store.workflow?.id ?? (route.params.workflowId as string))
   } catch (error) {
   } finally {

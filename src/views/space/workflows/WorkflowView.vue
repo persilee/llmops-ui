@@ -274,6 +274,15 @@ onUnmounted(() => {
             :date="getDate(workflow)"
             @click="handleToolCardClick(idx)"
           >
+            <template #prefix-title>
+              <a-tooltip v-if="workflow?.status == 'published'" :content="'已发布'">
+                <div
+                  class="bg-green-500 rounded-full w-4 h-4 flex items-center justify-center shrink-0 mr-1"
+                >
+                  <icon-check class="w-2.5 h-2.5 text-white" />
+                </div>
+              </a-tooltip>
+            </template>
             <a-dropdown position="br" @select="(v: string) => handleSelect(v, workflow)">
               <a-button @click.stop type="text" class="rounded-lg text-gray-700" size="small">
                 <template #icon><icon-more /></template>

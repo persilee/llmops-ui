@@ -1,5 +1,5 @@
 import WorkFlowApi from '@/services/api/workflow'
-import type { GetWorkflowsWithPage } from '@/services/api/workflow/types'
+import type { GetWorkflowResp, GetWorkflowsWithPage } from '@/services/api/workflow/types'
 import type { GraphEdge, GraphNode } from '@vue-flow/core'
 import { defineStore } from 'pinia'
 import { markRaw, ref } from 'vue'
@@ -17,7 +17,7 @@ import ToolNode from './components/nodes/ToolNode.vue'
 export const useWorkflowStore = defineStore(
   'workflow',
   () => {
-    const workflow = ref<GetWorkflowsWithPage>()
+    const workflow = ref<GetWorkflowResp | GetWorkflowsWithPage>()
     const mode = ref('mouse')
     const isShowMap = ref(false)
     const loading = ref(false)

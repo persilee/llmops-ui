@@ -13,6 +13,8 @@ export interface GetWorkflowsWithPage {
   status?: string
   tool_call_name?: string
   updated_at?: number
+  draft_graph?: any
+  graph?: any
 }
 
 export interface CreateWorkflowReq {
@@ -38,6 +40,8 @@ export interface GetWorkflowResp {
   status: string
   tool_call_name: string
   updated_at: number
+  draft_graph?: any
+  graph?: any
 }
 
 export interface UpdateWorkflowReq {

@@ -20,7 +20,10 @@ defineProps<{
         :style="{ background: background }"
       />
       <div class="flex flex-col">
-        <div class="text-base text-gray-900 font-bold line-clamp-1">{{ name }}</div>
+        <div class="flex items-center">
+          <slot name="prefix-title"></slot>
+          <div class="text-base text-gray-900 font-bold line-clamp-1">{{ name }}</div>
+        </div>
         <div class="text-xs text-gray-500 line-clamp-1">
           {{ subLabel }}
         </div>

@@ -106,10 +106,9 @@ class WorkFlowApi {
    * @param req 请求体参数
    * @returns Promise对象
    */
-  static publishWorkflow(workflowId: string, req: Record<string, any>) {
+  static publishWorkflow(workflowId: string) {
     return post({
       url: `/workflows/${workflowId}/publish`,
-      body: req,
     })
   }
 
@@ -132,10 +131,9 @@ class WorkFlowApi {
    * @param req 请求体参数
    * @returns Promise对象
    */
-  static cancelPublishWorkflow(workflowId: string, req: Record<string, any>) {
+  static cancelPublishWorkflow(workflowId: string) {
     return post({
       url: `/workflows/${workflowId}/unpublish`,
-      body: req,
     })
   }
 }

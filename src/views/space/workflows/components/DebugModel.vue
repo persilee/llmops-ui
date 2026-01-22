@@ -79,6 +79,7 @@ const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | u
       if (resp) {
         debugError.value = resp.message
       }
+      await store.getWorkflow(store.workflow.id)
     }
   } catch (error: any) {
     debugError.value = error.message
