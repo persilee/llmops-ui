@@ -20,9 +20,7 @@ const accountStore = useAccountStore()
       <div class="font-semibold text-gray-700">
         {{ accountStore.account.name }}
       </div>
-      <div
-        class="max-w-max bg-blue-600 text-white border border-blue-700 px-4 py-3 rounded-lg leading-5"
-      >
+      <div class="max-w-max bg-blue-200 text-gray-700 px-4 py-3 rounded-lg leading-5">
         {{ message.query }}
       </div>
     </div>

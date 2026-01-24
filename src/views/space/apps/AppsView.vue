@@ -275,6 +275,15 @@ onUnmounted(() => {
             :date="getDate(app)"
             @click="handleClick(app)"
           >
+            <template #prefix-title>
+              <a-tooltip v-if="app.status === 'published'" :content="'已发布'">
+                <div
+                  class="bg-green-500 rounded-full w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"
+                >
+                  <icon-check class="w-2 h-2 text-white" />
+                </div>
+              </a-tooltip>
+            </template>
             <a-dropdown position="br" @select="(v: string) => handleSelect(v, app)">
               <a-button @click.stop type="text" class="rounded-lg text-gray-700" size="small">
                 <template #icon><icon-more /></template>

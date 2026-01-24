@@ -277,9 +277,9 @@ onUnmounted(() => {
             <template #prefix-title>
               <a-tooltip v-if="workflow?.status == 'published'" :content="'已发布'">
                 <div
-                  class="bg-green-500 rounded-full w-4 h-4 flex items-center justify-center shrink-0 mr-1"
+                  class="bg-green-500 rounded-full w-3.5 h-3.5 flex items-center justify-center shrink-0 mr-1"
                 >
-                  <icon-check class="w-2.5 h-2.5 text-white" />
+                  <icon-check class="w-2 h-2 text-white" />
                 </div>
               </a-tooltip>
             </template>

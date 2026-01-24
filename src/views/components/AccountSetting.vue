@@ -185,7 +185,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <a-modal :visible="visible" :width="1000" hide-title :footer="false" class="rounded-xl">
+  <a-modal :visible="visible" :width="800" hide-title :footer="false" class="rounded-xl">
     <div class="flex h-[560px]">
       <!-- 左边导航 -->
       <div class="w-[186px] flex flex-col">

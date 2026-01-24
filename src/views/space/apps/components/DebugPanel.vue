@@ -174,9 +174,9 @@ const handleScroll = async (e: Event) => {
  * @example
  * await sendMessage();
  */
-const sendMessage = async () => {
+const sendMessage = async (query?: string) => {
   // 检查是否有对话正在进行中或ID不存在，如果有则停止当前对话
-  if (isDisabled.value || !store.app?.id) {
+  if ((!query && isDisabled.value) || !store.app?.id) {
     Message.info('对话正在进行中，请等待对话结束，或手动停止对话')
     return
   }
@@ -192,7 +192,7 @@ const sendMessage = async () => {
   const newMessage = {
     id: '',
     conversation_id: '',
-    query: inputValue.value,
+    query: query ?? inputValue.value,
     answer: '',
     total_token_count: 0,
     latency: 0,
@@ -205,7 +205,7 @@ const sendMessage = async () => {
   messages.value.unshift(newMessage)
 
   // 保存用户输入内容
-  const humanInput = inputValue.value
+  const humanInput = query ?? inputValue.value
   // 清空输入框
   inputValue.value = ''
   // 滚动到底部以显示新消息
@@ -314,6 +314,8 @@ const handleEventData = (eventResponse: Record<string, any>) => {
 
     // 将新的思考内容追加到消息回答中
     messages.value[0].answer += data.thought
+    messages.value[0].latency = data.latency
+    messages.value[0].total_token_count = data.total_token_count
   } else {
     // 对于非AI消息事件，直接创建新的思考过程
     agentThoughts.push(createThought(data))
@@ -375,6 +377,10 @@ const handleStopResponse = async () => {
   }
 }
 
+const handleRegenerate = (message: GetDebugConversationMessagesWithPage) => {
+  sendMessage(message.query)
+}
+
 /**
  * 组件挂载时的生命周期钩子函数
  *
@@ -413,7 +419,7 @@ onMounted(async () => {
           @scroll="handleScroll"
           class="scrollbar-w-none py-6"
         >
-          <template v-slot="{ item, active }">
+          <template v-slot="{ item, index, active }">
             <DynamicScrollerItem
               :item="item"
               :active="active"
@@ -431,8 +437,12 @@ onMounted(async () => {
                 :agent-thoughts="
                   item.agent_thoughts.sort((a: any, b: any) => a.position - b.position)
                 "
+                :latency="item.latency"
+                :total-token-count="item.total_token_count"
                 :loading="thoughtLoading && item.id === messageId"
+                :is-last-item="index === messages.length - 1"
                 @select-opening-question="handleSelectOpeningQuestion"
+                @regenerate="handleRegenerate"
               />
             </DynamicScrollerItem>
           </template>
@@ -456,7 +466,9 @@ onMounted(async () => {
     </a-spin>
     <!-- 输入框 -->
     <div class="flex flex-col w-full flex-shrink-0 bg-white relative">
-      <div class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency"></div>
+      <div
+        class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
+      ></div>
       <div class="flex items-center px-6 gap-4">
         <a-button
           class="flex-shrink-0"
@@ -469,13 +481,18 @@ onMounted(async () => {
         <div
           class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
         >
-          <form @submit.prevent="sendMessage" class="w-full">
-            <input v-model="inputValue" type="text" class="flex-1 outline-0 ml-1.5" />
+          <form @submit.prevent="sendMessage()" class="w-full">
+            <input
+              v-model="inputValue"
+              type="text"
+              :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
+              class="flex-1 w-full outline-0 ml-1.5"
+            />
           </form>
           <a-button type="text" shape="circle">
             <template #icon><img src="@/assets/images/icon-add.png" class="w-4 h-4" /></template>
           </a-button>
-          <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage">
+          <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage()">
             <template #icon
               ><img
                 src="@/assets/images/icon-send.png"

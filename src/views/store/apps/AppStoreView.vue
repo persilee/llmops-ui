@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconApp from '@/components/icons/IconApp.vue'
 import BuiltinAppApi from '@/services/api/builtin-app'
 import type {
   GetBuiltinAppCategoriesResp,
@@ -132,7 +133,7 @@ onMounted(() => {
   <a-spin :loading="loading" class="block h-full w-full bg-gray-50">
     <div class="flex flex-col p-6">
       <!-- 页面头部 -->
-      <PageHeader title="应用广场" />
+      <PageHeader title="应用广场"><IconApp /></PageHeader>
 
       <!-- 筛选区域 -->
       <StoreFilter

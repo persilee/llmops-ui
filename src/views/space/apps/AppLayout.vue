@@ -154,9 +154,26 @@ onMounted(() => {
         <HeaderSkeleton v-if="headerLoading" />
         <div v-else class="flex items-center gap-3">
           <!-- 图标 -->
-          <div class="bg-white border border-gray-300 rounded-lg p-2">
-            <img :src="store.app?.icon" class="w-[25px] h-[28px]" />
-          </div>
+          <a-badge :offset="[-2, 30]" :dotStyle="{ width: '16px', fontSize: '16px' }">
+            <template #content>
+              <div
+                v-if="isPublished"
+                class="bg-white p-0.5 rounded-full w-4 h-4 flex items-center justify-center shrink-0"
+              >
+                <div
+                  class="bg-green-500 rounded-full w-full h-full flex items-center justify-center"
+                >
+                  <icon-check class="w-2 h-2 text-white" />
+                </div>
+              </div>
+            </template>
+            <a-avatar
+              :size="36"
+              shape="square"
+              class="rounded-lg flex-shrink-0 bg-transparent"
+              :image-url="store.app?.icon"
+            />
+          </a-badge>
           <!-- 标题和信息 -->
           <div class="flex flex-col justify-between">
             <div class="flex items-center gap-1">
@@ -175,16 +192,8 @@ onMounted(() => {
                 class="rounded h-[16px] leading-[16px] text-[10px] bg-gray-200 text-gray-500"
               >
                 <template #icon>
-                  <img src="@/assets/images/icon-user-dark.png" class="w-2.5 h-2.5" />
-                </template>
-                个人空间
-              </a-tag>
-              <a-tag
-                size="small"
-                class="rounded h-[16px] leading-[16px] text-[10px] bg-gray-200 text-gray-500"
-              >
-                <template #icon>
-                  <img src="@/assets/images/icon-history.png" class="w-2.5 h-2.5" />
+                  <icon-check-circle v-if="isPublished" class="w-2.5 h-2.5" />
+                  <img v-else src="@/assets/images/icon-history.png" class="w-2.5 h-2.5" />
                 </template>
                 {{ isPublished ? '已发布' : '草稿' }}
               </a-tag>
