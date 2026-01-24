@@ -32,6 +32,7 @@
     "monaco-editor-vue3": "^1.0.5",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
+    "qrcode-vue3": "^1.7.1",
     "ts-type-guards": "^0.7.0",
     "uuid": "^13.0.0",
     "vite-plugin-monaco-editor": "^1.1.0",

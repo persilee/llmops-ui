@@ -248,6 +248,18 @@ class AppsApi {
       params,
     })
   }
+
+  /**
+   * 删除指定消息
+   * @param appId 应用ID
+   * @param messageId 消息ID
+   * @returns 返回删除消息的响应结果
+   */
+  static deleteMessageById(appId: string, messageId: string) {
+    return post({
+      url: `/apps/${appId}/${messageId}/delete`,
+    })
+  }
 }
 
 export default AppsApi

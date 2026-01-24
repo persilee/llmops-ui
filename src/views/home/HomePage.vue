@@ -9,9 +9,11 @@ import type {
 } from '@/services/api/assistant-agent/type'
 import type { Paginator } from '@/services/types'
 import { Message } from '@arco-design/web-vue'
+import { remove } from 'lodash-es'
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import ShareMessagesModel from '../components/ShareMessagesModel.vue'
 import AIMessage from '../space/apps/components/debug/AIMessage.vue'
 import DebugEmptyMessage from '../space/apps/components/debug/DebugEmptyMessage.vue'
 import HumanMessage from '../space/apps/components/debug/HumanMessage.vue'
@@ -51,6 +53,12 @@ const inputValue = ref('')
 const isDisabled = computed(() => thoughtLoading.value || inputValue.value.trim() === '')
 // 控制停止响应按钮的显示状态
 const isShowStopBtn = ref(false)
+const checkboxMessages = ref<Array<string>>([])
+const shareMessages = ref<Array<GetAssistantAgentMessagesWithPage>>([])
+const isShareMessages = ref(false)
+const checkedAll = ref(false)
+const indeterminate = ref(false)
+const shareMessagesModelVisible = ref(false)
 
 /**
  * 获取调试对话消息数据
@@ -113,9 +121,9 @@ const fetchMessagesData = async (isLoadMore: boolean = false) => {
  * @example
  * await sendMessage();
  */
-const sendMessage = async () => {
+const sendMessage = async (query?: string) => {
   // 检查是否有对话正在进行中或ID不存在，如果有则停止当前对话
-  if (isDisabled.value) {
+  if (!query && isDisabled.value) {
     Message.info('对话正在进行中，请等待对话结束，或手动停止对话')
     return
   }
@@ -131,7 +139,7 @@ const sendMessage = async () => {
   const newMessage = {
     id: '',
     conversation_id: '',
-    query: inputValue.value,
+    query: query ?? inputValue.value,
     answer: '',
     total_token_count: 0,
     latency: 0,
@@ -144,7 +152,7 @@ const sendMessage = async () => {
   messages.value.unshift(newMessage)
 
   // 保存用户输入内容
-  const humanInput = inputValue.value
+  const humanInput = query ?? inputValue.value
   // 清空输入框
   inputValue.value = ''
   // 滚动到底部以显示新消息
@@ -342,6 +350,186 @@ const handleSelectOpeningQuestion = async (question: string) => {
 }
 
 /**
+ * 重新发送消息
+ * @param message
+ */
+const handleRegenerate = (message: GetAssistantAgentMessagesWithPage) => {
+  sendMessage(message.query)
+}
+
+/**
+ * 删除单条消息的函数
+ *
+ * 该函数执行以下操作：
+ * 1. 设置加载状态为true，显示加载效果
+ * 2. 调用AssistantAgentApi.deleteMessageById接口删除指定ID的消息
+ * 3. 从本地消息列表中移除该消息
+ * 4. 显示删除成功的提示消息
+ * 5. 在finally块中重置加载状态
+ *
+ * @param {GetAssistantAgentMessagesWithPage} message - 要删除的消息对象，包含消息ID等信息
+ * @returns {Promise<void>} 返回一个Promise，表示异步操作的完成
+ */
+const handleDeleteMessage = async (message: GetAssistantAgentMessagesWithPage) => {
+  try {
+    // 设置加载状态，显示加载效果
+    loading.value = true
+    // 调用API删除指定ID的消息
+    const resp = await AssistantAgentApi.deleteMessageById(message.id)
+    // 从本地消息列表中移除该消息
+    remove(messages.value, (item) => item.id === message.id)
+    // 显示删除成功的提示消息
+    Message.success(resp.message)
+  } catch (error) {
+    // 错误处理：捕获并处理可能出现的异常
+  } finally {
+    // 无论成功失败，都重置加载状态
+    loading.value = false
+  }
+}
+
+/**
+ * 处理消息复选框状态变化的函数
+ *
+ * 该函数用于处理消息列表中复选框的状态变化，主要功能包括：
+ * 1. 根据选中的消息数量更新全选和部分选中状态
+ * 2. 维护待分享消息列表的同步更新
+ *
+ * @param {string[]} values - 当前选中的消息ID数组
+ * @returns {void} 无返回值
+ */
+const handleCheckboxMessagesChange = (values: string[]) => {
+  // 判断是否全选：选中的消息数量等于总消息数量
+  if (values.length == messages.value.length) {
+    checkedAll.value = true // 设置全选状态为true
+    indeterminate.value = false // 设置部分选中状态为false
+  }
+  // 判断是否未选：选中的消息数量为0
+  else if (values.length == 0) {
+    checkedAll.value = false // 设置全选状态为false
+    indeterminate.value = false // 设置部分选中状态为false
+  }
+  // 部分选中状态：选中的消息数量介于0和总数之间
+  else {
+    checkedAll.value = false // 设置全选状态为false
+    indeterminate.value = true // 设置部分选中状态为true
+  }
+
+  // 清空现有的分享消息列表
+  shareMessages.value = []
+
+  // 遍历所有选中的消息ID
+  values.forEach((value) => {
+    // 在消息列表中查找对应的消息对象
+    messages.value.forEach((item) => {
+      // 如果找到匹配的消息ID，将该消息添加到分享列表中
+      if (value === item.id) {
+        shareMessages.value.push(item)
+      }
+    })
+  })
+}
+
+/**
+ * 处理分享消息的函数
+ *
+ * 当用户点击单条消息的分享按钮时触发此函数，用于：
+ * 1. 进入分享模式，显示分享相关的UI元素
+ * 2. 初始化复选框状态
+ * 3. 将当前消息添加到待分享列表中
+ *
+ * @param {GetAssistantAgentMessagesWithPage} message - 需要分享的消息对象，包含消息ID、内容等信息
+ * @returns {void} 无返回值
+ */
+const handleShareMessages = (message: GetAssistantAgentMessagesWithPage) => {
+  // 进入分享模式，显示分享相关的UI元素
+  isShareMessages.value = true
+  // 设置全选状态为false，因为只选中了一条消息
+  checkedAll.value = false
+  // 设置部分选中状态为true，表示有部分消息被选中
+  indeterminate.value = true
+  // 将当前消息的ID添加到已选中的消息ID列表中
+  checkboxMessages.value.push(message.id)
+  // 将当前消息对象添加到待分享的消息列表中
+  shareMessages.value.push(message)
+}
+
+/**
+ * 取消消息分享操作的函数
+ *
+ * 当用户点击取消分享按钮时触发此函数，用于重置所有与分享相关的状态：
+ * - 退出分享模式
+ * - 清空已选中的消息ID列表
+ * - 清空已选中的消息对象列表
+ * - 重置全选状态
+ * - 重置部分选中状态
+ *
+ * @returns {void} 无返回值
+ */
+const handleCancelShareMessages = () => {
+  // 退出分享模式，隐藏分享相关的UI元素
+  isShareMessages.value = false
+  // 清空已选中的消息ID数组
+  checkboxMessages.value = []
+  // 清空已选中的消息对象数组
+  shareMessages.value = []
+  // 重置全选状态
+  checkedAll.value = false
+  // 重置部分选中状态
+  indeterminate.value = false
+}
+
+/**
+ * 处理全选/取消全选操作的函数
+ *
+ * 该函数用于控制消息列表的全选状态，当用户点击全选复选框时触发。
+ * 它会更新以下状态：
+ * - indeterminate: 部分选中状态，设置为false表示完全选中或未选中
+ * - checkedAll: 全选状态，表示是否所有消息都被选中
+ * - checkboxMessages: 存储被选中消息的ID数组
+ * - shareMessages: 存储被选中消息的完整对象数组
+ *
+ * @param {boolean} value - 全选复选框的状态值，true表示全选，false表示取消全选
+ * @returns {void} 无返回值
+ */
+const handleChangeAll = (value: boolean) => {
+  // 重置部分选中状态
+  indeterminate.value = false
+
+  if (value) {
+    // 全选操作
+    checkedAll.value = true
+    // 清空现有选中列表
+    checkboxMessages.value = []
+    shareMessages.value = []
+    // 遍历所有消息，将消息ID和完整消息对象分别添加到对应数组中
+    messages.value.forEach((item) => {
+      checkboxMessages.value.push(item.id)
+      shareMessages.value.push(item)
+    })
+  } else {
+    // 取消全选操作
+    checkedAll.value = false
+    // 清空所有选中状态
+    checkboxMessages.value = []
+    shareMessages.value = []
+  }
+}
+
+/**
+ * 将选中的消息分享为图片
+ *
+ * 该函数用于触发分享消息的模态框显示，让用户可以将选中的对话消息转换为图片格式进行分享。
+ * 当用户点击"分享图片"按钮时调用此函数。
+ *
+ * @returns {void} 无返回值
+ */
+const shareMessagesToImage = () => {
+  // 打开分享消息的模态框
+  shareMessagesModelVisible.value = true
+}
+
+/**
  * 处理滚动事件，实现无限滚动加载功能
  * @param {Event} e - 滚动事件对象
  */
@@ -389,118 +577,173 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="w-full h-full max-w-[780px] mx-auto">
-    <a-spin :loading="loading" class="flex flex-col w-full h-[calc(100vh-100px)] px-6">
-      <!-- 调试消息列表 -->
-      <div v-if="messages.length > 0" class="flex flex-col h-full relative">
-        <DynamicScroller
-          ref="scroller"
-          :items="messages.slice().reverse()"
-          :min-item-size="1"
-          @scroll="handleScroll"
-          class="scrollbar-w-none py-6"
-        >
-          <template v-slot="{ item, index, active }">
-            <DynamicScrollerItem
-              :item="item"
-              :active="active"
-              :data-index="item.id"
-              class="flex flex-col"
-            >
-              <!-- 人类消息 -->
-              <HumanMessage :message="item" />
-              <!-- AI消息 -->
-              <AIMessage
-                :message="item"
-                :opening-questions="item.id === messageId ? openingQuestions : []"
-                :is-show-dot="aiMessageLoading && item.id === messageId"
-                :is-show-cursor="isShowCursor && item.id === messageId"
-                :agent-thoughts="
-                  item.agent_thoughts.sort((a: any, b: any) => a.position - b.position)
-                "
-                :latency="item.latency"
-                :total-token-count="item.total_token_count"
-                :loading="thoughtLoading && item.id === messageId"
-                :is-last-item="index === messages.length - 1"
-                @select-opening-question="handleSelectOpeningQuestion"
-                :icon="avatarIcon"
-                :name="'小智'"
-              />
-            </DynamicScrollerItem>
-          </template>
-        </DynamicScroller>
-        <!-- 停止响应按钮 -->
-        <div
-          v-if="isShowStopBtn"
-          class="flex items-center justify-center absolute z-50 bottom-3 left-0 right-0"
-        >
-          <div
-            class="inline-block py-1.5 px-3.5 border border-gray-200 bg-white rounded-lg shadow-lg cursor-pointer hover:bg-gray-300"
-            @click="handleStopResponse"
-          >
-            <icon-record-stop />
-            <span class="text-gray-900 font-bold ml-1">停止响应</span>
-          </div>
+  <div :class="`w-full h-full ${isShareMessages ? 'relative pt-[76px]' : ''}`">
+    <div
+      v-if="isShareMessages"
+      class="h-[76px] border-b border-gray-200 bg-gray-50 flex items-center absolute top-0 left-0 right-0 z-10"
+    >
+      <div class="w-[780px] flex items-center justify-between mx-auto">
+        <div class="flex flex-col gap-1">
+          <div class="text-gray-700 font-bold text-base">分享对话</div>
+          <div class="text-gray-400 text-xs">内容由 AI 生成，不能完全保障真实</div>
         </div>
-      </div>
-      <!-- 空消息显示 Agent 图标和名字 -->
-      <DebugEmptyMessage
-        v-else
-        :icon="avatarIcon"
-        :name="'我是 AI 应用构建器助手，小智'"
-        :opening-statement="`
-          <b>你好，欢迎来到LLMOps 🎉</b><br><br>
-          LLMOps是新一代大模型 AI 应用开发平台。无论你是否有编程基础，都可以快速搭建出各种 AI 应用，并一键发布到各大社交平台，或者轻松部署到自己的网站。<br><br>
-          如果你还有其他LLMOps的使用问题，也欢迎随时问我！`"
-        :opening-questions="[
-          '什么是LLMOps，有哪些功能？',
-          '如何使用LLMOps？',
-          '我想创建一个应用？',
-        ]"
-        @select-opening-question="handleSelectOpeningQuestion"
-      />
-    </a-spin>
-    <!-- 输入框 -->
-    <div class="flex flex-col w-full flex-shrink-0 relative">
-      <div
-        class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
-      ></div>
-      <div class="flex items-center px-6 gap-4">
-        <a-button
-          class="flex-shrink-0"
-          type="text"
-          shape="circle"
-          @click="deleteConversationMessages"
+        <a-button type="text" @click="handleCancelShareMessages" class="text-gray-500"
+          >取消</a-button
         >
-          <template #icon><img src="@/assets/images/icon-clear.png" class="w-4 h-4" /></template>
-        </a-button>
-        <div
-          class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
-        >
-          <form @submit.prevent="sendMessage" class="w-full">
-            <input
-              v-model="inputValue"
-              type="text"
-              :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
-              class="flex-1 w-full outline-0 ml-1.5"
-            />
-          </form>
-          <a-button type="text" shape="circle">
-            <template #icon><img src="@/assets/images/icon-add.png" class="w-4 h-4" /></template>
-          </a-button>
-          <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage">
-            <template #icon
-              ><img
-                src="@/assets/images/icon-send.png"
-                :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
-            /></template>
-          </a-button>
-        </div>
-      </div>
-      <div class="text-center text-gray-500 text-xs py-4">
-        内容由AI生成，无法确保真实准确，仅供参考。
       </div>
     </div>
+    <div class="w-full h-full max-w-[780px] mx-auto">
+      <a-spin
+        :loading="loading"
+        :class="`flex flex-col w-full ${isShareMessages ? 'h-[calc(100vh-176px)]' : 'h-[calc(100vh-100px)]'}  px-6`"
+      >
+        <!-- 调试消息列表 -->
+        <div v-if="messages.length > 0" class="flex flex-col h-full relative">
+          <DynamicScroller
+            ref="scroller"
+            :items="messages.slice().reverse()"
+            :min-item-size="1"
+            @scroll="handleScroll"
+            class="scrollbar-w-none py-6"
+          >
+            <template v-slot="{ item, index, active }">
+              <DynamicScrollerItem
+                :item="item"
+                :active="active"
+                :data-index="item.id"
+                class="flex flex-col"
+              >
+                <a-checkbox-group v-model="checkboxMessages" @change="handleCheckboxMessagesChange">
+                  <div
+                    :class="`${checkboxMessages.includes(item.id) ? 'bg-blue-100 p-3 rounded-xl mb-1' : ''}`"
+                  >
+                    <div class="flex items-center justify-center">
+                      <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
+                      <!-- 人类消息 -->
+                      <HumanMessage :message="item" class="flex-1" />
+                    </div>
+                    <!-- AI消息 -->
+                    <div class="flex items-center justify-center">
+                      <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
+                      <AIMessage
+                        class="flex-1"
+                        :message="item"
+                        :opening-questions="item.id === messageId ? openingQuestions : []"
+                        :is-show-dot="aiMessageLoading && item.id === messageId"
+                        :is-show-cursor="isShowCursor && item.id === messageId"
+                        :agent-thoughts="
+                          item.agent_thoughts.sort((a: any, b: any) => a.position - b.position)
+                        "
+                        :latency="item.latency"
+                        :total-token-count="item.total_token_count"
+                        :loading="thoughtLoading && item.id === messageId"
+                        :is-last-item="index === messages.length - 1"
+                        :icon="avatarIcon"
+                        :name="'小智'"
+                        :is-share-messages="isShareMessages"
+                        @select-opening-question="handleSelectOpeningQuestion"
+                        @delete-message="handleDeleteMessage"
+                        @regenerate="handleRegenerate"
+                        @share-messages="handleShareMessages"
+                      />
+                    </div>
+                  </div>
+                </a-checkbox-group>
+              </DynamicScrollerItem>
+            </template>
+          </DynamicScroller>
+          <!-- 停止响应按钮 -->
+          <div
+            v-if="isShowStopBtn"
+            class="flex items-center justify-center absolute z-50 bottom-3 left-0 right-0"
+          >
+            <div
+              class="inline-block py-1.5 px-3.5 border border-gray-200 bg-white rounded-lg shadow-lg cursor-pointer hover:bg-gray-300"
+              @click="handleStopResponse"
+            >
+              <icon-record-stop />
+              <span class="text-gray-900 font-bold ml-1">停止响应</span>
+            </div>
+          </div>
+        </div>
+        <!-- 空消息显示 Agent 图标和名字 -->
+        <DebugEmptyMessage
+          v-else
+          :icon="avatarIcon"
+          :name="'我是 AI 应用构建器助手，小智'"
+          :opening-statement="`
+            <b>你好，欢迎来到LLMOps 🎉</b><br><br>
+            LLMOps是新一代大模型 AI 应用开发平台。无论你是否有编程基础，都可以快速搭建出各种 AI 应用，并一键发布到各大社交平台，或者轻松部署到自己的网站。<br><br>
+            如果你还有其他LLMOps的使用问题，也欢迎随时问我！`"
+          :opening-questions="[
+            '什么是LLMOps，有哪些功能？',
+            '如何使用LLMOps？',
+            '我想创建一个应用？',
+          ]"
+          @select-opening-question="handleSelectOpeningQuestion"
+        />
+      </a-spin>
+      <!-- 输入框 -->
+      <div v-if="!isShareMessages" class="flex flex-col w-full flex-shrink-0 relative">
+        <div
+          class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
+        ></div>
+        <div class="flex items-center px-6 gap-4">
+          <a-button
+            class="flex-shrink-0"
+            type="text"
+            shape="circle"
+            @click="deleteConversationMessages"
+          >
+            <template #icon><img src="@/assets/images/icon-clear.png" class="w-4 h-4" /></template>
+          </a-button>
+          <div
+            class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
+          >
+            <form @submit.prevent="sendMessage()" class="w-full">
+              <input
+                v-model="inputValue"
+                type="text"
+                :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
+                class="flex-1 w-full outline-0 ml-1.5"
+              />
+            </form>
+            <a-button type="text" shape="circle">
+              <template #icon><img src="@/assets/images/icon-add.png" class="w-4 h-4" /></template>
+            </a-button>
+            <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage()">
+              <template #icon
+                ><img
+                  src="@/assets/images/icon-send.png"
+                  :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
+              /></template>
+            </a-button>
+          </div>
+        </div>
+        <div class="text-center text-gray-500 text-xs py-4">
+          内容由AI生成，无法确保真实准确，仅供参考。
+        </div>
+      </div>
+      <div
+        v-if="isShareMessages"
+        class="flex items-center justify-between w-full h-[100px] flex-shrink-0 border-t border-gray-200"
+      >
+        <a-checkbox
+          :model-value="checkedAll"
+          :indeterminate="indeterminate"
+          @change="handleChangeAll"
+          >全选
+        </a-checkbox>
+        <a-button :disabled="shareMessages.length == 0" type="primary" @click="shareMessagesToImage"
+          >分享图片</a-button
+        >
+      </div>
+    </div>
+    <ShareMessagesModel
+      v-model:visible="shareMessagesModelVisible"
+      :messages="shareMessages"
+      @share-success="handleCancelShareMessages"
+    />
   </div>
 </template>
 

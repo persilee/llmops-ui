@@ -53,6 +53,17 @@ class AssistantAgentApi {
       url: '/assistant-agent/conversation/delete',
     })
   }
+
+  /**
+   * 根据消息ID删除助手代理的单条消息
+   * @param {string} messageId - 要删除的消息的唯一标识符
+   * @returns {Promise} 返回删除操作的Promise对象
+   */
+  static deleteMessageById(messageId: string) {
+    return post({
+      url: `/assistant-agent/${messageId}/delete`,
+    })
+  }
 }
 
 export default AssistantAgentApi

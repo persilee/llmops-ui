@@ -21,9 +21,10 @@ const props = defineProps<{
   latency?: number
   totalTokenCount?: number
   isLastItem?: boolean
+  isShareMessages?: boolean
 }>()
 
-const emits = defineEmits(['selectOpeningQuestion', 'regenerate', 'deleteMessage'])
+const emits = defineEmits(['selectOpeningQuestion', 'regenerate', 'deleteMessage', 'shareMessages'])
 
 const store = useAppStore()
 
@@ -63,7 +64,10 @@ const copyToClipboard = async (text: string) => {
           {{ message.answer }}
           <DotCursor v-if="isShowCursor" />
         </div>
-        <div v-if="!isShowCursor && !isShowDot" class="flex items-center justify-between w-full">
+        <div
+          v-if="!isShowCursor && !isShowDot && !isShareMessages"
+          class="flex items-center justify-between w-full"
+        >
           <div class="flex items-center gap-2">
             <div class="flex items-center gap-1 text-gray-500 text-xs">
               {{ latency?.toFixed(2) }}s
@@ -92,6 +96,16 @@ const copyToClipboard = async (text: string) => {
                 @click="emits('regenerate', message)"
               >
                 <template #icon><icon-refresh class="text-gray-500 w-3.5 h-3.5" /></template>
+              </a-button>
+            </a-tooltip>
+            <a-tooltip content="分享">
+              <a-button
+                type="text"
+                size="mini"
+                class="hover:bg-gray-200"
+                @click="emits('shareMessages', message)"
+              >
+                <template #icon><icon-share-alt class="text-gray-500 w-3.5 h-3.5" /></template>
               </a-button>
             </a-tooltip>
             <a-tooltip content="删除">

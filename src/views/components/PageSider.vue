@@ -66,7 +66,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <a-layout-sider :width="240" class="min-h-screen bg-gray-50 p-2 shadow-none">
+  <a-layout-sider :width="240" class="min-h-screen bg-gray-50 py-2 pl-2 shadow-none">
     <div class="bg-white h-full rounded-lg px-2 py-4 flex flex-col justify-between">
       <!-- 顶部区域：Logo和创建按钮 -->
       <div class="">

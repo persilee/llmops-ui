@@ -1,5 +1,10 @@
 import { post, ssePost } from '@/services/request'
-import type { GenerateSuggestedQuestionsReq, OptimizePromptReq } from './types'
+import type {
+  GenerateConversationNameReq,
+  GenerateConversationNameResp,
+  GenerateSuggestedQuestionsReq,
+  OptimizePromptReq,
+} from './types'
 
 class AIApi {
   /**
@@ -23,6 +28,18 @@ class AIApi {
   static generateSuggestedQuestions(req: GenerateSuggestedQuestionsReq) {
     return post<Array<string>>({
       url: '/ai/suggested/questions',
+      body: req,
+    })
+  }
+
+  /**
+   * 生成对话名称
+   * @param req 生成对话名称的请求参数
+   * @returns 返回一个Promise对象，包含生成的对话名称响应
+   */
+  static generateConversationName(req: GenerateConversationNameReq) {
+    return post<GenerateConversationNameResp>({
+      url: '/ai/generate-conversation-name',
       body: req,
     })
   }

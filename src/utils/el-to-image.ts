@@ -1,4 +1,9 @@
-import { toJpeg as ElToJpg, toPng as ElToPng, toSvg as ElToSvg } from 'html-to-image'
+import {
+  toBlob as ElToBlob,
+  toJpeg as ElToJpg,
+  toPng as ElToPng,
+  toSvg as ElToSvg,
+} from 'html-to-image'
 import type { Options as HTMLToImageOptions } from 'html-to-image/es/types'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
@@ -47,6 +52,8 @@ export interface UseScreenshot {
   capture: CaptureScreenshot
   /** 下载截图文件的方法 */
   download: Download
+  /** 存储图片 data URL 的响应式引用 */
+  elToBlob: (el: HTMLElement) => Promise<Blob | null>
   /** 存储图片 data URL 的响应式引用 */
   dataUrl: Ref<string>
   /** 存储错误信息的响应式引用 */
@@ -183,6 +190,26 @@ export function useScreenshot(): UseScreenshot {
   }
 
   /**
+   * 将 HTML 元素转换为 Blob 对象
+   * @param el - 需要转换的 HTML 元素
+   * @returns 返回 Promise，解析为图片的 Blob 对象或 null
+   * @description 使用 html-to-image 库将指定元素转换为 Blob 对象，
+   *              转换失败时会设置 error 状态并抛出错误
+   */
+  function elToBlob(el: HTMLElement): Promise<Blob | null> {
+    error.value = null
+
+    return ElToBlob(el, { quality: 0.95 })
+      .then((data) => {
+        return data
+      })
+      .catch((error) => {
+        error.value = error
+        throw new Error(error)
+      })
+  }
+
+  /**
    * 下载截图文件
    * @param fileName - 下载文件的名称（不包含扩展名）
    * @description 创建一个临时的<a>元素，设置下载属性和图片数据URL，然后触发点击来下载图片
@@ -198,6 +225,7 @@ export function useScreenshot(): UseScreenshot {
   return {
     capture,
     download,
+    elToBlob,
     dataUrl,
     error,
   }
