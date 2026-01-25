@@ -124,6 +124,11 @@ const router = createRouter({
           component: () => import('@/views/auth/LoginView.vue'),
         },
         {
+          path: 'share/:shareId',
+          name: 'share-messages',
+          component: () => import('@/views/space/apps/ShareMessagesPage.vue'),
+        },
+        {
           path: 'auth/authorize/:provider_name',
           name: 'auth-authorize',
           component: () => import('@/views/auth/AuthorizeView.vue'),

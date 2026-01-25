@@ -189,7 +189,7 @@ const stop = watch(visible, (newVal) => {
           type="outline"
           :disabled="loading"
           @click="handleCopyImage"
-          :class="`border border-gray-200 text-gray-700 ${loading ? 'bg-gray-100' : ''}`"
+          :class="`border border-gray-200 text-gray-700  ${loading ? 'bg-gray-100' : 'hover:bg-gray-200'}`"
         >
           <template #icon><icon-copy /></template>
           复制图片

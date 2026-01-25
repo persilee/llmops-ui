@@ -237,3 +237,16 @@ export interface ModelConfig {
   model?: string
   provider?: string
 }
+
+export interface GenerateShareConversationReq {
+  conversation_id: string
+  message_ids: any[]
+}
+
+export interface GenerateShareConversationResp {
+  share_id: string
+}
+
+export interface GetShareConversationResp {
+  messages: any[]
+}

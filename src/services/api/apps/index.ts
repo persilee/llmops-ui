@@ -5,12 +5,15 @@ import type {
   CreateAppResp,
   DebugChatReq,
   FallbackHistoryToDraftReq,
+  GenerateShareConversationReq,
+  GenerateShareConversationResp,
   GetAppResp,
   GetAppsWithPageResp,
   GetDebugConversationMessagesWithPageResp,
   GetDebugConversionSummaryResp,
   GetDraftAppConfigResp,
   GetPublishHistoriesWithPageResp,
+  GetShareConversationResp,
   UpdateAppReq,
   UpdateDebugConversationSummaryReq,
   UpdateDraftAppConfigReq,
@@ -258,6 +261,29 @@ class AppsApi {
   static deleteMessageById(appId: string, messageId: string) {
     return post({
       url: `/apps/${appId}/${messageId}/delete`,
+    })
+  }
+
+  /**
+   * 生成分享对话
+   * @param req 生成分享对话的请求参数
+   * @returns 返回生成分享对话的响应结果
+   */
+  static generateShareConversation(req: GenerateShareConversationReq) {
+    return post<GenerateShareConversationResp>({
+      url: `/apps/generate_share_conversation`,
+      body: req,
+    })
+  }
+
+  /**
+   * 获取分享对话
+   * @param shareId 分享ID
+   * @returns 返回分享对话的消息列表
+   */
+  static getShareConversation(shareId: string) {
+    return get<GetShareConversationResp>({
+      url: `/apps/share/${shareId}/messages`,
     })
   }
 }

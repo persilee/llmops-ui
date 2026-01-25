@@ -2,6 +2,7 @@
 import avatarIcon from '@/assets/images/icon-avatar.png'
 import { QueueEvent } from '@/config'
 import AIApi from '@/services/api/ai'
+import AppsApi from '@/services/api/apps'
 import AssistantAgentApi from '@/services/api/assistant-agent'
 import type {
   AgentThought,
@@ -59,6 +60,8 @@ const isShareMessages = ref(false)
 const checkedAll = ref(false)
 const indeterminate = ref(false)
 const shareMessagesModelVisible = ref(false)
+const conversationId = ref('')
+const shareMessagesLinkLoading = ref(false)
 
 /**
  * 获取调试对话消息数据
@@ -448,6 +451,8 @@ const handleShareMessages = (message: GetAssistantAgentMessagesWithPage) => {
   checkedAll.value = false
   // 设置部分选中状态为true，表示有部分消息被选中
   indeterminate.value = true
+  // 设置当前会话ID赋值给全局变量
+  conversationId.value = message.conversation_id
   // 将当前消息的ID添加到已选中的消息ID列表中
   checkboxMessages.value.push(message.id)
   // 将当前消息对象添加到待分享的消息列表中
@@ -527,6 +532,49 @@ const handleChangeAll = (value: boolean) => {
 const shareMessagesToImage = () => {
   // 打开分享消息的模态框
   shareMessagesModelVisible.value = true
+}
+
+/**
+ * 复制分享消息链接的异步函数
+ *
+ * 该函数执行以下操作：
+ * 1. 设置加载状态为true，显示加载效果
+ * 2. 调用AppsApi.generateShareConversation接口生成分享链接
+ * 3. 如果成功获取到share_id，构建完整的分享链接
+ * 4. 使用navigator.clipboard.writeText将链接复制到剪贴板
+ * 5. 显示复制成功的提示消息
+ * 6. 调用handleCancelShareMessages重置分享状态
+ * 7. 如果生成链接失败，显示错误提示
+ * 8. 在catch块中处理异常情况，显示错误提示
+ * 9. 在finally块中重置加载状态
+ *
+ * @returns {Promise<void>} 返回一个Promise，表示异步操作的完成
+ *
+ * @throws {Error} 当API调用失败或剪贴板操作失败时抛出错误
+ *
+ * @example
+ * await copyShareMessagesLink();
+ */
+const copyShareMessagesLink = async () => {
+  try {
+    shareMessagesLinkLoading.value = true
+    const resp = await AppsApi.generateShareConversation({
+      conversation_id: conversationId.value,
+      message_ids: checkboxMessages.value,
+    })
+    if (resp.data.share_id) {
+      const shareLink = `${window.location.origin}/share/${resp.data.share_id}`
+      await navigator.clipboard.writeText(shareLink)
+      Message.success('复制成功')
+      handleCancelShareMessages()
+    } else {
+      Message.error('复制失败')
+    }
+  } catch (error) {
+    Message.error('复制失败')
+  } finally {
+    shareMessagesLinkLoading.value = false
+  }
 }
 
 /**
@@ -734,9 +782,22 @@ onMounted(async () => {
           @change="handleChangeAll"
           >全选
         </a-checkbox>
-        <a-button :disabled="shareMessages.length == 0" type="primary" @click="shareMessagesToImage"
-          >分享图片</a-button
-        >
+        <div class="flex items-center gap-2">
+          <a-button
+            :disabled="shareMessages.length == 0"
+            type="primary"
+            class="bg-white border border-gray-200 text-gray-600 hover:bg-gray-200"
+            @click="shareMessagesToImage"
+            >分享图片</a-button
+          >
+          <a-button
+            :loading="shareMessagesLinkLoading"
+            :disabled="shareMessages.length == 0"
+            type="primary"
+            @click="copyShareMessagesLink"
+            >复制链接</a-button
+          >
+        </div>
       </div>
     </div>
     <ShareMessagesModel
