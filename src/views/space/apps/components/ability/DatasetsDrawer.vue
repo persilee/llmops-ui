@@ -400,11 +400,19 @@ onUnmounted(() => {
             />
           </div>
           <!-- 底部按钮 -->
-          <div class="flex justify-end items-end mt-4">
-            <a-button type="outline" class="border-gray-300 text-gray-500 mr-3" @click="handleClose"
-              >取消</a-button
-            >
-            <a-button :loading="loading" type="primary" @click="handleSave">保存</a-button>
+          <div class="flex items-center justify-between mt-4">
+            <div class="text-gray-800 font-bold text-[15px]">
+              {{ draftDatasets.length }} 个知识库被选中
+            </div>
+            <div>
+              <a-button
+                type="outline"
+                class="border-gray-300 text-gray-500 mr-3"
+                @click="handleClose"
+                >取消</a-button
+              >
+              <a-button :loading="loading" type="primary" @click="handleSave">保存</a-button>
+            </div>
           </div>
         </div>
       </div>

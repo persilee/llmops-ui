@@ -10,6 +10,7 @@ const props = defineProps<{
   isDark?: boolean
   placeholder?: string
   language?: string
+  isPlaintext?: boolean
 }>()
 const code = defineModel('code', { type: String, default: '' })
 const emits = defineEmits(['blur', 'change', 'focus', 'layoutChange', 'changeCursorPosition'])
@@ -62,8 +63,34 @@ const defaultOptions: EditorOptions = {
   wordWrap: 'on',
 }
 
-const editorOptions = merge({}, defaultOptions, props.options)
+const plaintextOptions = {
+  renderLineHighlight: 'none', // 当前行高亮显示方式：'none'表示不显示高亮
+  renderLineHighlightOnlyWhenFocus: false, // 是否仅在获得焦点时显示行高亮
+  overviewRulerBorder: false, // 是否显示概览标尺边框
+  hideCursorInOverviewRuler: true, // 是否在概览标尺中隐藏光标
+  unicodeHighlight: {
+    ambiguousCharacters: false, // 是否高亮显示可能有歧义的Unicode字符
+  },
+  quickSuggestions: false, // 关闭快速提示（如代码补全）
+  parameterHints: false, // 关闭参数提示
+  wordBasedSuggestions: false, // 关闭基于单词的提示
+  suggestions: false, // 关闭所有建议
+  diagnosticsOptions: {
+    enableSyntaxValidation: false, // 关闭语法验证
+    enableSemanticValidation: false, // 关闭语义验证
+    suppressWarnings: true, // 关闭所有警告
+    suppressInformation: true, // 关闭所有信息提示
+  },
+  stickyScroll: { enabled: false }, // 关闭粘性滚动
+}
 
+// 合并默认配置和纯文本模式配置
+const options = merge({}, defaultOptions, props.isPlaintext ? plaintextOptions : {})
+
+// 合并基础配置和传入的自定义配置
+const editorOptions = merge({}, options, props.options)
+
+// 计算编辑器高度：如果传入height属性，根据是否展开状态返回不同高度；否则默认100%
 const editorHeight = computed(() =>
   props.height ? (isExpand.value ? '100%' : props.height - 46) : '100%',
 )
@@ -201,6 +228,7 @@ const handExpand = () => {
 }
 :deep(.monaco-editor) {
   background-color: transparent;
+  outline: none !important;
 }
 
 :deep(.monaco-editor.no-user-select .lines-content) {

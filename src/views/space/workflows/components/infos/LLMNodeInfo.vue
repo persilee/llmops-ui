@@ -495,6 +495,7 @@ watch(
                   :height="200"
                   class="rounded-lg"
                   language="jinja2"
+                  :is-plaintext="true"
                   :placeholder="'输入 \{\{ 插入变量，编写大模型的提示词，使大模型实现对应的功能。通过插入\{\{参数名\}\}可以引用对应的参数值。'"
                   @change-cursor-position="handleChangeCursorPosition"
                   @blur="handleCodeEditorBlur"
