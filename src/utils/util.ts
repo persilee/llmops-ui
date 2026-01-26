@@ -13,12 +13,24 @@ import { Message } from '@arco-design/web-vue'
  * @property {string} int - 整数类型
  * @property {string} float - 浮点数类型
  * @property {string} bool - 布尔值类型
+ * @property {string} string - 字符串类型
+ * @property {string} boolean - 布尔值类型
+ * @property {string} 'list[string]' - 字符串数组类型
+ * @property {string} 'list[int]' - 整数数组类型
+ * @property {string} 'list[float]' - 浮点数数组类型
+ * @property {string} 'list[boolean]' - 布尔值数组类型
  */
 export const typeMap: { [key: string]: string } = {
   str: '字符串',
   int: '整数',
   float: '浮点数',
   bool: '布尔值',
+  string: '字符串',
+  boolean: '布尔值',
+  'list[string]': '字符串数组',
+  'list[int]': '整数数组',
+  'list[float]"': '浮点数数组',
+  'list[boolean]"': '布尔值数组',
 }
 
 export const llmTagMap: { [key: string]: string } = {

@@ -340,10 +340,10 @@ onUnmounted(() => {
               <img :src="dataset.icon" class="w-10 h-10 rounded-lg bg-white flex-shrink-0" />
               <div class="flex-1 flex flex-col min-w-0">
                 <div class="text-gray-600 font-bold">{{ dataset.name }}</div>
-                <div class="text-gray-600 text-xs mt-1 line-clamp-1 overflow-ellipsis">
+                <div class="text-gray-600 text-xs mt-0.5 line-clamp-1 overflow-ellipsis">
                   {{ dataset.description }}
                 </div>
-                <div class="flex gap-2 mt-2.5">
+                <div class="flex gap-2 mt-1.5">
                   <a-popover
                     @popup-visible-change="(visible: boolean) => getDocuments(visible, dataset)"
                   >

@@ -677,12 +677,12 @@ onMounted(async () => {
                 <div
                   :class="`${checkboxMessages.includes(item.id) ? 'bg-blue-100 p-3 rounded-xl mb-1' : ''}`"
                 >
-                  <div class="flex items-center justify-center">
+                  <div class="flex items-center justify-start">
                     <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
                     <!-- 人类消息 -->
                     <HumanMessage :message="item" class="flex-1" />
                   </div>
-                  <div class="flex items-center justify-center">
+                  <div class="flex items-start justify-start">
                     <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
                     <!-- AI消息 -->
                     <AIMessage
