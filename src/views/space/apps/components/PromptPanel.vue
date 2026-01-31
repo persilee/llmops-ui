@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import DotCursor from '@/components/DotCursor.vue'
 import AIApi from '@/services/api/ai'
+import { Theme } from '@/types/types'
+import CodeEditor from '@/views/components/CodeEditor.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
@@ -377,15 +379,18 @@ onUnmounted(() => {
       </a-trigger>
     </div>
     <!-- 提示词文本框 -->
-    <div class="flex-1 px-3 pb-4">
-      <a-textarea
-        v-model="prompt"
-        class="h-[calc(100%-56px)] flex-1 bg-transparent rounded-xl focus-within:border-0 not-focus-within: border-0"
+    <div class="flex-1 px-3 pb-4 h-[calc(100%-56px)]">
+      <CodeEditor
+        v-model:code="prompt"
+        :is-plaintext="true"
+        :is-hide-header="true"
+        :is-simple-mode="true"
+        :options="{ lineNumbers: 'off', language: 'markdown' }"
+        :theme="Theme.Active4D"
         placeholder="请输入提示词或点击优化自动生成提示词"
-        :max-length="2000"
-        show-word-limit
+        class="flex-1 h-full"
         @blur="handleBlur"
-      ></a-textarea>
+      ></CodeEditor>
     </div>
   </div>
 </template>

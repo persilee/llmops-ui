@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { useAccountStore } from '@/stores/account'
+import { Theme } from '@/types/types'
 import { Message } from '@arco-design/web-vue'
 import { merge } from 'lodash-es'
 import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   height?: number
   options?: EditorOptions
-
+  isHideHeader?: boolean
+  isSimpleMode?: boolean
   placeholder?: string
+  theme?: Theme
   language?: string
   isPlaintext?: boolean
 }>()
@@ -25,7 +28,7 @@ const defaultOptions: EditorOptions = {
   // 编程语言 (javascript, typescript, python, java, html, css, json等)
   language: 'python',
   // 主题 (vs, vs-dark, hc-black)
-  theme: store.isDark ? 'vs-dark' : 'vs-light',
+  theme: props.theme ?? (store.isDark ? 'vs-dark' : 'vs-light'),
   // 自动布局，容器大小变化时自动调整
   automaticLayout: true,
   // 字体大小 (px)
@@ -104,6 +107,61 @@ const showPlaceholder = computed(() => {
   return !code.value && !hasFocus.value
 })
 
+// 主题映射表
+const themeImports: Record<string, () => Promise<any>> = {
+  monokai: () => import('monaco-themes/themes/Monokai.json'),
+  github: () => import('monaco-themes/themes/GitHub.json'),
+  'github-light': () => import('monaco-themes/themes/GitHub Light.json'),
+  tomorrow: () => import('monaco-themes/themes/Tomorrow.json'),
+  idle: () => import('monaco-themes/themes/IDLE.json'),
+  'solarized-dark': () => import('monaco-themes/themes/Solarized-dark.json'),
+  'solarized-light': () => import('monaco-themes/themes/Solarized-light.json'),
+  Active4D: () => import('monaco-themes/themes/Active4D.json'),
+}
+
+const loadTheme = async () => {
+  const themeName = props.theme ?? Theme.vsLight
+
+  // 如果是内置主题，直接应用
+  if (['vs-light', 'vs-dark', 'hc-black', 'hc-light'].includes(themeName)) {
+    if (themeName === 'vs-light') {
+      monaco.editor.defineTheme('vs-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [],
+        colors: {
+          'editor.background': '#f9fafb',
+        },
+      })
+    }
+    monaco.editor.setTheme(themeName)
+    return
+  }
+
+  // 加载第三方主题
+  try {
+    const importFunc = themeImports[themeName]
+    if (importFunc) {
+      const themeModule = await importFunc()
+      const themeData = themeModule.default || themeModule
+
+      // 定义主题
+      monaco.editor.defineTheme(themeName, themeData)
+      if (['idle', 'github', 'github-light', 'tomorrow', 'Active4D'].includes(themeName)) {
+        themeData.colors['editor.background'] = '#f9fafb'
+        monaco.editor.defineTheme('idle', themeData)
+      }
+
+      // 应用主题
+      monaco.editor.setTheme(themeName)
+    }
+  } catch (error) {
+    console.error(`加载主题 "${themeName}" 失败：`, error)
+    // 回退到默认主题
+    monaco.editor.setTheme('vs-light')
+  }
+}
+
 const handleChangeTheme = () => {
   store.isDark = !store.isDark
   const theme = store.isDark ? 'vs-dark' : 'vs-light'
@@ -157,22 +215,18 @@ const handExpand = () => {
 }
 
 onMounted(() => {
-  monaco.editor.defineTheme('vs-light', {
-    base: 'vs',
-    inherit: true,
-    rules: [],
-    colors: {
-      'editor.background': '#f9fafb',
-    },
+  nextTick(() => {
+    loadTheme()
   })
 })
 </script>
 
 <template>
   <div
-    :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} w-full h-full flex flex-col ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
+    :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} ${isSimpleMode ? 'simple' : ''} w-full h-full flex flex-col ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
   >
     <div
+      v-if="!isHideHeader"
       :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
     >
       <div class="flex items-center font-semibold gap-1 text-sm">
@@ -247,6 +301,7 @@ onMounted(() => {
 .editor-container {
   position: relative;
   width: 100%;
+  height: 100%;
   min-height: 200px;
   overflow: hidden;
 }
@@ -265,5 +320,13 @@ onMounted(() => {
   pointer-events: none;
   user-select: none;
   z-index: 1;
+}
+
+.simple :deep(.monaco-editor) {
+  left: -14px !important;
+}
+
+:deep(.decorationsOverviewRuler) {
+  display: none !important;
 }
 </style>
