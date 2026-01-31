@@ -468,7 +468,7 @@ watch(
                 <CodeEditor
                   v-model:code="form.template"
                   :height="200"
-                  class="rounded-lg"
+                  class="rounded-lg overflow-hidden"
                   language="jinja2"
                   :is-plaintext="true"
                   :placeholder="'输入 \{\{ 插入变量，通过插入\{\{参数名\}\}可以引用对应的参数值。'"
@@ -523,7 +523,7 @@ watch(
             <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
               <div class="flex items-center gap-2">
                 <div class="text-gray-700">{{ output.name }}</div>
-                <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">{{ output.type }}</div>
+                <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded">{{ output.type }}</div>
               </div>
             </div>
           </div>

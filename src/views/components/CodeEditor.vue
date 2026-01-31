@@ -1,13 +1,15 @@
 <script setup lang="ts">
+import { useAccountStore } from '@/stores/account'
 import { Message } from '@arco-design/web-vue'
 import { merge } from 'lodash-es'
+import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   height?: number
   options?: EditorOptions
-  isDark?: boolean
+
   placeholder?: string
   language?: string
   isPlaintext?: boolean
@@ -17,12 +19,13 @@ const emits = defineEmits(['blur', 'change', 'focus', 'layoutChange', 'changeCur
 const isExpand = ref(false)
 const visible = ref(false)
 const hasFocus = ref(false)
+const store = useAccountStore()
 let editorInstance: any = null
 const defaultOptions: EditorOptions = {
   // 编程语言 (javascript, typescript, python, java, html, css, json等)
   language: 'python',
   // 主题 (vs, vs-dark, hc-black)
-  theme: 'vs',
+  theme: store.isDark ? 'vs-dark' : 'vs-light',
   // 自动布局，容器大小变化时自动调整
   automaticLayout: true,
   // 字体大小 (px)
@@ -38,7 +41,7 @@ const defaultOptions: EditorOptions = {
   // 显示行号左侧的空白栏 (用于断点等)
   glyphMargin: false,
   // 行装饰宽度
-  lineNumbersMinChars: 0,
+  lineNumbersMinChars: 2,
   scrollbar: {
     // 垂直滚动条 (auto, visible, hidden)
     vertical: 'hidden',
@@ -101,6 +104,13 @@ const showPlaceholder = computed(() => {
   return !code.value && !hasFocus.value
 })
 
+const handleChangeTheme = () => {
+  store.isDark = !store.isDark
+  const theme = store.isDark ? 'vs-dark' : 'vs-light'
+  editorOptions.theme = theme
+  editorInstance?.updateOptions(editorOptions)
+}
+
 const handleEditorDidMount = async (editor: any) => {
   editorInstance = editor
 
@@ -145,14 +155,27 @@ const handExpand = () => {
   isExpand.value = !isExpand.value
   visible.value = false
 }
+
+onMounted(() => {
+  monaco.editor.defineTheme('vs-light', {
+    base: 'vs',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': '#f9fafb',
+    },
+  })
+})
 </script>
 
 <template>
   <div
-    :class="`${isDark ? 'vs-dark' : ''} w-full h-full flex flex-col bg-gray-100 px-2 pb-3 ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
+    :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} w-full h-full flex flex-col ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
   >
-    <div class="flex items-center justify-between py-1.5 gap-1">
-      <div class="flex items-center font-semibold text-gray-700 gap-1 text-sm">
+    <div
+      :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
+    >
+      <div class="flex items-center font-semibold gap-1 text-sm">
         <icon-code class="text-base" />{{
           String(language ?? editorOptions.language).toLocaleUpperCase()
         }}
@@ -162,10 +185,31 @@ const handExpand = () => {
           <a-button
             type="text"
             size="mini"
-            class="hover:bg-gray-200"
+            :class="`${store.isDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'} `"
             @click="copyToClipboard(code)"
           >
-            <template #icon><icon-copy class="text-gray-500 w-3.5 h-3.5" /></template>
+            <template #icon>
+              <icon-copy :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`" />
+            </template>
+          </a-button>
+        </a-tooltip>
+        <a-tooltip :content="!store.isDark ? '黑暗模式' : '明亮模式'">
+          <a-button
+            type="text"
+            size="mini"
+            :class="`${store.isDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'}  mr-0.5`"
+            @click="handleChangeTheme"
+          >
+            <template #icon>
+              <icon-sun
+                v-if="store.isDark"
+                :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+              />
+              <icon-moon
+                v-else
+                :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+              />
+            </template>
           </a-button>
         </a-tooltip>
         <slot>
@@ -221,62 +265,5 @@ const handExpand = () => {
   pointer-events: none;
   user-select: none;
   z-index: 1;
-}
-
-.monaco-code-editor :deep(.monaco-editor .margin) {
-  background-color: transparent;
-}
-:deep(.monaco-editor) {
-  background-color: transparent;
-  outline: none !important;
-}
-
-:deep(.monaco-editor.no-user-select .lines-content) {
-  background-color: transparent;
-}
-
-:deep(.decorationsOverviewRuler) {
-  display: none !important;
-}
-
-:deep(.monaco-editor .sticky-widget .sticky-widget-lines-scrollable) {
-  background-color: #f3f4f6;
-}
-
-:deep(.monaco-editor .sticky-widget .sticky-widget-line-numbers) {
-  background-color: #f3f4f6;
-}
-
-.monaco-code-editor :deep(.monaco-editor .view-lines) {
-  background-color: transparent;
-}
-
-/* -------------------- */
-
-.vs-dark .monaco-code-editor :deep(.monaco-editor .margin) {
-  background-color: #1e1e1e;
-}
-.vs-dark :deep(.monaco-editor) {
-  background-color: #1e1e1e;
-}
-
-.vs-dark :deep(.monaco-editor.no-user-select .lines-content) {
-  background-color: #1e1e1e;
-}
-
-.vs-dark :deep(.decorationsOverviewRuler) {
-  display: block;
-}
-
-.vs-dark :deep(.monaco-editor .sticky-widget .sticky-widget-lines-scrollable) {
-  background-color: #1e1e1e;
-}
-
-.vs-dark :deep(.monaco-editor .sticky-widget .sticky-widget-line-numbers) {
-  background-color: #1e1e1e;
-}
-
-.vs-dark .monaco-code-editor :deep(.monaco-editor .view-lines) {
-  background-color: #1e1e1e;
 }
 </style>

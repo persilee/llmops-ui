@@ -169,7 +169,7 @@ watch(
         v-model:code="form.code"
         :options="{ lineNumbersMinChars: 3 }"
         @blur="handleUpdateNodeInfo"
-        class="rounded-l-lg pointer-events-auto"
+        class="rounded-l-lg pointer-events-auto overflow-hidden"
       >
         <a-button
           type="text"
@@ -352,7 +352,7 @@ watch(
                     v-model:code="form.code"
                     :height="230"
                     @blur="handleUpdateNodeInfo"
-                    class="rounded-lg"
+                    class="rounded-lg overflow-hidden"
                   >
                     <a-button
                       type="text"
