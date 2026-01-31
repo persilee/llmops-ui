@@ -81,7 +81,6 @@ const handleCancelPublishClick = async () => {
     hideCancel: false, // 显示取消按钮，允许用户取消操作
     titleAlign: 'start', // 标题左对齐显示
     simple: false, // 使用完整模式显示对话框
-
     // 确认删除的回调函数
     onOk: async () => {
       try {

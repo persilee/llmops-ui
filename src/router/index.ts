@@ -114,6 +114,11 @@ const router = createRouter({
           ],
         },
         {
+          path: 'web-app/:token',
+          name: 'web-app-chat',
+          component: () => import('@/views/space/apps/WebAppView.vue'),
+        },
+        {
           path: 'space/workflows/:workflowId/detail',
           name: 'space-workflows-detail',
           component: () => import('@/views/space/workflows/WorkflowDetail.vue'),

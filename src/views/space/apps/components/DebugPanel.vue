@@ -732,14 +732,16 @@ onMounted(async () => {
         class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
       ></div>
       <div class="flex items-center px-6 gap-4">
-        <a-button
-          class="flex-shrink-0"
-          type="text"
-          shape="circle"
-          @click="deleteConversationMessages"
-        >
-          <template #icon><img src="@/assets/images/icon-clear.png" class="w-4 h-4" /></template>
-        </a-button>
+        <a-tooltip content="删除对话记录">
+          <a-button
+            class="flex-shrink-0"
+            type="text"
+            shape="circle"
+            @click="deleteConversationMessages"
+          >
+            <template #icon><img src="@/assets/images/icon-clear.png" class="w-4 h-4" /></template>
+          </a-button>
+        </a-tooltip>
         <div
           class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
         >

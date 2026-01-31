@@ -14,6 +14,7 @@ export const useAppStore = defineStore(
   () => {
     const loading = ref(false)
     const app = ref<GetAppResp>()
+    const conversationId = ref('')
     const draftAppConfig = ref<GetDraftAppConfigResp>({
       id: '',
       created_at: 0,
@@ -240,6 +241,7 @@ export const useAppStore = defineStore(
 
     return {
       app,
+      conversationId,
       draftAppConfig,
       loading,
       getApp,

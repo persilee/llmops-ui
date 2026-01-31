@@ -136,7 +136,8 @@ const handleSelect = async (v: string, workflow: GetWorkflowsWithPage) => {
       hideCancel: false, // 显示取消按钮
       titleAlign: 'start', // 标题左对齐
       simple: false, // 简单模式
-
+      modalClass: 'delete-modal',
+      okText: '删除', // 确认按钮文本
       // 确认按钮的回调函数
       onOk: async () => {
         try {
