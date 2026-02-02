@@ -215,6 +215,9 @@ const fetchData = async () => {
     conversationId.value = store.conversationId
     // 如果存在当前对话ID，则加载该对话的消息记录
     if (conversationId.value) {
+      currentConversation.value = conversations.value.find(
+        (conversation) => conversation.id === conversationId.value,
+      )
       await getConversationMessages(conversationId.value)
     }
   } catch (error) {
@@ -1312,4 +1315,18 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.send-icon-active {
+  filter: brightness(0) saturate(100%) invert(35%) sepia(96%) saturate(462%) hue-rotate(185deg)
+    brightness(96%) contrast(95%);
+}
+
+.linear-gradient-transparency {
+  background: linear-gradient(
+    to bottom,
+    rgba(251, 249, 250, 0) 0%,
+    rgba(251, 249, 250, 0.5) 50%,
+    rgba(251, 249, 250, 1) 100%
+  );
+}
+</style>

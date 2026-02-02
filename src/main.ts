@@ -6,6 +6,8 @@ import '@/assets/styles/main.css'
 import hljsVuePlugin from '@highlightjs/vue-plugin'
 import hljs from 'highlight.js/lib/core'
 import bash from 'highlight.js/lib/languages/bash'
+import json from 'highlight.js/lib/languages/json'
+import markdown from 'highlight.js/lib/languages/markdown'
 import shell from 'highlight.js/lib/languages/shell'
 import 'highlight.js/styles/monokai-sublime.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
@@ -15,6 +17,8 @@ import router from './router'
 // 注册语言
 hljs.registerLanguage('bash', bash)
 hljs.registerLanguage('shell', shell)
+hljs.registerLanguage('markdown', markdown)
+hljs.registerLanguage('json', json)
 
 // 创建Vue应用实例
 const app = createApp(App)

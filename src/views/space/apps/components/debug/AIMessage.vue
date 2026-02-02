@@ -5,6 +5,7 @@ import type {
   AgentThought as AgentThoughtType,
   GetDebugConversationMessagesWithPage,
 } from '@/services/api/apps/types'
+import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import { Message } from '@arco-design/web-vue'
 import { useAppStore } from '../../AppView.store'
 import AgentThought from './AgentThought.vue'
@@ -27,6 +28,13 @@ const props = defineProps<{
 const emits = defineEmits(['selectOpeningQuestion', 'regenerate', 'deleteMessage', 'shareMessages'])
 
 const store = useAppStore()
+
+const markdownOptions = {
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight: true,
+}
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -56,17 +64,17 @@ const copyToClipboard = async (text: string) => {
       <!-- 推理内容 -->
       <AgentThought :agent-thoughts="agentThoughts" :loading="loading" />
       <!-- AI消息 -->
-      <div class="flex flex-col group w-full gap-1.5">
+      <div class="flex flex-col group gap-1.5">
         <div
           class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-lg leading-5"
         >
           <DotFlashing v-if="isShowDot" />
-          {{ message.answer }}
+          <MarkdownRender :source="message.answer" :options="markdownOptions" class="" />
           <DotCursor v-if="isShowCursor" />
         </div>
         <div
           v-if="!isShowCursor && !isShowDot && !isShareMessages"
-          class="flex items-center justify-between w-full"
+          class="flex items-center justify-between"
         >
           <div class="flex items-center gap-2">
             <div class="flex items-center gap-1 text-gray-500 text-xs">

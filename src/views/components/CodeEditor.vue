@@ -229,10 +229,8 @@ onMounted(() => {
       v-if="!isHideHeader"
       :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
     >
-      <div class="flex items-center font-semibold gap-1 text-sm">
-        <icon-code class="text-base" />{{
-          String(language ?? editorOptions.language).toLocaleUpperCase()
-        }}
+      <div class="flex items-center font-medium gap-1 text-gray-600">
+        <icon-code class="text-sm" />{{ String(language ?? editorOptions.language) }}
       </div>
       <div class="flex items-center gap-0.5">
         <a-tooltip content="复制代码">
