@@ -6,6 +6,7 @@ import { merge } from 'lodash-es'
 import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
 import { computed, nextTick, onMounted, ref } from 'vue'
+import CodeEditorDrawer from './CodeEditorDrawer.vue'
 
 const props = defineProps<{
   height?: number
@@ -16,19 +17,21 @@ const props = defineProps<{
   theme?: Theme
   language?: string
   isPlaintext?: boolean
+  background?: string
 }>()
 const code = defineModel('code', { type: String, default: '' })
 const emits = defineEmits(['blur', 'change', 'focus', 'layoutChange', 'changeCursorPosition'])
-const isExpand = ref(false)
 const visible = ref(false)
 const hasFocus = ref(false)
 const store = useAccountStore()
+const codeEditorVisible = ref(false)
 let editorInstance: any = null
+
 const defaultOptions: EditorOptions = {
   // 编程语言 (javascript, typescript, python, java, html, css, json等)
-  language: 'python',
+  language: props.language ?? 'python',
   // 主题 (vs, vs-dark, hc-black)
-  theme: props.theme ?? (store.isDark ? 'vs-dark' : 'vs-light'),
+  theme: props.theme ?? (store.isEditorDark ? 'vs-dark' : 'vs'),
   // 自动布局，容器大小变化时自动调整
   automaticLayout: true,
   // 字体大小 (px)
@@ -97,9 +100,7 @@ const options = merge({}, defaultOptions, props.isPlaintext ? plaintextOptions :
 const editorOptions = merge({}, options, props.options)
 
 // 计算编辑器高度：如果传入height属性，根据是否展开状态返回不同高度；否则默认100%
-const editorHeight = computed(() =>
-  props.height ? (isExpand.value ? '100%' : props.height - 46) : '100%',
-)
+const editorHeight = computed(() => (props.height ? props.height - 46 : '100%'))
 
 // 计算是否显示placeholder
 const showPlaceholder = computed(() => {
@@ -120,12 +121,12 @@ const themeImports: Record<string, () => Promise<any>> = {
 }
 
 const loadTheme = async () => {
-  const themeName = props.theme ?? Theme.vsLight
+  const themeName = props.theme ?? (store.isEditorDark ? Theme.vsDark : Theme.vsLight)
 
   // 如果是内置主题，直接应用
-  if (['vs-light', 'vs-dark', 'hc-black', 'hc-light'].includes(themeName)) {
-    if (themeName === 'vs-light') {
-      monaco.editor.defineTheme('vs-light', {
+  if (['vs', 'vs-dark', 'hc-black', 'hc-light'].includes(themeName)) {
+    if (themeName === 'vs') {
+      monaco.editor.defineTheme('vs', {
         base: 'vs',
         inherit: true,
         rules: [],
@@ -148,8 +149,8 @@ const loadTheme = async () => {
       // 定义主题
       monaco.editor.defineTheme(themeName, themeData)
       if (['idle', 'github', 'github-light', 'tomorrow', 'Active4D'].includes(themeName)) {
-        themeData.colors['editor.background'] = '#f9fafb'
-        monaco.editor.defineTheme('idle', themeData)
+        themeData.colors['editor.background'] = '#999'
+        monaco.editor.defineTheme(themeName, themeData)
       }
 
       // 应用主题
@@ -158,13 +159,13 @@ const loadTheme = async () => {
   } catch (error) {
     console.error(`加载主题 "${themeName}" 失败：`, error)
     // 回退到默认主题
-    monaco.editor.setTheme('vs-light')
+    monaco.editor.setTheme('vs')
   }
 }
 
 const handleChangeTheme = () => {
-  store.isDark = !store.isDark
-  const theme = store.isDark ? 'vs-dark' : 'vs-light'
+  store.isEditorDark = !store.isEditorDark
+  const theme = store.isEditorDark ? 'vs-dark' : 'vs'
   editorOptions.theme = theme
   editorInstance?.updateOptions(editorOptions)
 }
@@ -210,8 +211,10 @@ const copyToClipboard = async (text: string) => {
 }
 
 const handExpand = () => {
-  isExpand.value = !isExpand.value
   visible.value = false
+  codeEditorVisible.value = true
+  document.body.classList.add('code-editor-open')
+  store.codeEditorVisible = true
 }
 
 onMounted(() => {
@@ -223,13 +226,13 @@ onMounted(() => {
 
 <template>
   <div
-    :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} ${isSimpleMode ? 'simple' : ''} w-full h-full flex flex-col ${isExpand ? 'absolute top-0 left-0 bottom-0 right-0 z-200 translate-0' : ''}`"
+    :class="`${store.isEditorDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} ${isSimpleMode ? 'simple' : ''} w-full h-full flex flex-col`"
   >
     <div
       v-if="!isHideHeader"
-      :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
+      :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isEditorDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
     >
-      <div class="flex items-center font-medium gap-1 text-gray-600">
+      <div class="flex items-center font-medium gap-1">
         <icon-code class="text-sm" />{{ String(language ?? editorOptions.language) }}
       </div>
       <div class="flex items-center gap-0.5">
@@ -237,39 +240,47 @@ onMounted(() => {
           <a-button
             type="text"
             size="mini"
-            :class="`${store.isDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'} `"
+            :class="`${store.isEditorDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'}`"
             @click="copyToClipboard(code)"
           >
             <template #icon>
-              <icon-copy :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`" />
+              <icon-copy
+                :class="`${store.isEditorDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+              />
             </template>
           </a-button>
         </a-tooltip>
-        <a-tooltip :content="!store.isDark ? '黑暗模式' : '明亮模式'">
+        <a-tooltip :content="!store.isEditorDark ? '黑暗模式' : '明亮模式'">
           <a-button
             type="text"
             size="mini"
-            :class="`${store.isDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'}  mr-0.5`"
+            :class="`${store.isEditorDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'}  mr-0.5`"
             @click="handleChangeTheme"
           >
             <template #icon>
               <icon-sun
-                v-if="store.isDark"
-                :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+                v-if="store.isEditorDark"
+                :class="`${store.isEditorDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
               />
               <icon-moon
                 v-else
-                :class="`${store.isDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+                :class="`${store.isEditorDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
               />
             </template>
           </a-button>
         </a-tooltip>
         <slot>
-          <a-tooltip v-model:popup-visible="visible" :content="isExpand ? '缩小' : '放大'">
-            <a-button type="text" size="mini" class="hover:bg-gray-200" @click="handExpand">
+          <a-tooltip v-model:popup-visible="visible" :content="'放大'">
+            <a-button
+              type="text"
+              size="mini"
+              :class="`${store.isEditorDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'}`"
+              @click="handExpand"
+            >
               <template #icon>
-                <icon-expand v-if="!isExpand" class="text-gray-500 w-3.5 h-3.5" />
-                <icon-shrink v-else class="text-gray-500 w-3.5 h-3.5" />
+                <icon-expand
+                  :class="`${store.isEditorDark ? 'text-white' : 'text-gray-500'}  w-3.5 h-3.5`"
+                />
               </template>
             </a-button>
           </a-tooltip>
@@ -292,6 +303,13 @@ onMounted(() => {
         {{ placeholder ?? '请输入代码' }}
       </div>
     </div>
+    <CodeEditorDrawer
+      v-model:visible="codeEditorVisible"
+      v-model:code="code"
+      :language="language"
+      :options="{ language: language }"
+      @blur="emits('blur')"
+    />
   </div>
 </template>
 

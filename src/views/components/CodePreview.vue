@@ -4,6 +4,7 @@ import type { Theme } from '@/types/types'
 import { Message } from '@arco-design/web-vue'
 import hljs from 'highlight.js'
 import { onMounted, ref } from 'vue'
+import CodeEditorDrawer from './CodeEditorDrawer.vue'
 const props = defineProps<{
   height?: number
   code: string
@@ -11,8 +12,8 @@ const props = defineProps<{
   language?: string
 }>()
 const store = useAccountStore()
-const isExpand = ref(false)
 const visible = ref(false)
+const codeEditorVisible = ref(false)
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -32,8 +33,10 @@ const handleChangeTheme = () => {
 }
 
 const handExpand = () => {
-  isExpand.value = !isExpand.value
   visible.value = false
+  codeEditorVisible.value = true
+  document.body.classList.add('code-editor-open')
+  store.codeEditorVisible = true
 }
 
 onMounted(() => {
@@ -91,17 +94,15 @@ onMounted(() => {
           </a-button>
         </a-tooltip>
         <slot>
-          <a-tooltip v-model:popup-visible="visible" :content="isExpand ? '缩小' : '放大'">
-            <a-button type="text" size="mini" class="hover:bg-gray-200" @click="handExpand">
+          <a-tooltip v-model:popup-visible="visible" content="放大">
+            <a-button
+              type="text"
+              size="mini"
+              :class="`${store.isDark ? 'hover:bg-[#ffffff0f]' : 'hover:bg-gray-200'} `"
+              @click="handExpand"
+            >
               <template #icon>
-                <icon-expand
-                  v-if="!isExpand"
-                  :class="`${store.isDark ? 'text-white' : 'text-gray-500'} w-3 h-3`"
-                />
-                <icon-shrink
-                  v-else
-                  :class="`${store.isDark ? 'text-white' : 'text-gray-500'} w-3 h-3`"
-                />
+                <icon-expand :class="`${store.isDark ? 'text-white' : 'text-gray-500'} w-3 h-3`" />
               </template>
             </a-button>
           </a-tooltip>
@@ -111,6 +112,12 @@ onMounted(() => {
     <div :class="`code-container ${store.isDark ? 'github-dark' : 'github'}`">
       <pre><code :class="`language-${language}`">{{ code }}</code></pre>
     </div>
+    <CodeEditorDrawer
+      v-model:visible="codeEditorVisible"
+      :code="code"
+      :language="language"
+      :options="{ language: language }"
+    />
   </div>
 </template>
 

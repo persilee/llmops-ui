@@ -18,7 +18,9 @@ export default defineConfig({
     }),
     tailwindcss(),
     monacoEditorPlugin({
-      languageWorkers: ['editorWorkerService', 'typescript', 'json', 'html', 'css'],
+      eslint: false,
+      languageWorkers: ['editorWorkerService'],
+      customLanguages: [], // 禁用自定义语言的检查
       publicPath: 'monaco-workers',
     }),
   ],

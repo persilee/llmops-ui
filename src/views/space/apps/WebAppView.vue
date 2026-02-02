@@ -11,6 +11,7 @@ import type {
 import WebAppApi from '@/services/api/web-app'
 import type { GetConversationsResp, GetWebAppResp } from '@/services/api/web-app/types'
 import type { Paginator } from '@/services/types'
+import { useAccountStore } from '@/stores/account'
 import ShareMessagesModel from '@/views/components/ShareMessagesModel.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { remove } from 'lodash-es'
@@ -89,6 +90,7 @@ const shareMessagesModelVisible = ref(false)
 const shareMessagesLinkLoading = ref(false)
 // 获取应用状态管理store实例
 const store = useAppStore()
+const accountStore = useAccountStore()
 
 /**
  * 获取对话消息的异步函数
@@ -974,7 +976,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen h-full bg-gray-50">
+  <div
+    :class="`flex min-h-screen h-full bg-gray-50 ${accountStore.codeEditorVisible ? 'w-1/2' : 'w-full'}`"
+  >
     <!-- 左侧会话记录 -->
     <div class="w-[260px] flex-shrink-0 bg-gray-50 p-2">
       <div

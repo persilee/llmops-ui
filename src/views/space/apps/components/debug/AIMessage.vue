@@ -69,7 +69,7 @@ const copyToClipboard = async (text: string) => {
           class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-lg leading-5"
         >
           <DotFlashing v-if="isShowDot" />
-          <MarkdownRender :source="message.answer" :options="markdownOptions" class="" />
+          <MarkdownRender :source="message.answer" :options="markdownOptions" />
           <DotCursor v-if="isShowCursor" />
         </div>
         <div

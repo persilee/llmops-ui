@@ -387,6 +387,7 @@ onUnmounted(() => {
         :is-simple-mode="true"
         :options="{ lineNumbers: 'off', language: 'markdown' }"
         :theme="Theme.github"
+        :background="'#fbf9fa'"
         placeholder="请输入提示词或点击优化自动生成提示词"
         class="flex-1 h-full"
         @blur="handleBlur"

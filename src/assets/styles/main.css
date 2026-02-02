@@ -64,4 +64,13 @@
   .delete-modal .arco-modal-footer .arco-btn-primary {
     background-color: #e7000b !important;
   }
+
+  .code-editor-open .arco-drawer-container {
+    pointer-events: none;
+  }
+
+  .code-editor-open .arco-drawer {
+    pointer-events: all;
+    box-shadow: 0 16px 25px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25)) !important;
+  }
 }

@@ -5,7 +5,7 @@ export enum Theme {
   tomorrow = 'tomorrow',
   solarizedDark = 'solarized-dark',
   solarizedLight = 'solarized-light',
-  vsLight = 'vs-light',
+  vsLight = 'vs',
   vsDark = 'vs-dark',
   hcBlack = 'hc-black',
   hcLight = 'hc-light',

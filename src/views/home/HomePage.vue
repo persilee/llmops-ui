@@ -9,6 +9,7 @@ import type {
   GetAssistantAgentMessagesWithPage,
 } from '@/services/api/assistant-agent/type'
 import type { Paginator } from '@/services/types'
+import { useAccountStore } from '@/stores/account'
 import { Message } from '@arco-design/web-vue'
 import { remove } from 'lodash-es'
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
@@ -62,6 +63,7 @@ const indeterminate = ref(false)
 const shareMessagesModelVisible = ref(false)
 const conversationId = ref('')
 const shareMessagesLinkLoading = ref(false)
+const accountStore = useAccountStore()
 
 /**
  * 获取调试对话消息数据
@@ -625,12 +627,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div :class="`w-full h-full ${isShareMessages ? 'relative pt-[76px]' : ''}`">
+  <div
+    :class="`h-full ${isShareMessages ? 'relative pt-[76px]' : ''} ${accountStore.codeEditorVisible ? 'w-[calc(50vw-230px)]' : 'w-full'}`"
+  >
     <div
       v-if="isShareMessages"
       class="h-[76px] border-b border-gray-200 bg-gray-50 flex items-center absolute top-0 left-0 right-0 z-10"
     >
-      <div class="w-[780px] flex items-center justify-between mx-auto">
+      <div class="w-[780px] min-w-[600px] flex items-center justify-between mx-auto">
         <div class="flex flex-col gap-1">
           <div class="text-gray-700 font-bold text-base">分享对话</div>
           <div class="text-gray-400 text-xs">内容由 AI 生成，不能完全保障真实</div>
