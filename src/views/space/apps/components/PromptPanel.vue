@@ -144,6 +144,18 @@ const handleOptimize = () => {
   visible.value = true
 }
 
+/**
+ * 处理点击弹窗外部区域的操作
+ * 当用户点击优化提示词弹窗外部区域时触发
+ * 根据是否存在优化后的提示词内容，执行不同的关闭逻辑
+ *
+ * 如果存在优化后的内容：
+ * - 显示警告对话框，提示用户确认是否要舍弃AI生成的内容
+ * - 用户确认后，清空优化内容并关闭弹窗
+ *
+ * 如果不存在优化后的内容：
+ * - 直接关闭弹窗
+ */
 const handleClickOutside = () => {
   if (optimizePrompt.value) {
     Modal.warning({

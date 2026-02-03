@@ -75,4 +75,36 @@
     pointer-events: all;
     box-shadow: 0 16px 25px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25)) !important;
   }
+
+  .md-editor-preview {
+    background-color: transparent !important;
+    font-size: 14px !important;
+  }
+
+  .md-editor-preview h1,
+  .md-editor-preview h2,
+  .md-editor-preview h3,
+  .md-editor-preview h4,
+  .md-editor-preview h5,
+  .md-editor-preview h6 {
+    font-weight: 600 !important;
+  }
+
+  .md-editor-preview h1 {
+    font-size: 1.5em !important;
+  }
+
+  .md-editor-preview h2 {
+    font-size: 1.25em !important;
+  }
+
+  .md-editor-preview h3 {
+    font-size: 1.1em !important;
+  }
+
+  .md-editor-preview h4,
+  .md-editor-preview h5,
+  .md-editor-preview h6 {
+    font-size: 1em !important;
+  }
 }

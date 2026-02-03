@@ -173,7 +173,7 @@ const sendMessage = async (query?: string) => {
     })
 
     // 如果存在任务ID，则生成建议问题
-    if (taskId.value) {
+    if (taskId.value && messageId.value) {
       // 调用AI API生成建议问题
       const { data } = await AIApi.generateSuggestedQuestions({ message_id: messageId.value })
       // 更新建议问题列表
@@ -267,6 +267,10 @@ const handleEventData = (eventResponse: Record<string, any>) => {
     messages.value[0].answer += data.thought
     messages.value[0].latency = data.latency
     messages.value[0].total_token_count = data.total_token_count
+  } else if (event === QueueEvent.error) {
+    messages.value[0].answer = data.observation
+  } else if (event === QueueEvent.timeout) {
+    messages.value[0].answer = '请求超时，请稍后重试'
   } else {
     // 对于非AI消息事件，直接创建新的思考过程
     agentThoughts.push(createThought(data))

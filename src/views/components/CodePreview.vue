@@ -56,7 +56,7 @@ onMounted(() => {
     :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'}  w-full h-full flex flex-col mb-4 border border-gray-200 rounded-xl overflow-clip`"
   >
     <div
-      :class="`flex items-center justify-between py-1 px-4 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-[#f4f5f6] text-gray-600'}`"
+      :class="`flex items-center justify-between py-1 px-4 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-[#818b981f] text-gray-600'}`"
     >
       <div class="flex items-center font-medium gap-1 text-xs">
         <icon-code class="text-xs" />{{ language }}
