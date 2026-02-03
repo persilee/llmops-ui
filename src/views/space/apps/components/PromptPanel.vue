@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import DotCursor from '@/components/DotCursor.vue'
 import AIApi from '@/services/api/ai'
-import CodeEditor from '@/views/components/CodeEditor.vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useAppStore } from '../AppView.store'
+import MdPreviewDrawer from './MdPreviewDrawer.vue'
 
 // 用户输入的提示词内容
 const inputValue = ref('')
@@ -12,6 +14,8 @@ const inputValue = ref('')
 const inputPrompt = ref('')
 // 控制优化弹窗的显示状态
 const visible = ref(false)
+// 控制预览弹窗的显示状态
+const previewVisible = ref(false)
 // 原始提示词内容
 const prompt = ref('')
 // 存储优化后的提示词内容
@@ -31,7 +35,7 @@ const inputRef = useTemplateRef('inputRef')
 // 更新提示词的加载状态
 const updatePromptLoading = ref(false)
 // 获取复制内容的DOM元素引用
-const contentToCopy = useTemplateRef('contentToCopy')
+const contentToCopy = useTemplateRef<any>('contentToCopy')
 // 计算属性：判断是否显示自动优化按钮
 const isShowAutoOptimize = computed(() => {
   return store.app && store.app.description && isShowAutoOptimizeBtn.value
@@ -39,6 +43,9 @@ const isShowAutoOptimize = computed(() => {
 // 计算属性：判断输入框是否禁用（空值时禁用）
 const isDisabled = computed(() => {
   return inputValue.value.trim() == ''
+})
+const clickOutsideToClose = computed(() => {
+  return optimizePrompt.value.trim() == ''
 })
 
 /**
@@ -96,6 +103,11 @@ const optimizePromptFn = async (prompt: string) => {
     // 设置加载状态，显示加载动画
     optimizeLoading.value = true
     isCursor.value = true
+    setTimeout(() => {
+      document
+        .querySelector('.read-only-md.md-editor .cm-content')
+        ?.setAttribute('contenteditable', 'false')
+    }, 360)
     // 调用AI优化API，使用流式响应实时更新优化结果
     await AIApi.optimizePrompt({ prompt: prompt }, (eventResp) => {
       // 获取当前返回的优化片段
@@ -104,6 +116,13 @@ const optimizePromptFn = async (prompt: string) => {
       isCursor.value = data == '' ? false : true
       // 累积优化结果
       optimizePrompt.value += data
+      setTimeout(() => {
+        contentToCopy.value.scrollTo({
+          top: contentToCopy.value.scrollHeight,
+          behavior: 'smooth',
+        })
+      }, 60)
+
       // 当优化完成（有内容且当前片段为空）时显示操作按钮
       if (optimizePrompt.value.trim() != '' && data == '') {
         isShowBtns.value = true
@@ -123,6 +142,28 @@ const optimizePromptFn = async (prompt: string) => {
  */
 const handleOptimize = () => {
   visible.value = true
+}
+
+const handleClickOutside = () => {
+  if (optimizePrompt.value) {
+    Modal.warning({
+      title: '确定舍弃？', // 对话框标题
+      content: '确认退出并舍弃 AI 生成的内容吗?', // 提示内容
+      titleAlign: 'start', // 标题左对齐显示
+      hideCancel: false, // 显示取消按钮，允许用户取消操作
+      simple: false, // 使用完整模式显示对话框
+      modalClass: 'delete-modal', // 自定义样式类名
+      okText: '确认', // 确认按钮文本
+
+      // 确认删除后的回调函数
+      onOk: async (e) => {
+        optimizePrompt.value = ''
+        visible.value = false
+      },
+    })
+  } else {
+    visible.value = false
+  }
 }
 
 /**
@@ -180,8 +221,14 @@ const copyToClipboard = async () => {
   try {
     // 检查目标元素是否存在，如果不存在则直接返回
     if (!contentToCopy.value) return
-    // 获取div内的文本内容，优先使用textContent，如果不存在则使用innerText作为备选
-    const text = contentToCopy.value.textContent || contentToCopy.value.innerText
+
+    let text = ''
+    if (optimizePrompt.value.trim()) {
+      text = optimizePrompt.value
+    } else {
+      // 获取div内的文本内容，优先使用textContent，如果不存在则使用innerText作为备选
+      text = contentToCopy.value.textContent || contentToCopy.value.innerText
+    }
 
     // 使用Clipboard API将文本复制到剪贴板
     await navigator.clipboard.writeText(text)
@@ -201,6 +248,16 @@ const copyToClipboard = async () => {
 const handleCancelOptimize = () => {
   visible.value = false // 关闭弹窗
   resetData() // 重置优化相关的数据状态
+}
+
+/**
+ * 处理打开预览弹窗的操作
+ * 当用户点击预览按钮时，显示预览弹窗并添加相应的样式类
+ * @returns void 无返回值
+ */
+const handlePreview = () => {
+  previewVisible.value = true
+  document.body.classList.add('md-preview-open')
 }
 
 /**
@@ -246,6 +303,7 @@ const stopPrompt = watch(
 onMounted(() => {
   // 组件挂载时，初始化提示词内容
   prompt.value = store.draftAppConfig.preset_prompt
+  document.getElementById('app')?.addEventListener('click', handleClickOutside)
 })
 
 /**
@@ -261,136 +319,156 @@ onUnmounted(() => {
 <template>
   <div class="flex flex-col flex-1 border-r border-gray-200">
     <!-- 标题和按钮 -->
-    <div class="flex items-center justify-between h-10 px-6">
+    <div class="flex items-center justify-between h-10 px-4">
       <div class="font-bold text-gray-900">人设与回复逻辑</div>
-      <a-trigger
-        v-model:popup-visible="visible"
-        trigger="click"
-        :unmount-on-close="false"
-        position="bl"
-        :popup-translate="[0, 8]"
-      >
-        <a-tooltip content="自动优化提示词">
+      <div class="flex items-center gap-1">
+        <a-tooltip content="预览">
           <a-button
             type="text"
             size="mini"
             class="text-gray-500 font-bold text-sm"
-            @click="handleOptimize"
+            @click="handlePreview"
           >
             <template #icon>
-              <img src="@/assets/images/icon-optimize.svg" class="w-4 h-4" />
+              <icon-eye class="w-4 h-4" />
             </template>
-            优化
           </a-button>
         </a-tooltip>
-        <template #content>
-          <div class="bg-white rounded-xl shadow-xl p-4 w-[460px] max-h-[480px]">
-            <div class="flex flex-col gap-2 h-full">
-              <!-- 按钮 -->
-              <div v-if="isShowAutoOptimize" class="flex items-center">
-                <a-button
-                  type="outline"
-                  :loading="optimizeLoading"
-                  class="border-gray-500 bg-gray-200 text-gray-900 rounded-full"
-                  @click="handleAutoOptimize"
-                  >自动优化</a-button
-                >
-              </div>
-              <!-- 提示词优化后的结果 -->
-              <div v-else class="flex flex-1 flex-col">
-                <div
-                  ref="contentToCopy"
-                  class="text-gray-500 flex-1 max-h-[330px] overflow-y-scroll scrollbar-w-none leading-6.5"
-                >
-                  {{ optimizePrompt }}
-                  <DotCursor v-if="isCursor" />
+        <a-trigger
+          v-model:popup-visible="visible"
+          trigger="click"
+          :unmount-on-close="false"
+          position="bl"
+          :popup-translate="[0, 8]"
+          :click-outside-to-close="false"
+        >
+          <a-tooltip content="自动优化提示词">
+            <a-button
+              type="text"
+              size="mini"
+              class="text-gray-500 font-bold text-sm"
+              @click.stop="handleOptimize"
+            >
+              <template #icon>
+                <img src="@/assets/images/icon-optimize.svg" class="w-4 h-4 send-icon-active" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <template #content>
+            <div class="bg-white rounded-xl shadow-xl p-4 w-[460px] max-h-[480px]" @click.stop>
+              <div class="flex flex-col gap-2 h-full">
+                <!-- 按钮 -->
+                <div v-if="isShowAutoOptimize" class="flex items-center">
+                  <a-button
+                    type="outline"
+                    :loading="optimizeLoading"
+                    class="border-gray-500 bg-gray-200 text-gray-900 rounded-full"
+                    @click="handleAutoOptimize"
+                    >自动优化</a-button
+                  >
                 </div>
-                <Transition name="fade">
-                  <div v-if="isShowBtns" class="flex items-center justify-between h-10 pt-2">
-                    <div class="flex gap-2">
-                      <a-button
-                        type="primary"
-                        size="small"
-                        :loading="updatePromptLoading"
-                        @click="updatePrompt"
-                        >替换</a-button
-                      >
-                      <a-button size="small" @click="handleCancelOptimize">退出</a-button>
-                    </div>
-                    <div class="flex gap-2">
-                      <a-tooltip content="复制" content-class="rounded-lg py-1">
-                        <a-button
-                          type="text"
-                          size="small"
-                          class="text-gray-600"
-                          @click="copyToClipboard"
-                        >
-                          <template #icon><icon-copy /></template>
-                        </a-button>
-                      </a-tooltip>
-                      <a-tooltip content="重新生成" content-class="rounded-lg py-1">
-                        <a-button
-                          type="text"
-                          size="small"
-                          class="text-gray-600"
-                          @click="handleRegenerate"
-                        >
-                          <template #icon><icon-refresh /></template>
-                        </a-button>
-                      </a-tooltip>
-                    </div>
+                <!-- 提示词优化后的结果 -->
+                <div v-else class="flex flex-1 flex-col">
+                  <div
+                    ref="contentToCopy"
+                    class="text-gray-500 flex-1 max-h-[330px] overflow-y-scroll scrollbar-w-none leading-6.5"
+                  >
+                    <MdEditor
+                      v-model="optimizePrompt"
+                      :preview="false"
+                      :toolbars="[]"
+                      :footers="[]"
+                      :scroll-auto="false"
+                      :read-only="true"
+                      class="read-only-md"
+                    />
+                    <DotCursor v-if="isCursor" />
                   </div>
-                </Transition>
-              </div>
-              <!-- 输入框 -->
-              <div
-                class="flex flex-shrink-0 items-center h-[46px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
-              >
-                <img src="@/assets/images/icon-optimize.svg" class="w-3.5 h-3.5" />
-                <input
-                  ref="inputRef"
-                  v-model="inputValue"
-                  type="text"
-                  class="flex-1 outline-0"
-                  placeholder="你希望如何编写或优化提示词？"
-                  @keyup.enter="handleOptimizePrompt"
-                  @keyup.enter.exact="handleOptimizePrompt"
-                />
-                <a-button
-                  :disabled="isDisabled"
-                  type="text"
-                  shape="circle"
-                  @click="handleOptimizePrompt"
+                  <Transition name="fade">
+                    <div v-if="isShowBtns" class="flex items-center justify-between h-10 pt-2">
+                      <div class="flex gap-2">
+                        <a-button
+                          type="primary"
+                          size="small"
+                          :loading="updatePromptLoading"
+                          @click="updatePrompt"
+                          >替换</a-button
+                        >
+                        <a-button size="small" @click="handleCancelOptimize">退出</a-button>
+                      </div>
+                      <div class="flex gap-2">
+                        <a-tooltip content="复制" content-class="rounded-lg py-1">
+                          <a-button
+                            type="text"
+                            size="small"
+                            class="text-gray-600"
+                            @click="copyToClipboard"
+                          >
+                            <template #icon><icon-copy /></template>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip content="重新生成" content-class="rounded-lg py-1">
+                          <a-button
+                            type="text"
+                            size="small"
+                            class="text-gray-600"
+                            @click="handleRegenerate"
+                          >
+                            <template #icon><icon-refresh /></template>
+                          </a-button>
+                        </a-tooltip>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+                <!-- 输入框 -->
+                <div
+                  class="flex flex-shrink-0 items-center h-[46px] gap-2 px-4 border border-gray-200 rounded-full focus-within:border-blue-700"
                 >
-                  <template #icon
-                    ><img
-                      src="@/assets/images/icon-send.png"
-                      :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
-                  /></template>
-                </a-button>
-              </div>
-              <div class="text-center text-gray-500 text-xs">
-                内容由AI生成，无法确保真实准确，仅供参考。
+                  <img src="@/assets/images/icon-optimize.svg" class="w-3.5 h-3.5" />
+                  <input
+                    ref="inputRef"
+                    v-model="inputValue"
+                    type="text"
+                    class="flex-1 outline-0"
+                    placeholder="你希望如何编写或优化提示词？"
+                    @keyup.enter="handleOptimizePrompt"
+                    @keyup.enter.exact="handleOptimizePrompt"
+                  />
+                  <a-button
+                    :disabled="isDisabled"
+                    type="text"
+                    shape="circle"
+                    @click="handleOptimizePrompt"
+                  >
+                    <template #icon
+                      ><img
+                        src="@/assets/images/icon-send.png"
+                        :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
+                    /></template>
+                  </a-button>
+                </div>
+                <div class="text-center text-gray-500 text-xs">
+                  内容由AI生成，无法确保真实准确，仅供参考。
+                </div>
               </div>
             </div>
-          </div>
-        </template>
-      </a-trigger>
+          </template>
+        </a-trigger>
+      </div>
     </div>
     <!-- 提示词文本框 -->
-    <div class="flex-1 px-3 pb-4 h-[calc(100%-56px)]">
-      <CodeEditor
-        v-model:code="prompt"
-        :is-plaintext="true"
-        :is-hide-header="true"
-        :is-simple-mode="true"
-        :options="{ lineNumbers: 'off', language: 'markdown' }"
-        :background="'#fbf9fa'"
-        placeholder="请输入提示词或点击优化自动生成提示词"
-        class="flex-1 h-full"
+    <div class="flex-1">
+      <MdEditor
+        v-model="prompt"
+        :preview="false"
+        :toolbars="[]"
+        class="h-[calc(100vh-180px)]"
+        :scroll-auto="false"
         @blur="handleBlur"
-      ></CodeEditor>
+      />
     </div>
+    <MdPreviewDrawer v-model:visible="previewVisible" :text="prompt" />
   </div>
 </template>
 
@@ -422,5 +500,39 @@ onUnmounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+:deep(.md-editor-custom-scrollbar__track) {
+  display: none !important;
+}
+
+:deep(.md-editor) {
+  background-color: oklch(98.5% 0.002 247.839) !important;
+  border: none !important;
+  height: 100%;
+}
+
+:deep(.md-editor .cm-content) {
+  line-height: 1.8;
+}
+
+:deep(.read-only-md.md-editor) {
+  background-color: white !important;
+  border: none !important;
+}
+
+:deep(.read-only-md.md-editor .cm-content) {
+  pointer-events: none !important;
+}
+
+:deep(.ͼo) {
+  background-color: oklch(98.5% 0.002 247.839) !important;
+}
+
+:deep(.read-only-md .ͼo) {
+  background-color: white !important;
+}
+
+:deep(.md-editor-footer) {
+  background-color: oklch(98.5% 0.002 247.839) !important;
 }
 </style>
