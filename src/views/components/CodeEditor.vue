@@ -15,6 +15,7 @@ const props = defineProps<{
   isSimpleMode?: boolean
   placeholder?: string
   theme?: Theme
+  languageName?: string
   language?: string
   isPlaintext?: boolean
   background?: string
@@ -131,7 +132,7 @@ const loadTheme = async () => {
         inherit: true,
         rules: [],
         colors: {
-          'editor.background': '#f9fafb',
+          'editor.background': props.background ?? '#f9fafb',
         },
       })
     }
@@ -149,7 +150,7 @@ const loadTheme = async () => {
       // 定义主题
       monaco.editor.defineTheme(themeName, themeData)
       if (['idle', 'github', 'github-light', 'tomorrow', 'Active4D'].includes(themeName)) {
-        themeData.colors['editor.background'] = '#999'
+        themeData.colors['editor.background'] = props.background ?? '#f9fafb'
         monaco.editor.defineTheme(themeName, themeData)
       }
 
@@ -233,7 +234,7 @@ onMounted(() => {
       :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isEditorDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
     >
       <div class="flex items-center font-medium gap-1">
-        <icon-code class="text-sm" />{{ String(language ?? editorOptions.language) }}
+        <icon-code class="text-sm" />{{ String(languageName ?? language) }}
       </div>
       <div class="flex items-center gap-0.5">
         <a-tooltip content="复制代码">

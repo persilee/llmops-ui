@@ -261,3 +261,28 @@ export const generateRandomString = (length: number): string => {
 
   return result
 }
+
+export const supportedLanguages = [
+  'javascript',
+  'typescript',
+  'json',
+  'html',
+  'css',
+  'scss',
+  'less',
+  'python',
+  'java',
+  'csharp',
+  'cpp',
+  'php',
+  'ruby',
+  'go',
+  'rust',
+  'sql',
+  'markdown',
+  'xml',
+  'yaml',
+  'dockerfile',
+  'shell',
+  'powershell',
+]

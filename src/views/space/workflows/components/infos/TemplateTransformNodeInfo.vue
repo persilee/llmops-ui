@@ -469,7 +469,7 @@ watch(
                   v-model:code="form.template"
                   :height="200"
                   class="rounded-lg overflow-hidden"
-                  language="jinja2"
+                  language-name="jinja"
                   :is-plaintext="true"
                   :placeholder="'输入 \{\{ 插入变量，通过插入\{\{参数名\}\}可以引用对应的参数值。'"
                   @change-cursor-position="handleChangeCursorPosition"

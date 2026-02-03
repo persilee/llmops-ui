@@ -12,6 +12,7 @@ const props = defineProps<{
   options?: EditorOptions
   isHideHeader?: boolean
   theme?: Theme
+  languageName?: string
   language?: string
 }>()
 const visible = defineModel('visible', { type: Boolean, default: false })
@@ -202,6 +203,7 @@ onUnmounted(() => {
   >
     <a-spin :loading="loading" class="w-full h-full">
       <div
+        v-if="visible"
         :class="`${store.isDark ? 'vs-dark bg-[#1e1e1e]' : 'bg-gray-50'} w-full h-full flex flex-col`"
       >
         <div
@@ -209,7 +211,7 @@ onUnmounted(() => {
           :class="`flex items-center justify-between py-2.5 px-3 gap-1 ${store.isDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
         >
           <div class="flex items-center font-medium gap-1 text-base">
-            <icon-code class="text-base" />{{ String(language ?? editorOptions.language) }}
+            <icon-code class="text-base" />{{ String(String(languageName ?? language)) }}
           </div>
           <div class="flex items-center gap-1">
             <a-tooltip content="复制代码">

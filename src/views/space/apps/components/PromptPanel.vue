@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import DotCursor from '@/components/DotCursor.vue'
 import AIApi from '@/services/api/ai'
-import { Theme } from '@/types/types'
 import CodeEditor from '@/views/components/CodeEditor.vue'
 import { Message } from '@arco-design/web-vue'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
@@ -386,7 +385,6 @@ onUnmounted(() => {
         :is-hide-header="true"
         :is-simple-mode="true"
         :options="{ lineNumbers: 'off', language: 'markdown' }"
-        :theme="Theme.github"
         :background="'#fbf9fa'"
         placeholder="请输入提示词或点击优化自动生成提示词"
         class="flex-1 h-full"
@@ -400,6 +398,16 @@ onUnmounted(() => {
 .send-icon-active {
   filter: brightness(0) saturate(100%) invert(35%) sepia(96%) saturate(462%) hue-rotate(185deg)
     brightness(96%) contrast(95%);
+}
+
+:deep(.monaco-editor-background) {
+  background-color: transparent !important;
+}
+:deep(.monaco-editor) {
+  background-color: transparent !important;
+}
+:deep(.monaco-editor .margin) {
+  background-color: transparent !important;
 }
 
 :deep(.arco-textarea) {
