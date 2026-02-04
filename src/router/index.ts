@@ -134,9 +134,24 @@ const router = createRouter({
           component: () => import('@/views/space/apps/ShareMessagesPage.vue'),
         },
         {
-          path: 'auth/authorize/:provider_name',
+          path: 'auth/authorize/:providerName',
           name: 'auth-authorize',
           component: () => import('@/views/auth/AuthorizeView.vue'),
+        },
+        {
+          path: '/:pathMatch(.*)*',
+          name: 'not-found',
+          component: () => import('@/views/errors/NotFoundView.vue'),
+        },
+        {
+          path: '/errors/404',
+          name: 'errors-not-found',
+          component: () => import('@/views/errors/NotFoundView.vue'),
+        },
+        {
+          path: '/errors/403',
+          name: 'errors-forbidden',
+          component: () => import('@/views/errors/ForbiddenView.vue'),
         },
       ],
     },
@@ -144,14 +159,24 @@ const router = createRouter({
 })
 
 // 路由守卫：检查用户登录状态
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 如果用户未登录且目标页面不是登录或授权页面，则重定向到登录页
   if (!auth.isLogin() && !['auth-login', 'auth-authorize'].includes(to.name as string)) {
     next({ name: 'auth-login' })
     return
-  }
-  // 其他情况允许访问
-  next()
+  } else next()
+})
+
+router.onError((error, to, from) => {
+  // 跳转到404页面，可携带错误信息
+  router.push({
+    name: 'not-found',
+    query: {
+      errorMsg: error.message || '路由发生错误',
+    },
+  })
+
+  return false
 })
 
 export default router

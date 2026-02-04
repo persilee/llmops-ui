@@ -8,7 +8,7 @@ import UploadApi from '@/services/api/upload-file'
 import { unescapeString } from '@/utils/util'
 import { Message, type FileItem, type RequestOption } from '@arco-design/web-vue'
 import { onUnmounted, reactive, ref, useTemplateRef } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDatasetStore } from '../DatasetView.store'
 
 // 批次ID，用于追踪文档处理的批次
@@ -21,6 +21,7 @@ let timer: number | null | undefined = null
 const store = useDatasetStore()
 // Vue路由实例
 const router = useRouter()
+const route = useRoute()
 // 创建文档的表单数据，包含处理类型、规则和文件列表
 const createDocumentForm = reactive({
   // 文档处理类型：'automatic'（自动）或'custom'（自定义）
@@ -126,19 +127,18 @@ const handleNextClick = async () => {
         }
       }
       // 调用API创建文档
-      if (store.dataset && store.dataset.id) {
-        const resp = await DocumentsApi.createDocument(store.dataset?.id, req)
-        // 保存批次ID用于后续状态查询
-        batch = resp.data.batch
 
-        // 获取文档处理状态
-        await fetchDocumentsStatus()
-        // 启动定时器轮询处理状态
-        startTimer()
+      const resp = await DocumentsApi.createDocument(route.params.datasetId as string, req)
+      // 保存批次ID用于后续状态查询
+      batch = resp.data.batch
 
-        // 进入下一步
-        store.currentStep++
-      }
+      // 获取文档处理状态
+      await fetchDocumentsStatus()
+      // 启动定时器轮询处理状态
+      startTimer()
+
+      // 进入下一步
+      store.currentStep++
     } catch (error) {
       // 错误处理
     } finally {
@@ -177,24 +177,21 @@ const handlePreviousClick = () => {
  */
 const fetchDocumentsStatus = async () => {
   try {
-    // 检查知识库是否存在
-    if (store.dataset && store.dataset.id) {
-      // 增加获取次数计数器
-      fetchCount++
-      // 调用API获取文档状态
-      const resp = await DocumentsApi.getDocumentsStatus(store.dataset.id, batch)
-      // 更新文档状态数据
-      documents.value = resp.data
-      // 检查是否超过最大获取次数（66次）
-      if (fetchCount > 66) stopTimer()
+    // 增加获取次数计数器
+    fetchCount++
+    // 调用API获取文档状态
+    const resp = await DocumentsApi.getDocumentsStatus(route.params.datasetId as string, batch)
+    // 更新文档状态数据
+    documents.value = resp.data
+    // 检查是否超过最大获取次数（66次）
+    if (fetchCount > 66) stopTimer()
 
-      // 检查所有文档是否处理完成
-      const isCompleted = documents.value.every(
-        (document) => document.status === 'completed' || document.status === 'error',
-      )
-      // 如果所有文档处理完成，停止轮询
-      if (isCompleted) stopTimer()
-    }
+    // 检查所有文档是否处理完成
+    const isCompleted = documents.value.every(
+      (document) => document.status === 'completed' || document.status === 'error',
+    )
+    // 如果所有文档处理完成，停止轮询
+    if (isCompleted) stopTimer()
   } catch (error) {
     // 发生错误时停止轮询
     stopTimer()

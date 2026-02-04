@@ -13,7 +13,7 @@ onMounted(async () => {
   try {
     // 调用授权API，传入第三方提供商名称和授权码
     const resp = await AccountApi.authorize(
-      route.params?.provider_name as string, // 从路由参数中获取第三方提供商名称
+      route.params?.providerName as string, // 从路由参数中获取第三方提供商名称
       route.query?.code as string, // 从查询参数中获取授权码
     )
     // 更新凭证存储中的用户信息

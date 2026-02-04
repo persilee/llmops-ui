@@ -51,19 +51,17 @@ const fetchData = async () => {
   try {
     // 开启加载状态
     loading.value = true
-    // 确保知识库存在
-    if (store.dataset) {
-      // 调用API获取文档列表
-      const resp = await DocumentsApi.getDocumentsWithPage(store.dataset.id, {
-        current_page: pagination.current, // 当前页码
-        page_size: pagination.pageSize, // 每页条数
-        search_word: searchWord.value, // 搜索关键词
-      })
-      // 更新文档列表数据
-      documents.value = resp.data.list
-      // 更新分页总条数
-      pagination.total = resp.data.paginator.total_record
-    }
+
+    // 调用API获取文档列表
+    const resp = await DocumentsApi.getDocumentsWithPage(route.params.datasetId as string, {
+      current_page: pagination.current, // 当前页码
+      page_size: pagination.pageSize, // 每页条数
+      search_word: searchWord.value, // 搜索关键词
+    })
+    // 更新文档列表数据
+    documents.value = resp.data.list
+    // 更新分页总条数
+    pagination.total = resp.data.paginator.total_record
   } catch (error) {
     // 错误处理
     console.error('获取文档列表失败:', error)
@@ -73,15 +71,25 @@ const fetchData = async () => {
   }
 }
 
+/**
+ * 获取知识库详细信息
+ * @description 根据路由参数中的知识库ID，从服务器获取知识库的详细信息
+ *              包括知识库名称、文档数量、命中次数等数据
+ * @async
+ * @returns {Promise<void>} 无返回值，但会更新dataset.value
+ * @throws {Error} 当API调用失败时抛出错误
+ */
 const fetchDatasetById = async () => {
   try {
-    if (store.dataset && store.dataset.id) {
-      // 开启加载状态
-      loading.value = true
-      const resp = await DatasetApi.getDataset(store.dataset.id)
-      dataset.value = resp.data
-    }
+    // 开启加载状态
+    loading.value = true
+    // 调用API获取知识库详情
+    const resp = await DatasetApi.getDataset(route.params.datasetId as string)
+    // 更新知识库信息
+    dataset.value = resp.data
   } catch (error) {
+    // 错误处理：获取知识库信息失败
+    console.error('获取知识库信息失败:', error)
   } finally {
     // 关闭加载状态
     loading.value = false
@@ -105,21 +113,22 @@ const handlePageChange = (page: number) => {
 const handleSwitchChange = async (v: boolean, ev: Event, document: GetDocumentsWithPage) => {
   ev.stopPropagation()
   try {
-    // 确保知识库存在
-    if (store.dataset && store.dataset.id) {
-      // 开启加载状态
-      loading.value = true
-      // 调用API更新文档启用状态
-      const resp = await DocumentsApi.updateDocumentEnabled(store.dataset.id, document.id, {
+    // 开启加载状态
+    loading.value = true
+    // 调用API更新文档启用状态
+    const resp = await DocumentsApi.updateDocumentEnabled(
+      route.params.datasetId as string,
+      document.id,
+      {
         enabled: v,
-      })
-      // 如果更新成功，显示成功消息
-      if (resp.code == 'success') {
-        Message.success(resp.message)
-      }
-      // 重新获取文档列表数据
-      fetchData()
+      },
+    )
+    // 如果更新成功，显示成功消息
+    if (resp.code == 'success') {
+      Message.success(resp.message)
     }
+    // 重新获取文档列表数据
+    fetchData()
   } catch (error) {
     // 如果更新失败，恢复文档的原始状态
     document.enabled = !v
@@ -179,19 +188,16 @@ const handleDelete = (data: GetDocumentsWithPage) => {
     // 确认删除的回调函数
     onOk: async () => {
       try {
-        // 确保知识库存在
-        if (store.dataset && store.dataset.id) {
-          // 开启加载状态
-          loading.value = true
-          // 调用API删除文档
-          const resp = await DocumentsApi.deleteDocument(store.dataset.id, data.id)
-          // 显示删除结果消息
-          Message.success(resp.message)
-          // 如果删除成功，刷新文档列表
-          if (resp.code == 'success') {
-            await fetchDatasetById()
-            await fetchData()
-          }
+        // 开启加载状态
+        loading.value = true
+        // 调用API删除文档
+        const resp = await DocumentsApi.deleteDocument(route.params.datasetId as string, data.id)
+        // 显示删除结果消息
+        Message.success(resp.message)
+        // 如果删除成功，刷新文档列表
+        if (resp.code == 'success') {
+          await fetchDatasetById()
+          await fetchData()
         }
       } catch (error) {
         // 错误处理：删除失败时的处理逻辑

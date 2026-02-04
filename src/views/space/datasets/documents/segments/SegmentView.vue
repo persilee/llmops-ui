@@ -8,7 +8,7 @@ import InputSearch from '@/views/components/InputSearch.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { debounce } from 'lodash-es'
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDatasetStore } from '../../DatasetView.store'
 import SegmentContent from './components/SegmentContent.vue'
 import SegmentHeader from './components/SegmentHeader.vue'
@@ -16,6 +16,7 @@ import SegmentModal from './components/SegmentModal.vue'
 
 // 初始化路由实例，用于页面导航
 const router = useRouter()
+const route = useRoute()
 // 初始化知识库store，用于管理知识库相关的状态
 const store = useDatasetStore()
 // 文档详情的响应式变量，存储当前文档的详细信息
@@ -86,21 +87,23 @@ const fetchData = async (isLoadMore: boolean = false) => {
   }
 
   try {
-    if (store.dataset && store.dataset.id && store.document && store.document.id) {
-      // 开启加载状态
-      loading.value = true
-      // 调用API获取数据
-      const resp = await SegmentsApi.getSegmentsWithPage(store.dataset.id, store.document.id, {
+    // 开启加载状态
+    loading.value = true
+    // 调用API获取数据
+    const resp = await SegmentsApi.getSegmentsWithPage(
+      route.params.datasetId as string,
+      route.params.documentId as string,
+      {
         current_page: paginator.value.current_page,
         page_size: paginator.value.page_size,
         search_word: searchWord.value,
-      })
+      },
+    )
 
-      // 将新数据追加到现有列表中
-      segments.value.push(...resp.data.list)
-      // 更新分页信息
-      paginator.value = resp.data.paginator
-    }
+    // 将新数据追加到现有列表中
+    segments.value.push(...resp.data.list)
+    // 更新分页信息
+    paginator.value = resp.data.paginator
   } catch (error) {
     // 错误处理
     console.error('获取片段列表失败:', error)
@@ -118,15 +121,15 @@ const fetchData = async (isLoadMore: boolean = false) => {
  */
 const fetchDocumentById = async () => {
   try {
-    // 检查必要的数据是否存在：知识库ID和文档ID
-    if (store.dataset && store.dataset.id && store.document && store.document.id) {
-      // 开启加载状态，用于显示加载动画
-      headerLoading.value = true
-      // 调用API获取文档详情
-      const resp = await DocumentsApi.getDocument(store.dataset.id, store.document.id)
-      // 将获取到的文档数据存储到响应式变量中
-      document.value = resp.data
-    }
+    // 开启加载状态，用于显示加载动画
+    headerLoading.value = true
+    // 调用API获取文档详情
+    const resp = await DocumentsApi.getDocument(
+      route.params.datasetId as string,
+      route.params.documentId as string,
+    )
+    // 将获取到的文档数据存储到响应式变量中
+    document.value = resp.data
   } catch (error) {
     // 错误处理：如果获取文档详情失败，保持原有状态
   } finally {
@@ -144,14 +147,14 @@ const fetchDocumentById = async () => {
 const handleChangeEnabled = async (v: boolean, ev: Event, segment: GetSegmentsWithPage) => {
   ev.stopPropagation()
   try {
-    // 检查必要的数据是否存在：知识库ID、文档ID和片段对象
-    if (store.dataset && store.dataset.id && store.document && store.document.id && segment) {
+    // 检查必要的数据是否存在：片段对象
+    if (segment) {
       // 开启加载状态，用于显示加载动画
       loading.value = true
       // 调用API更新片段的启用状态
       const resp = await SegmentsApi.updateSegmentEnabled(
-        store.dataset.id,
-        store.document.id,
+        route.params.datasetId as string,
+        route.params.documentId as string,
         segment.id,
         { enabled: v as boolean },
       )
@@ -197,14 +200,14 @@ const handleDelete = async (segment: GetSegmentsWithPage) => {
     // 确认按钮的回调函数
     onOk: async () => {
       try {
-        // 检查必要的数据是否存在：知识库ID、文档ID和片段对象
-        if (store.dataset && store.dataset.id && store.document && store.document.id && segment) {
+        // 检查必要的数据是否存在：片段对象
+        if (segment) {
           // 开启加载状态，用于显示加载动画
           loading.value = true
           // 调用API删除片段
           const resp = await SegmentsApi.deleteSegment(
-            store.dataset.id,
-            store.document.id,
+            route.params.datasetId as string,
+            route.params.documentId as string,
             segment.id,
           )
           // 如果删除成功，显示成功消息并更新本地状态

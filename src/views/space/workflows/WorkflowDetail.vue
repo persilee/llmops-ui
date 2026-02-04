@@ -56,14 +56,13 @@ const highlightedEdges = ref<string[]>([])
 const debugModelVisible = ref(false)
 const selectNode = ref<any>(null)
 const nodeInfoVisible = ref(false)
-const code = ref('')
 
 const fetchData = async () => {
   try {
     loading.value = true
     headerLoading.value = true
     await store.getWorkflow(route.params.workflowId as string)
-    await store.getDraftGraph(store.workflow?.id ?? (route.params.workflowId as string))
+    await store.getDraftGraph(route.params.workflowId as string)
   } catch (error) {
   } finally {
     loading.value = false
@@ -198,8 +197,8 @@ const handleNodeMouseLeave = () => {
 const handleUpdateGraph = () => {
   if (isInit.value) return
 
-  if (store.workflow && store.workflow.id && flowInstance.value) {
-    store.updateDraftGraph(store.workflow?.id, {
+  if (flowInstance.value) {
+    store.updateDraftGraph(route.params.workflowId as string, {
       edges: store.draftGraph.edges,
       nodes: store.draftGraph.nodes,
     })
@@ -237,8 +236,8 @@ const handleUpdateNode = (node_data: Record<string, any>) => {
     }
   }
 
-  if (store.workflow && store.workflow.id && flowInstance.value) {
-    store.updateDraftGraph(store.workflow?.id, {
+  if (flowInstance.value) {
+    store.updateDraftGraph(route.params.workflowId as string, {
       edges: store.draftGraph.edges,
       nodes: store.draftGraph.nodes,
     })

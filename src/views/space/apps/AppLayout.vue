@@ -4,6 +4,7 @@ import { formatDate } from '@/utils/format-util'
 import HeaderSkeleton from '@/views/components/HeaderSkeleton.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSpaceStore } from '../SpaceView.store'
 import { useAppStore } from './AppView.store'
 import AppModel from './components/AppModel.vue'
@@ -21,6 +22,7 @@ const spaceStore = useSpaceStore()
 const historyVersionVisible = ref(false)
 // 计算属性，判断应用是否已发布
 const isPublished = computed(() => store.app?.status === 'published')
+const route = useRoute()
 
 /**
  * 获取应用数据
@@ -29,14 +31,12 @@ const isPublished = computed(() => store.app?.status === 'published')
  */
 const fetchAppData = async () => {
   try {
-    if (store.app && store.app.id) {
-      // 设置加载状态为true，显示加载中效果
-      headerLoading.value = true
-      // 调用API获取指定ID的应用数据
-      const resp = await AppsApi.getApp(store.app.id)
-      // 将获取到的数据存储到store中
-      store.app = resp.data
-    }
+    // 设置加载状态为true，显示加载中效果
+    headerLoading.value = true
+    // 调用API获取指定ID的应用数据
+    const resp = await AppsApi.getApp(route.params.appId as string)
+    // 将获取到的数据存储到store中
+    store.app = resp.data
   } finally {
     // 无论成功失败，都将加载状态设置为false
     headerLoading.value = false
@@ -50,17 +50,14 @@ const fetchAppData = async () => {
  */
 const handlePublishClick = async () => {
   try {
-    // 检查应用数据是否存在
-    if (store.app && store.app.id) {
-      // 设置发布加载状态
-      publishLoading.value = true
-      // 调用发布API
-      const resp = await AppsApi.publish(store.app.id)
-      // 重新获取应用数据以更新状态
-      await fetchAppData()
-      // 显示成功消息
-      Message.success(resp.message)
-    }
+    // 设置发布加载状态
+    publishLoading.value = true
+    // 调用发布API
+    const resp = await AppsApi.publish(route.params.appId as string)
+    // 重新获取应用数据以更新状态
+    await fetchAppData()
+    // 显示成功消息
+    Message.success(resp.message)
   } finally {
     // 无论成功失败，都重置加载状态
     publishLoading.value = false
@@ -84,17 +81,14 @@ const handleCancelPublishClick = async () => {
     // 确认删除的回调函数
     onOk: async () => {
       try {
-        // 检查应用数据是否存在
-        if (store.app && store.app.id) {
-          // 设置发布加载状态，显示加载中效果
-          publishLoading.value = true
-          // 调用取消发布API
-          const resp = await AppsApi.cancelPublish(store.app.id)
-          // 重新获取应用数据以更新状态
-          await fetchAppData()
-          // 显示成功消息
-          Message.success(resp.message)
-        }
+        // 设置发布加载状态，显示加载中效果
+        publishLoading.value = true
+        // 调用取消发布API
+        const resp = await AppsApi.cancelPublish(route.params.appId as string)
+        // 重新获取应用数据以更新状态
+        await fetchAppData()
+        // 显示成功消息
+        Message.success(resp.message)
       } finally {
         // 无论成功失败，都重置加载状态
         publishLoading.value = false
