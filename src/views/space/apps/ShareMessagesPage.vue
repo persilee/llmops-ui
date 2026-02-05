@@ -2,6 +2,7 @@
 import AIApi from '@/services/api/ai'
 import AppsApi from '@/services/api/apps'
 import type { GetAssistantAgentMessagesWithPage } from '@/services/api/assistant-agent/type'
+import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import moment from 'moment'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -54,8 +55,8 @@ onMounted(async () => {
               <div class="bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end">
                 {{ message.query }}
               </div>
-              <div class="py-3 rounded-lg leading-5 self-start">
-                {{ message.answer }}
+              <div class="py-3 self-start">
+                <MarkdownRender :source="message.answer" />
               </div>
             </div>
           </div>

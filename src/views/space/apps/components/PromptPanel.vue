@@ -325,6 +325,7 @@ onMounted(() => {
 onUnmounted(() => {
   stop() // 组件卸载时停止监听
   stopPrompt() // 组件卸载时停止监听
+  document.getElementById('app')?.removeEventListener('click', handleClickOutside)
 })
 </script>
 

@@ -20,6 +20,19 @@ export const QueueEvent = {
   ping: 'ping',
 }
 
+export const nodeTypeMap = {
+  start: 'startNodeResult',
+  http_request: 'httpRequestNodeResult',
+  dataset_retrieval: 'datasetRetrievalNodeResult',
+  llm: 'llmNodeResult',
+  tool: 'toolNodeResult',
+  template_transform: 'templateTransformNodeResult',
+  question_classifier: 'questionClassifierNodeResult',
+  code: 'codeNodeResult',
+  iteration: 'iterationNodeResult',
+  end: 'endNodeResult',
+}
+
 // 提取事件类型常量
 export const RUNNING_THOUGHT_EVENTS = [
   QueueEvent.longTermMemoryRecall,

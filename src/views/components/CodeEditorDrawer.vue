@@ -66,6 +66,7 @@ const defaultOptions: EditorOptions = {
   editContext: false,
   // 自动换行 (off, on, wordWrapColumn, bounded)
   wordWrap: 'on',
+  domReadOnly: true,
 }
 
 const editorOptions = merge({}, defaultOptions, props.options)
@@ -158,6 +159,12 @@ const handleChange = (value: string, event: any) => {
 
 const handleEditorDidMount = async (editor: any) => {
   editorInstance = editor
+  try {
+    // 执行Monaco内置的格式化动作
+    await editor?.getAction('editor.action.formatDocument')?.run()
+  } catch (error) {
+    console.error('格式化失败:', error)
+  }
 
   editor.onDidBlurEditorText(() => {
     emits('blur')

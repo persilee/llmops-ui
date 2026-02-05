@@ -1,8 +1,25 @@
 <script setup lang="ts">
 import { Position, type NodeProps } from '@vue-flow/core'
+import { onUnmounted, ref, watch } from 'vue'
+import 'vue-json-pretty/lib/styles.css'
+import { useWorkflowStore } from '../../Workflow.store'
 import NodeHandle from './NodeHandle.vue'
+import NodeRunInfo from './NodeRunInfo.vue'
 
 const props = defineProps<NodeProps>()
+const store = useWorkflowStore()
+const nodeResult = ref<any>()
+
+const stop = watch(
+  () => store.startNodeResult.value,
+  (newData) => {
+    nodeResult.value = newData
+  },
+)
+
+onUnmounted(() => {
+  stop()
+})
 </script>
 
 <template>
@@ -67,6 +84,7 @@ const props = defineProps<NodeProps>()
       <!-- 工具节点-连接句柄 -->
       <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
     </div>
+    <NodeRunInfo v-if="nodeResult" :data="nodeResult" :is-hide-output="true" />
   </div>
 </template>
 
@@ -81,5 +99,12 @@ const props = defineProps<NodeProps>()
 
 .selected .flow-node {
   border: 1px solid #1447e6 !important;
+}
+
+:deep(.arco-collapse-item-content) {
+  background-color: white !important;
+}
+:deep(.arco-collapse-item-header) {
+  border-bottom: none !important;
 }
 </style>

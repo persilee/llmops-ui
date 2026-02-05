@@ -6,7 +6,9 @@ import { useScreenshot } from '@/utils/el-to-image'
 import { Message } from '@arco-design/web-vue'
 import moment from 'moment'
 import QRCodeVue3 from 'qrcode-vue3'
-import { ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import MarkdownRender from './MarkdownRender.vue'
 
 // 定义组件的props，包含消息列表数据
 const props = defineProps<{
@@ -24,11 +26,18 @@ const { capture, elToBlob } = useScreenshot()
 const loading = ref(false)
 // 回话名称
 const name = ref('')
+const route = useRoute()
 
 // 处理关闭模态框的方法
 const handleCloseModal = () => {
   visible.value = false
 }
+
+// 计算属性：反转消息列表顺序
+// 将props.messages数组进行反转，使最新的消息显示在上方
+const reversedMessages = computed(() => {
+  return [...props.messages].reverse()
+})
 
 /**
  * 处理复制图片功能
@@ -94,28 +103,57 @@ const handleDownloadImage = async () => {
   }
 }
 
+/**
+ * 生成对话名称
+ * 通过收集所有消息内容，调用AI API生成一个合适的对话名称
+ * @returns {Promise<void>}
+ */
 const generateConversationName = async () => {
   try {
+    // 设置加载状态为true，显示加载动画
     loading.value = true
+    // 初始化查询字符串
     let query = ''
+    // 遍历所有消息，将问题和答案拼接成字符串
     props.messages.forEach((item) => {
       query += item.query + '\n' + item.answer + '\n'
     })
+    // 如果查询字符串超过2000字符，截取前2000字符
     if (query.length > 2000) {
       query = query.slice(0, 2000)
     }
+    // 调用AI API生成对话名称
     const resp = await AIApi.generateConversationName({ query })
+    // 将生成的名称保存到name变量中
     name.value = resp.data.name
   } catch (error) {
+    // 发生错误时不做处理，静默失败
   } finally {
+    // 无论成功失败，都将加载状态设置为false
     loading.value = false
   }
 }
 
+/**
+ * 获取二维码内容
+ * @returns {string} 返回当前路由的完整路径作为二维码内容
+ */
+const getQRCodeContent = () => {
+  return route.fullPath
+}
+
+// 创建一个watch监听器，监听visible属性的变化
+// 当模态框显示时(visible为true)，自动生成对话名称
 const stop = watch(visible, (newVal) => {
   if (newVal) {
     generateConversationName()
   }
+})
+
+// 在组件卸载时，停止watch监听器
+// 这是一个必要的清理步骤，可以防止内存泄漏
+onUnmounted(() => {
+  stop()
 })
 </script>
 
@@ -141,11 +179,13 @@ const stop = watch(visible, (newVal) => {
             </div>
           </div>
           <a-divider class="my-8" />
-          <div v-for="message in messages" :key="message.id" class="flex flex-col gap-2">
+          <div v-for="message in reversedMessages" :key="message.id" class="flex flex-col gap-2">
             <div class="bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end">
               {{ message.query }}
             </div>
-            <div class="py-3 rounded-lg leading-5 self-start">{{ message.answer }}</div>
+            <div class="py-3 self-start">
+              <MarkdownRender :source="message.answer" />
+            </div>
           </div>
 
           <div class="bg-gray-100 flex items-center justify-between rounded-sm mt-10 py-6 px-10">
@@ -159,7 +199,7 @@ const stop = watch(visible, (newVal) => {
               </div>
             </div>
             <QRCodeVue3
-              value="https://lishaoy.net"
+              :value="getQRCodeContent()"
               :width="66"
               :height="66"
               :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"

@@ -120,8 +120,6 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
             Message.error('登录已过期，请重新登录')
             useRouter().push({ name: 'auth-login' })
           } else if (data.code === HttpCode.NotFound) {
-            console.log('aaaaaaaaccccccccc', data)
-
             await router.push({ name: 'errors-not-found', query: data.data })
           } else if (data.code === HttpCode.Forbidden) {
             await router.push({ name: 'errors-forbidden' })

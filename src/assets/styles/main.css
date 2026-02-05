@@ -107,4 +107,12 @@
   .md-editor-preview h6 {
     font-size: 1em !important;
   }
+
+  .monaco-editor-overlaymessage {
+    display: none !important;
+  }
+
+  .node-z-index {
+    z-index: 1000 !important;
+  }
 }

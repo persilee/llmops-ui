@@ -71,6 +71,14 @@ const defaultOptions: EditorOptions = {
   editContext: false,
   // 自动换行 (off, on, wordWrapColumn, bounded)
   wordWrap: 'on',
+  domReadOnly: true,
+  hover: {
+    enabled: false,
+  },
+  // 额外配置：禁用语言服务的hover提示
+  modeConfiguration: {
+    hovers: false,
+  },
 }
 
 const plaintextOptions = {
@@ -101,7 +109,7 @@ const options = merge({}, defaultOptions, props.isPlaintext ? plaintextOptions :
 const editorOptions = merge({}, options, props.options)
 
 // 计算编辑器高度：如果传入height属性，根据是否展开状态返回不同高度；否则默认100%
-const editorHeight = computed(() => (props.height ? props.height - 46 : '100%'))
+const editorHeight = computed(() => (props.height ? props.height - 10 : '100%'))
 
 // 计算是否显示placeholder
 const showPlaceholder = computed(() => {
@@ -173,6 +181,13 @@ const handleChangeTheme = () => {
 
 const handleEditorDidMount = async (editor: any) => {
   editorInstance = editor
+
+  try {
+    // 执行Monaco内置的格式化动作
+    await editor?.getAction('editor.action.formatDocument')?.run()
+  } catch (error) {
+    console.error('格式化失败:', error)
+  }
 
   editor.onDidBlurEditorText(() => {
     emits('blur')
@@ -308,7 +323,7 @@ onMounted(() => {
       v-model:visible="codeEditorVisible"
       v-model:code="code"
       :language="language"
-      :options="{ language: language }"
+      :options="{ language: language, ...options }"
       @blur="emits('blur')"
     />
   </div>

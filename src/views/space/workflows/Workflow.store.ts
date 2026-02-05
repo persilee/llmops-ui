@@ -2,7 +2,7 @@ import WorkFlowApi from '@/services/api/workflow'
 import type { GetWorkflowResp, GetWorkflowsWithPage } from '@/services/api/workflow/types'
 import type { GraphEdge, GraphNode } from '@vue-flow/core'
 import { defineStore } from 'pinia'
-import { markRaw, ref } from 'vue'
+import { markRaw, ref, type Ref } from 'vue'
 import CodeNode from './components/nodes/CodeNode.vue'
 import DatasetRetrievalNode from './components/nodes/DatasetRetrievalNode.vue'
 import EndNode from './components/nodes/EndNode.vue'
@@ -13,6 +13,19 @@ import QuestionClassifierNode from './components/nodes/QuestionClassifierNode.vu
 import StartNode from './components/nodes/StartNode.vue'
 import TemplateTransformNode from './components/nodes/TemplateTransformNode.vue'
 import ToolNode from './components/nodes/ToolNode.vue'
+
+export interface WorkflowStoreType {
+  startNodeResult: Ref<any>
+  httpRequestNodeResult: Ref<any>
+  datasetRetrievalNodeResult: Ref<any>
+  llmNodeResult: Ref<any>
+  toolNodeResult: Ref<any>
+  templateTransformNodeResult: Ref<any>
+  questionClassifierNodeResult: Ref<any>
+  codeNodeResult: Ref<any>
+  iterationNodeResult: Ref<any>
+  endNodeResult: Ref<any>
+}
 
 export const useWorkflowStore = defineStore(
   'workflow',
@@ -26,6 +39,17 @@ export const useWorkflowStore = defineStore(
       edges: <any[]>[],
     })
     const showedAddNode = ref('')
+    const nodeResult = ref<any>()
+    const startNodeResult = ref<any>({})
+    const httpRequestNodeResult = ref<any>({})
+    const endNodeResult = ref<any>({})
+    const datasetRetrievalNodeResult = ref<any>({})
+    const llmNodeResult = ref<any>({})
+    const toolNodeResult = ref<any>({})
+    const templateTransformNodeResult = ref<any>({})
+    const codeNodeResult = ref<any>({})
+    const questionClassifierNodeResult = ref<any>({})
+    const iterationNodeResult = ref<any>({})
 
     const getWorkflow = async (workflowId: string) => {
       try {
@@ -396,6 +420,17 @@ export const useWorkflowStore = defineStore(
       draftGraph,
       loading,
       showedAddNode,
+      nodeResult,
+      startNodeResult,
+      httpRequestNodeResult,
+      endNodeResult,
+      datasetRetrievalNodeResult,
+      llmNodeResult,
+      toolNodeResult,
+      templateTransformNodeResult,
+      codeNodeResult,
+      questionClassifierNodeResult,
+      iterationNodeResult,
       getWorkflow,
       getDraftGraph,
       updateDraftGraph,

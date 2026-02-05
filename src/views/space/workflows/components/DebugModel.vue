@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { nodeTypeMap } from '@/config'
 import WorkFlowApi from '@/services/api/workflow'
+import CodeEditor from '@/views/components/CodeEditor.vue'
 import type { ValidatedError } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
-import { computed, ref, useTemplateRef, watch } from 'vue'
-import { useWorkflowStore } from '../Workflow.store'
+import { computed, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import VueJsonPretty from 'vue-json-pretty'
+import 'vue-json-pretty/lib/styles.css'
+import { useWorkflowStore, type WorkflowStoreType } from '../Workflow.store'
 
 const store = useWorkflowStore()
 const visible = defineModel('visible', { type: Boolean, default: false })
@@ -55,6 +59,8 @@ const handleClick = () => {
   formRef.value.handleSubmit()
 }
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 // 6.定义表单提交函数
 const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | undefined }) => {
   // 6.1 运行前先将历史运行清空
@@ -72,10 +78,21 @@ const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | u
       const resp = await WorkFlowApi.debugWorkflow({
         workflowId: store.workflow.id,
         req: form.value,
-        onData: (event_response) => {
-          nodeResults.value.push(event_response?.data)
+        onData: async (event_response) => {
+          const data = event_response?.data
+          if (!data) return
+
+          nodeResults.value.push(data)
+          const nodeType = data.node_data?.node_type
+          const storeKey = nodeTypeMap[nodeType as keyof typeof nodeTypeMap]
+
+          if (storeKey) {
+            const key = storeKey as keyof WorkflowStoreType
+            store[key].value = data
+          }
         },
       })
+
       if (resp) {
         debugError.value = resp.message
       }
@@ -86,6 +103,48 @@ const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | u
   } finally {
     loading.value = false
   }
+}
+
+// 可调整宽度的div元素
+const resizableDiv = ref<any>(null)
+// 拖动按钮元素
+const dragBtn = ref(null)
+// 记录鼠标按下时的初始X坐标
+let startX = 0
+// 记录div的初始宽度
+let initialWidth = 0
+
+// 开始拖动的事件处理
+const startDrag = (e: MouseEvent) => {
+  // 阻止默认事件，避免选中文本等
+  e.preventDefault()
+  // 记录初始鼠标X坐标
+  startX = e.clientX
+  // 获取div的初始宽度
+  initialWidth = resizableDiv.value.offsetWidth
+
+  // 绑定全局的鼠标移动和松开事件
+  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('mouseup', stopDrag)
+}
+
+// 拖动中的事件处理
+const onDrag = (e: MouseEvent) => {
+  if (!resizableDiv.value) return
+  // 计算鼠标移动的距离
+  const moveDistance = -(e.clientX - startX)
+  // 计算新的宽度
+  const newWidth = initialWidth + moveDistance
+
+  // 设置div的新宽度，最小宽度限制为100px
+  resizableDiv.value.style.setProperty('width', Math.max(newWidth, 100) + 'px', 'important')
+}
+
+// 停止拖动的事件处理
+const stopDrag = () => {
+  // 移除全局的鼠标事件监听
+  document.removeEventListener('mousemove', onDrag)
+  document.removeEventListener('mouseup', stopDrag)
 }
 
 // 7.监听调试模态窗的显示或隐藏
@@ -99,14 +158,27 @@ watch(
     }
   },
 )
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', onDrag)
+  document.removeEventListener('mouseup', stopDrag)
+})
 </script>
 
 <template>
-  <div v-if="visible" class="absolute right-0 top-0 bottom-0 w-[400px] p-2.5">
+  <div
+    ref="resizableDiv"
+    v-if="visible"
+    class="absolute right-0 top-0 bottom-0 w-[400px] min-w-[400px] p-2.5"
+  >
     <div
-      class="flex flex-col h-full bg-white z-50 p-4 border border-gray-100 shadow-lg rounded-lg"
+      class="flex flex-col h-full bg-white z-50 p-4 border border-gray-100 shadow-lg rounded-lg relative"
       @click.stop
     >
+      <div
+        class="drag-btn h-6 w-1 bg-gray-300 rounded-2xl cursor-ew-resize"
+        @mousedown="startDrag"
+      ></div>
       <!-- 调试面板标题 -->
       <div class="flex items-center justify-between mb-2">
         <!-- 左侧标题 -->
@@ -192,8 +264,12 @@ watch(
                   <div class="text-green-500">工作流运行中</div>
                 </div>
                 <!-- 当前执行完成的节点 -->
-                <div class="text-gray-500 text-xs">
-                  已成功运行节点【{{ nodeResults.slice(-1)[0]?.node_data?.title ?? '-' }}】
+                <div
+                  v-for="nodeResult in nodeResults"
+                  :key="nodeResult.id"
+                  class="text-gray-500 text-xs"
+                >
+                  已成功运行节点【{{ nodeResult?.node_data?.title ?? '-' }}】
                 </div>
               </div>
               <!-- 非运行时状态 -->
@@ -212,38 +288,89 @@ watch(
                 <!-- 运行成功UI -->
                 <div
                   v-if="outputs"
-                  class="flex flex-col gap-2 bg-green-100 p-3 rounded-lg border border-green-500"
+                  class="flex flex-col gap-2 bg-green-100 p-3 rounded-lg border border-green-600"
                 >
-                  <!-- 状态统计 -->
-                  <div class="flex items-center gap-2 text-green-500">
-                    <icon-check-circle-fill />
-                    <div class="">运行成功</div>
-                  </div>
                   <!-- 数据统计 -->
                   <div class="flex items-center gap-2 text-xs">
-                    <div class="flex-1 flex flex-col gap-2">
+                    <div class="flex-1 flex flex-col gap-1">
+                      <div class="text-gray-500">状态</div>
+                      <div class="flex items-center gap-1">
+                        <icon-check-circle-fill class="text-xs text-green-600" />
+                        <div class="font-semibold text-green-600">运行成功</div>
+                      </div>
+                    </div>
+                    <div class="flex-1 flex flex-col gap-1">
                       <div class="text-gray-500">总消耗</div>
-                      <div class="text-gray-700">500 Tokens</div>
+                      <div class="text-gray-700 font-medium">500 Tokens</div>
                     </div>
-                    <div class="flex-1 flex flex-col gap-2">
+                    <div class="flex-1 flex flex-col gap-1">
                       <div class="text-gray-500">总用时</div>
-                      <div class="text-gray-700">{{ latency.toFixed(2) }}s</div>
-                    </div>
-                    <div class="flex-1 flex flex-col gap-2">
-                      <div class="text-gray-500">插件消耗</div>
-                      <div class="text-gray-700">{{ toolLatency.toFixed(2) }}s</div>
+                      <div class="text-gray-700 font-medium">{{ latency.toFixed(2) }}s</div>
                     </div>
                   </div>
                 </div>
                 <!-- 运行结果 -->
-                <div v-if="outputs" class="bg-gray-700 rounded-lg p-3 text-white">
-                  {{ outputs }}
+                <div v-if="outputs" class="rounded-lg">
+                  <vue-json-pretty
+                    :data="outputs"
+                    show-length
+                    :show-line="false"
+                    class="overflow-y-scroll scrollbar-w-none flex-1 py-2 text-xs"
+                  />
                 </div>
               </div>
               <!-- 空数据状态 -->
               <a-empty v-if="!loading && !outputs && !debugError" class="my-4">
                 该工作流暂无运行调试结果
               </a-empty>
+            </a-tab-pane>
+            <a-tab-pane
+              v-if="outputs"
+              key="outputInfo"
+              title="详情"
+              class="overflow-y-scroll max-h-[calc(100vh-228px)] scrollbar-w-none"
+            >
+              <div
+                v-if="outputs"
+                class="flex flex-col gap-2 bg-green-100 p-3 rounded-lg border border-green-600"
+              >
+                <!-- 数据统计 -->
+                <div class="flex items-center gap-2 text-xs">
+                  <div class="flex-1 flex flex-col gap-1">
+                    <div class="text-gray-500">状态</div>
+                    <div class="flex items-center gap-1">
+                      <icon-check-circle-fill class="text-xs text-green-600" />
+                      <div class="font-semibold text-green-600">运行成功</div>
+                    </div>
+                  </div>
+                  <div class="flex-1 flex flex-col gap-1">
+                    <div class="text-gray-500">总消耗</div>
+                    <div class="text-gray-700 font-medium">500 Tokens</div>
+                  </div>
+                  <div class="flex-1 flex flex-col gap-1">
+                    <div class="text-gray-500">总用时</div>
+                    <div class="text-gray-700 font-medium">{{ latency.toFixed(2) }}s</div>
+                  </div>
+                </div>
+              </div>
+              <CodeEditor
+                :code="form ? JSON.stringify(form, null, 2) : '{}'"
+                :height="200"
+                class="rounded-lg overflow-hidden mt-4"
+                language-name="输入"
+                language="json"
+                :options="{ readOnly: true }"
+                :is-plaintext="true"
+              />
+              <CodeEditor
+                :code="outputs ? JSON.stringify(outputs, null, 2) : '{}'"
+                :height="200"
+                class="rounded-lg overflow-hidden mt-4"
+                language-name="输出"
+                language="json"
+                :options="{ readOnly: true }"
+                :is-plaintext="true"
+              />
             </a-tab-pane>
           </a-tabs>
         </div>
@@ -261,4 +388,11 @@ watch(
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.drag-btn {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+}
+</style>

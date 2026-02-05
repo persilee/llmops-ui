@@ -5,7 +5,7 @@ import Forbidden from '@/assets/images/forbidden.png'
 <template>
   <div class="h-full flex flex-col items-center justify-center">
     <!-- 页面背景 -->
-    <img :src="Forbidden" alt="NotFound" class="w-[300px] mb-6" />
+    <img :src="Forbidden" alt="NotFound" class="w-[260px] mb-6" />
     <div class="text-base text-gray-700 font-semibold mb-3">对不起，您暂无权限访问该页面！</div>
     <div class="flex flex-col items-center justify-center text-gray-500 mb-6 text-xs gap-1">
       <div class="">您可能没有访问该页面的权限</div>
