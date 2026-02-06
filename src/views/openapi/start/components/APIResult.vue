@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CharReq } from '@/services/api/openapi/types'
 import { Message } from '@arco-design/web-vue'
+import 'highlight.js/styles/github-dark.css'
 import VueJsonPretty from 'vue-json-pretty'
 import 'vue-json-pretty/lib/styles.css'
 
@@ -57,7 +58,7 @@ const copyToClipboard = async (text: string) => {
           </a-button>
         </div>
       </div>
-      <highlightjs language="shell" :code="code" class="text-wrap" />
+      <highlightjs language="shell" :code="code" class="text-wrap p-3" />
     </div>
     <div
       class="flex flex-col rounded-lg mt-4 flex-1 min-h-0 border border-gray-200"

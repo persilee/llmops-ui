@@ -31,6 +31,7 @@ const spaceStore = useSpaceStore()
 const appStore = useAppStore()
 // 控制账号设置弹窗显示状态的响应式变量
 const visible = ref(false)
+const collapsed = ref(false)
 
 // 处理用户退出登录
 const handleLogout = () => {
@@ -59,6 +60,10 @@ const handleSuccess = async (appId: string) => {
   router.push({ name: 'space-apps-detail', params: { appId: appId } })
 }
 
+const handleCollapsed = () => {
+  collapsed.value = !collapsed.value
+}
+
 // 组件挂载时获取用户账户信息
 onMounted(() => {
   store.getAccount()
@@ -66,29 +71,52 @@ onMounted(() => {
 </script>
 
 <template>
-  <a-layout-sider :width="240" class="min-h-screen bg-gray-50 py-2 pl-2 shadow-none rounded-lg">
+  <a-layout-sider
+    :width="240"
+    class="min-h-screen bg-gray-50 py-2 pl-2 shadow-none rounded-lg"
+    :collapsed="collapsed"
+    :collapsed-width="66"
+  >
     <div
-      class="bg-white h-full rounded-lg px-2 py-4 flex flex-col justify-between shadow-xs border border-gray-100"
+      :class="`bg-white h-full w-full rounded-lg px-2 py-4 flex flex-col justify-between  shadow-xs border border-gray-100 ${collapsed ? 'items-center' : ''}`"
     >
       <!-- 顶部区域：Logo和创建按钮 -->
-      <div class="">
+      <div :class="`flex flex-col ${collapsed ? 'items-center' : ''}`">
         <!-- Logo区域 -->
-        <div class="flex justify-start">
-          <router-link to="/home" class="block h-9 w-[110px] mb-5 transition-all rounded-lg">
-            <img src="/src/assets/images/logo.png" alt="logo" />
+        <div class="flex justify-between items-center mb-4 mt-1">
+          <router-link v-if="!collapsed" to="/home" class="rounded-lg text-center">
+            <img src="/src/assets/images/logo.png" alt="logo" class="h-7" />
           </router-link>
+          <a-tooltip :content="collapsed ? '展开侧边栏' : '关闭侧边栏'" position="right">
+            <a-button type="text" @click="handleCollapsed">
+              <template #icon><icon-layout class="text-gray-500 text-base" /></template>
+            </a-button>
+          </a-tooltip>
         </div>
         <!-- 创建AI应用按钮 -->
-        <a-button type="primary" long class="rounded-lg mb-4 bg-blue-700!" @click="handleCreateApp">
+        <a-button
+          v-if="!collapsed"
+          type="primary"
+          long
+          class="rounded-lg mb-4 bg-blue-700"
+          @click="handleCreateApp"
+        >
           <template #icon>
             <icon-plus />
           </template>
           创建 AI 应用
         </a-button>
+        <a-tooltip v-else content="创建AI应用" position="right">
+          <a-button type="primary" class="rounded-lg mb-4 bg-blue-700" @click="handleCreateApp">
+            <template #icon>
+              <icon-plus />
+            </template>
+          </a-button>
+        </a-tooltip>
         <!-- 导航菜单 -->
         <div class="flex flex-col gap-2">
           <!-- 首页导航 -->
-          <PageRouterLink to="/home" label="首页" is-sider>
+          <PageRouterLink to="/home" label="首页" is-sider :collapsed="collapsed">
             <template #icon>
               <IconHomeFull v-if="route.path === '/home'" />
               <IconHome v-else />
@@ -99,6 +127,7 @@ onMounted(() => {
             to="/space/apps"
             label="个人空间"
             is-sider
+            :collapsed="collapsed"
             :class="route.path.startsWith('/space') ? ['bg-gray-200', 'font-bold'] : ''"
           >
             <template #icon>
@@ -108,14 +137,14 @@ onMounted(() => {
           <!-- 探索分组标题 -->
           <div class="text-gray-500 text-xs px-2">探索</div>
           <!-- 应用市场导航 -->
-          <PageRouterLink to="/store/apps" label="应用市场" is-sider>
+          <PageRouterLink to="/store/apps" label="应用市场" is-sider :collapsed="collapsed">
             <template #icon>
               <IconAppFull v-if="route.path.startsWith('/store/apps')" />
               <IconApp v-else />
             </template>
           </PageRouterLink>
           <!-- 插件广场导航 -->
-          <PageRouterLink to="/store/tools" label="插件广场" is-sider>
+          <PageRouterLink to="/store/tools" label="插件广场" is-sider :collapsed="collapsed">
             <template #icon>
               <IconToolFull v-if="route.path.startsWith('/store/tools')" />
               <IconTool v-else />
@@ -126,6 +155,7 @@ onMounted(() => {
             to="/openapi/start"
             label="开发 API"
             is-sider
+            :collapsed="collapsed"
             :class="route.path.startsWith('/openapi') ? ['bg-gray-200', 'font-bold'] : ''"
           >
             <template #icon>
@@ -144,7 +174,7 @@ onMounted(() => {
           <a-avatar :size="32" class="bg-transparent">
             <img :src="store.account.avatar" class="p-0.5" />
           </a-avatar>
-          <div class="flex flex-col">
+          <div v-if="!collapsed" class="flex flex-col">
             <div class="text-sm text-gray-900">{{ store.account.name }}</div>
             <div class="text-xs text-gray-500">{{ store.account.email }}</div>
           </div>

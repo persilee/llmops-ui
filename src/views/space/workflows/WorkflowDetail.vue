@@ -93,6 +93,12 @@ const handleEdgeClick = (event: EdgeMouseEvent) => {
   handleCloseNodeInfo()
 }
 const handleNodeClick = (event: NodeMouseEvent) => {
+  const nodeDivs = document.querySelectorAll('.vue-flow__node')
+  if (nodeDivs.length > 0) {
+    nodeDivs.forEach((nodeDiv: any) => {
+      nodeDiv.classList.remove('node-z-index')
+    })
+  }
   debugModelVisible.value = false
   if (!selectNode.value || selectNode.value.id !== event.node.id) {
     selectNode.value = event.node
