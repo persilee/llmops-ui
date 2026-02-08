@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAccountStore } from '@/stores/account'
 import { Theme } from '@/types/types'
-import { Message } from '@arco-design/web-vue'
+import { copyToClipboard } from '@/utils/util'
 import { merge } from 'lodash-es'
 import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
@@ -211,19 +211,6 @@ const handleEditorDidMount = async (editor: any) => {
 
 const handleChange = (value: string, event: any) => {
   emits('change', value, event)
-}
-
-const copyToClipboard = async (text: string) => {
-  try {
-    // 使用Clipboard API将文本复制到剪贴板
-    await navigator.clipboard.writeText(text)
-
-    // 复制成功时显示成功提示消息
-    Message.success('复制成功')
-  } catch (err) {
-    // 复制失败时捕获错误并显示失败提示消息
-    Message.error('复制失败' + err)
-  }
 }
 
 const handExpand = () => {

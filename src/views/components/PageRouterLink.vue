@@ -3,7 +3,7 @@ defineProps<{
   label: string
   to: string
   isSider?: boolean
-  collapsed: boolean
+  collapsed?: boolean
 }>()
 </script>
 

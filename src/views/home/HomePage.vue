@@ -651,7 +651,7 @@ onMounted(async () => {
     <div class="w-full h-full max-w-[780px] mx-auto">
       <a-spin
         :loading="loading"
-        :class="`flex flex-col w-full ${isShareMessages ? 'h-[calc(100vh-176px)]' : 'h-[calc(100vh-100px)]'}  px-6`"
+        :class="`flex flex-col w-full ${isShareMessages ? 'h-[calc(100vh-176px)]' : 'h-[calc(100vh-100px)]'} px-6`"
       >
         <!-- 调试消息列表 -->
         <div v-if="messages.length > 0" class="flex flex-col h-full relative">
@@ -679,7 +679,7 @@ onMounted(async () => {
                       <HumanMessage :message="item" class="flex-1" />
                     </div>
                     <!-- AI消息 -->
-                    <div class="flex items-center justify-center">
+                    <div class="flex items-center justify-center w-full overflow-hidden min-w-0">
                       <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
                       <AIMessage
                         class="flex-1"

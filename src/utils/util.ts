@@ -5,6 +5,8 @@ import iconNull from '@/assets/images/icon-file-null.png'
 import iconPdf from '@/assets/images/icon-file-pdf.png'
 import iconTxt from '@/assets/images/icon-file-txt.png'
 import { Message } from '@arco-design/web-vue'
+import { saveAs } from 'file-saver'
+import * as XLSX from 'xlsx'
 
 /**
  * 类型映射对象，用于将英文类型名转换为中文显示名称
@@ -203,6 +205,52 @@ export const copyToClipboard = async (text: string) => {
   } catch (err) {
     // 复制失败时捕获错误并显示失败提示消息
     Message.error('复制失败' + err)
+  }
+}
+
+/**
+ * 将表格数据导出为Excel文件并下载
+ * @param {any} data - 要导出的表格数据，可以是HTML表格元素或二维数组
+ * @returns {void} 无返回值
+ *
+ * 该函数会将输入的表格数据转换为Excel文件，并自动触发下载。
+ * 下载的文件名格式为"表格数据_时间戳.xlsx"。
+ * 导出成功或失败时会显示相应的提示消息。
+ *
+ * @example
+ * // 导出HTML表格
+ * const tableElement = document.getElementById('myTable')
+ * downloadFile(tableElement)
+ *
+ * // 导出二维数组
+ * const arrayData = [
+ *   ['姓名', '年龄', '分数'],
+ *   ['张三', 20, 85],
+ *   ['李四', 22, 90]
+ * ]
+ * downloadFile(arrayData)
+ */
+export const downloadFile = (data: any) => {
+  try {
+    // 将表格转换为workbook
+    const workbook = XLSX.utils.table_to_book(data, {
+      sheet: 'sheet1', // 工作表名称
+      raw: true, // 保留原始数据格式
+    })
+    // 生成Excel的blob数据
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    })
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheet.sheet',
+    })
+    // 触发下载
+    const fileName = `表格数据_${new Date().getTime()}.xlsx`
+    saveAs(blob, fileName)
+    Message.success('下载成功：' + fileName)
+  } catch (error) {
+    Message.success('下载失败：' + error)
   }
 }
 

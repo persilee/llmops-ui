@@ -51,12 +51,12 @@ const copyToClipboard = async (text: string) => {
 </script>
 
 <template>
-  <div class="flex flex-row gap-2 mb-6">
+  <div class="flex flex-row gap-2 mb-6 w-full">
     <!-- AI头像 -->
     <a-avatar class="shrink-0" :size="34" style="background-color: transparent">
       <img :src="icon ?? store.app?.icon" class="p-0.5" />
     </a-avatar>
-    <div class="flex flex-col items-start gap-2 w-full">
+    <div class="flex-1 flex flex-col items-start gap-2 min-w-0">
       <!-- AI名称 -->
       <div class="font-semibold text-gray-700">
         {{ name ?? store.app?.name }}
@@ -64,7 +64,7 @@ const copyToClipboard = async (text: string) => {
       <!-- 推理内容 -->
       <AgentThought :agent-thoughts="agentThoughts" :loading="loading" />
       <!-- AI消息 -->
-      <div class="flex flex-col group gap-1.5">
+      <div class="flex flex-col group gap-1.5 min-w-0">
         <div
           class="max-w-max bg-gray-100 text-gray-900 border border-gray-200 px-4 py-3 rounded-lg leading-5"
         >

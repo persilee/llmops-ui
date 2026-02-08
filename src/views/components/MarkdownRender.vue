@@ -3,6 +3,7 @@ import MarkdownIt from 'markdown-it'
 import markdownItTaskLists from 'markdown-it-task-lists'
 import { h, nextTick, ref, render, watch } from 'vue'
 import CodePreview from './CodePreview.vue'
+import TablePreview from './TablePreview.vue'
 
 interface Props {
   source: string
@@ -50,6 +51,26 @@ md.renderer.rules.fence = function (tokens, idx, options, env, self) {
   `
 }
 
+// 保存原来的表格渲染规则
+const originalTableOpen =
+  md.renderer.rules.table_open ||
+  function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+const originalTableClose =
+  md.renderer.rules.table_close ||
+  function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+// 自定义表格渲染，替换为自定义组件标签
+
+md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
+  return '<TablePreview>' + originalTableOpen(tokens, idx, options, env, self)
+}
+md.renderer.rules.table_close = function (tokens, idx, options, env, self) {
+  return originalTableClose(tokens, idx, options, env, self) + '</TablePreview>'
+}
+
 // 存储渲染后的 HTML（包含占位符）
 const renderedMarkdown = ref('')
 // 存储 Markdown 根元素的 DOM 引用
@@ -84,11 +105,47 @@ const mountCodeBlocks = async () => {
   })
 }
 
+/**
+ * 将 Markdown 渲染后的表格替换为自定义的 TablePreview 组件
+ * 该函数会查找所有 tablepreview 占位符，提取其中的表格数据，
+ * 然后使用 Vue 的 render 函数将 TablePreview 组件挂载到占位符位置
+ */
+const mountTable = async () => {
+  // 等待 DOM 更新完成，确保占位符元素已被渲染到页面中
+  await nextTick()
+
+  // 在 markdownRoot 容器中查找所有 tablepreview 自定义占位符元素
+  const placeholders = markdownRoot.value?.querySelectorAll('tablepreview')
+  // 如果没有找到任何占位符，直接返回，不执行后续操作
+  if (!placeholders) return
+
+  // 遍历所有找到的占位符元素
+  placeholders.forEach((placeholder) => {
+    // 从当前占位符中查找实际的 table 元素
+    const table = placeholder.querySelector('table')
+    // 如果没有找到 table 元素，跳过当前占位符
+    if (!table) return
+
+    // 创建 TablePreview 组件的虚拟节点，传入表格的 HTML 字符串作为 tableData 属性
+    const tableVNode = h(TablePreview, { tableData: table.outerHTML })
+
+    // 创建一个新的div作为挂载点
+    const mountPoint = document.createElement('div')
+    // mountPoint.className = 'w-fit'
+    placeholder.parentElement?.replaceChild(mountPoint, placeholder)
+    // 使用 Vue 的 render 函数将 TablePreview 组件渲染到占位符元素中
+    render(tableVNode, mountPoint)
+    // 移除原有的 table 元素，避免重复渲染
+    table.remove()
+  })
+}
+
 watch(
   () => props.source,
   (newValue) => {
     renderedMarkdown.value = md.render(newValue)
     mountCodeBlocks()
+    mountTable()
   },
   { immediate: true },
 )
@@ -104,6 +161,7 @@ watch(
 .markdown-body {
   background-color: transparent;
   font-size: 14px;
+  max-width: fit-content;
 }
 
 .markdown-body h1,
@@ -118,10 +176,12 @@ watch(
 
 .markdown-body h1 {
   font-size: 1.5em;
+  border-bottom: none;
 }
 
 .markdown-body h2 {
   font-size: 1.25em;
+  border-bottom: none;
 }
 
 .markdown-body h3,
@@ -145,5 +205,42 @@ watch(
 .markdown-body ul,
 .markdown-body menu {
   list-style: inherit;
+}
+
+.markdown-body table {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0 0 8px 8px;
+  border-right: 1px solid #c9cdd4;
+  margin-bottom: 0px;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  text-align: left;
+  border: 1px solid #c9cdd4;
+  border-top: none;
+  border-right: none;
+}
+
+.markdown-body table th {
+  border-top: 1px solid #c9cdd4;
+}
+
+.markdown-body table tr,
+.markdown-body table tr:nth-child(2n),
+.markdown-body table th {
+  background-color: transparent;
+}
+
+/* 设置最后一行的第一个单元格的左下角圆角 */
+.markdown-body tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+/* 设置最后一行的最后一个单元格的右下角圆角 */
+.markdown-body tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
 }
 </style>

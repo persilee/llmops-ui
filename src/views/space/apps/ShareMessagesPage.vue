@@ -51,8 +51,10 @@ onMounted(async () => {
               </div>
             </div>
             <a-divider class="my-8" />
-            <div v-for="message in messages" :key="message.id" class="flex flex-col gap-2">
-              <div class="bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end">
+            <div v-for="(message, index) in messages" :key="message.id" class="flex flex-col gap-2">
+              <div
+                :class="`bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end ${messages.length > 1 && index == messages.length - 1 ? 'mt-5' : ''}`"
+              >
                 {{ message.query }}
               </div>
               <div class="py-3 self-start">
