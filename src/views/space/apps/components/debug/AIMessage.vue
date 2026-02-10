@@ -56,7 +56,7 @@ const copyToClipboard = async (text: string) => {
     <a-avatar class="shrink-0" :size="34" style="background-color: transparent">
       <img :src="icon ?? store.app?.icon" class="p-0.5" />
     </a-avatar>
-    <div class="flex-1 flex flex-col items-start gap-2 min-w-0">
+    <div class="flex-1 flex flex-col items-start gap-2 min-w-0 pr-[42px]">
       <!-- AI名称 -->
       <div class="font-semibold text-gray-700">
         {{ name ?? store.app?.name }}

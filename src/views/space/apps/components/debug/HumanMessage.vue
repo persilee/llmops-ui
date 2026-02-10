@@ -12,8 +12,7 @@ const accountStore = useAccountStore()
 <template>
   <div class="w-full flex-1 flex">
     <div class="w-full flex flex-row gap-2 mb-6 self-end">
-      <!-- 人类头像 -->
-      <div class="w-full flex flex-col gap-2 items-end">
+      <div class="w-full flex flex-col gap-2 items-end pl-[42px]">
         <!-- 人类名称 -->
         <div class="font-semibold text-gray-700">
           {{ accountStore.account.name }}
@@ -22,6 +21,7 @@ const accountStore = useAccountStore()
           {{ message.query }}
         </div>
       </div>
+      <!-- 人类头像 -->
       <a-avatar class="shrink-0 bg-white" :size="34">
         <img :src="accountStore.account.avatar" class="p-0.5" />
       </a-avatar>

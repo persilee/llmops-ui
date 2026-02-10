@@ -15,7 +15,7 @@ import { useAccountStore } from '@/stores/account'
 import ShareMessagesModel from '@/views/components/ShareMessagesModel.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { remove } from 'lodash-es'
-import { computed, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
@@ -91,6 +91,9 @@ const shareMessagesLinkLoading = ref(false)
 // 获取应用状态管理store实例
 const store = useAppStore()
 const accountStore = useAccountStore()
+const isWrapLine = ref(false)
+const textareaWidth = ref(0)
+const hiddenSpanRef = ref<HTMLElement | null>(null)
 
 /**
  * 获取对话消息的异步函数
@@ -981,8 +984,61 @@ const copyShareMessagesLink = async () => {
   }
 }
 
+const handleAutoLineChange = () => {
+  if (inputValue.value == '') {
+    isWrapLine.value = false
+    return
+  }
+
+  if (!hiddenSpanRef.value) return
+  const textWidth = hiddenSpanRef.value.offsetWidth
+
+  if (textWidth > textareaWidth.value) {
+    isWrapLine.value = true
+  } else {
+    isWrapLine.value = false
+  }
+}
+
+const getTextareaWidth = () => {
+  const textarea = document.querySelector('textarea')
+  if (textarea) {
+    return parseInt(getComputedStyle(textarea).width)
+  }
+  return 0
+}
+
+const handleShiftEnter = (e: KeyboardEvent) => {
+  // 阻止默认行为，手动在光标位置插入换行
+  e.preventDefault()
+  const textarea = e.target as HTMLTextAreaElement
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+
+  // 在光标位置插入换行符
+  inputValue.value = inputValue.value.substring(0, start) + '\n' + inputValue.value.substring(end)
+
+  // 移动光标到换行后的位置
+  textarea.selectionStart = textarea.selectionEnd = start + 1
+}
+
+const stop = watch(() => inputValue.value, handleAutoLineChange)
+
 onMounted(async () => {
   await fetchData()
+  // 等待DOM更新完成
+  await nextTick(() => {
+    // 确保滚动容器存在
+    if (scrollRef.value) {
+      // 将滚动条滚动到底部，显示最新消息
+      scrollRef.value.scrollToBottom()
+    }
+  })
+  textareaWidth.value = getTextareaWidth()
+})
+
+onUnmounted(() => {
+  stop()
 })
 </script>
 
@@ -1128,11 +1184,7 @@ onMounted(async () => {
         </a-tooltip>
       </div>
       <!-- 中间消息列表 -->
-      <div class="flex-1 overflow-y-auto">
-        <div v-if="loading" class="flex justify-center items-center h-full"></div>
-      </div>
-      <!-- 底部对话消息列表 -->
-      <div :class="`flex-1 ${isShareMessages ? 'relative pt-[56px]' : ''}`">
+      <div :class="`flex-1 flex flex-col min-h-0 ${isShareMessages ? 'relative pt-[56px]' : ''}`">
         <div
           v-if="isShareMessages"
           class="h-[56px] border-b border-gray-200 bg-gray-50 flex items-center absolute top-0 left-0 right-0 z-10"
@@ -1147,9 +1199,9 @@ onMounted(async () => {
             >
           </div>
         </div>
-        <a-spin :loading="loading" class="w-full h-full">
-          <div class="w-full h-full max-w-[780px] mx-auto">
-            <div :class="`flex flex-col w-full h-[calc(100vh-156px)]  px-6`">
+        <a-spin :loading="loading" class="flex-1 flex flex-col w-full h-full">
+          <div class="flex flex-col w-full h-full max-w-[780px] mx-auto">
+            <div :class="`flex-1 flex flex-col w-full h-full min-h-0 px-6`">
               <!-- 调试消息列表 -->
               <div v-if="messages.length > 0" class="flex flex-col h-full relative">
                 <DynamicScroller
@@ -1253,33 +1305,59 @@ onMounted(async () => {
                   </a-button>
                 </a-tooltip>
                 <div
-                  class="flex flex-1 items-center h-[50px] gap-2 px-4 border border-gray-200 rounded-full gradient-input focus-within:border-blue-700"
+                  :class="`flex flex-1 ${isWrapLine ? 'flex-col' : 'flex-row'} items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input`"
                 >
-                  <form @submit.prevent="sendMessage()" class="w-full">
-                    <input
-                      v-model="inputValue"
+                  <div class="w-full items-center">
+                    <form @submit.prevent="sendMessage()" class="w-full mt-0.5">
+                      <a-textarea
+                        v-model="inputValue"
+                        type="text"
+                        :auto-size="{
+                          minRows: 1,
+                          maxRows: 5,
+                        }"
+                        :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
+                        class="flex-1 w-full outline-0 bg-transparent focus-within:border-none border-none items-center leading-1.5"
+                        @keydown.enter.exact.prevent="sendMessage()"
+                        @keydown.shift.enter="handleShiftEnter"
+                      />
+                      <span ref="hiddenSpanRef" class="hidden-span px-3 ml-1.5">{{
+                        inputValue
+                      }}</span>
+                    </form>
+                  </div>
+                  <div class="flex items-center self-end h-12">
+                    <a-button type="text" shape="circle">
+                      <template #icon>
+                        <icon-plus
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="w-4 h-4 text-gray-600"
+                        />
+                      </template>
+                    </a-button>
+                    <a-button type="text" shape="circle">
+                      <template #icon>
+                        <icon-voice
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="w-4 h-4 text-gray-600"
+                        />
+                      </template>
+                    </a-button>
+                    <a-button
+                      :disabled="isDisabled"
                       type="text"
-                      :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
-                      class="flex-1 w-full outline-0 ml-1.5"
-                    />
-                  </form>
-                  <a-button type="text" shape="circle">
-                    <template #icon
-                      ><img src="@/assets/images/icon-add.png" class="w-4 h-4"
-                    /></template>
-                  </a-button>
-                  <a-button
-                    :disabled="isDisabled"
-                    type="text"
-                    shape="circle"
-                    @click="sendMessage()"
-                  >
-                    <template #icon
-                      ><img
-                        src="@/assets/images/icon-send.png"
-                        :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
-                    /></template>
-                  </a-button>
+                      shape="circle"
+                      @click="sendMessage()"
+                    >
+                      <template #icon
+                        ><img
+                          src="@/assets/images/icon-send.png"
+                          :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
+                      /></template>
+                    </a-button>
+                  </div>
                 </div>
               </div>
               <div class="text-center text-gray-500 text-xs py-4">
@@ -1343,5 +1421,27 @@ onMounted(async () => {
     rgba(251, 249, 250, 0.5) 50%,
     rgba(251, 249, 250, 1) 100%
   );
+}
+
+:deep(.arco-textarea) {
+  line-height: 24px !important;
+}
+:deep(.arco-textarea:focus) {
+  border: none !important;
+}
+:deep(.arco-textarea-mirror:focus) {
+  border: none !important;
+}
+
+.hidden-span {
+  /* 处理换行，与textarea保持一致 */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  /* 与textarea的padding一致，模拟内容的实际布局 */
+  padding: 8px;
+  box-sizing: border-box;
+  /* 隐藏元素，不占用页面布局 */
+  position: absolute;
+  visibility: hidden;
 }
 </style>
