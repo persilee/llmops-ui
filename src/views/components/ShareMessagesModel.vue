@@ -8,6 +8,7 @@ import moment from 'moment'
 import QRCodeVue3 from 'qrcode-vue3'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import FancyboxView from './FancyboxView.vue'
 import MarkdownRender from './MarkdownRender.vue'
 
 // 定义组件的props，包含消息列表数据
@@ -184,6 +185,32 @@ onUnmounted(() => {
             :key="message.id"
             class="flex flex-col gap-2"
           >
+            <div
+              v-if="message.image_urls && message.image_urls.length > 0"
+              class="w-full flex items-center justify-end mb-1"
+            >
+              <FancyboxView>
+                <div v-for="(imgUrl, idx) in message.image_urls" :key="idx" class="">
+                  <a data-fancybox="gallery" :href="imgUrl" :data-thumb-src="imgUrl">
+                    <img
+                      v-if="message.image_urls.length == 1"
+                      :src="imgUrl"
+                      class="w-[248px] h-auto rounded-lg object-cover object-center"
+                    />
+                    <img
+                      v-else-if="message.image_urls.length == 2"
+                      :src="imgUrl"
+                      class="w-[188px] h-[188px] rounded-lg object-cover object-center"
+                    />
+                    <img
+                      v-else
+                      :src="imgUrl"
+                      class="w-[120px] h-[120px] rounded-lg object-cover object-center"
+                    />
+                  </a>
+                </div>
+              </FancyboxView>
+            </div>
             <div
               :class="`bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end ${reversedMessages.length > 1 && index == reversedMessages.length - 1 ? 'mt-5' : ''}`"
             >

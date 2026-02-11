@@ -2,6 +2,7 @@
 import AIApi from '@/services/api/ai'
 import AppsApi from '@/services/api/apps'
 import type { GetAssistantAgentMessagesWithPage } from '@/services/api/assistant-agent/type'
+import FancyboxView from '@/views/components/FancyboxView.vue'
 import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import moment from 'moment'
 import { onMounted, ref } from 'vue'
@@ -52,6 +53,32 @@ onMounted(async () => {
             </div>
             <a-divider class="my-8" />
             <div v-for="(message, index) in messages" :key="message.id" class="flex flex-col gap-2">
+              <div
+                v-if="message.image_urls && message.image_urls.length > 0"
+                class="w-full flex items-center justify-end mb-1"
+              >
+                <FancyboxView>
+                  <div v-for="(imgUrl, idx) in message.image_urls" :key="idx" class="">
+                    <a data-fancybox="gallery" :href="imgUrl" :data-thumb-src="imgUrl">
+                      <img
+                        v-if="message.image_urls.length == 1"
+                        :src="imgUrl"
+                        class="w-[248px] h-auto rounded-lg object-cover object-center"
+                      />
+                      <img
+                        v-else-if="message.image_urls.length == 2"
+                        :src="imgUrl"
+                        class="w-[188px] h-[188px] rounded-lg object-cover object-center"
+                      />
+                      <img
+                        v-else
+                        :src="imgUrl"
+                        class="w-[120px] h-[120px] rounded-lg object-cover object-center"
+                      />
+                    </a>
+                  </div>
+                </FancyboxView>
+              </div>
               <div
                 :class="`bg-gray-200 px-4 py-3 rounded-lg leading-5 self-end ${messages.length > 1 && index == messages.length - 1 ? 'mt-5' : ''}`"
               >

@@ -8,10 +8,12 @@ import type {
   AgentThought,
   GetConversationMessagesWithPage,
 } from '@/services/api/conversations/types'
+import UploadApi from '@/services/api/upload-file'
 import WebAppApi from '@/services/api/web-app'
 import type { GetConversationsResp, GetWebAppResp } from '@/services/api/web-app/types'
 import type { Paginator } from '@/services/types'
 import { useAccountStore } from '@/stores/account'
+import FancyboxView from '@/views/components/FancyboxView.vue'
 import ShareMessagesModel from '@/views/components/ShareMessagesModel.vue'
 import { Message, Modal } from '@arco-design/web-vue'
 import { remove } from 'lodash-es'
@@ -96,7 +98,16 @@ const textareaWidth = ref(0)
 const hiddenSpanRef = ref<HTMLElement | null>(null)
 const isShowScrollBottomBtn = ref(false)
 const isHideSidebar = ref(false)
+const uploadFileLoading = ref(false)
+const imageUrls = ref<string[]>([])
+const fileInput = ref<any>(null)
 
+const isImageInput = computed(() => {
+  return webAppInfo.value?.app_config.features.includes('image_input')
+})
+const isSpeechToText = computed(() => {
+  return webAppInfo.value?.app_config.speech_to_text.enable
+})
 /**
  * 获取对话消息的异步函数
  *
@@ -288,7 +299,7 @@ const addConversation = () => {
  *   is_pinned: false
  * });
  */
-const changeConversation = (conversation: GetConversationsResp) => {
+const changeConversation = async (conversation: GetConversationsResp) => {
   // 更新当前对话ID
   conversationId.value = conversation.id
   // 将对话ID保存到store中，实现状态持久化
@@ -296,7 +307,11 @@ const changeConversation = (conversation: GetConversationsResp) => {
   // 设置当前对话对象，用于显示对话信息
   currentConversation.value = conversation
   // 加载该对话的消息记录
-  getConversationMessages(conversation.id)
+  await getConversationMessages(conversation.id)
+  if (scrollRef.value) {
+    // 将滚动条滚动到底部，显示最新消息
+    scrollRef.value.scrollToBottom()
+  }
 }
 
 /**
@@ -631,7 +646,7 @@ const sendMessage = async (query?: string) => {
     latency: 0,
     agent_thoughts: [],
     created_at: 0,
-    image_urls: [],
+    image_urls: imageUrls.value,
   }
 
   // 将新消息添加到消息列表的开头
@@ -639,8 +654,11 @@ const sendMessage = async (query?: string) => {
 
   // 保存用户输入内容
   const humanInput = query ?? inputValue.value
+  const humanImageUrls = imageUrls.value
   // 清空输入框
   inputValue.value = ''
+  // 清空图片URL列表
+  imageUrls.value = []
   // 滚动到底部以显示新消息
   scrollToBottom()
 
@@ -648,7 +666,7 @@ const sendMessage = async (query?: string) => {
     // 调用调试API发送消息
     await WebAppApi.webAppChat({
       token: route.params.token as string,
-      req: { query: humanInput, conversation_id: conversationId.value },
+      req: { query: humanInput, image_urls: humanImageUrls, conversation_id: conversationId.value },
       onData: handleEventData,
     })
 
@@ -1050,6 +1068,38 @@ const handleHideSidebar = () => {
   isHideSidebar.value = !isHideSidebar.value
 }
 
+const triggerFileInput = () => {
+  // 1.检测上传的图片数量是否超过5
+  if (imageUrls.value.length >= 5) {
+    Message.error('对话上传图片数量不能超过5张')
+    return
+  }
+
+  // 2.满足条件触发上传
+  fileInput.value.click()
+}
+
+const handleFileChange = async (e: Event) => {
+  if (uploadFileLoading.value) return
+  const input = e.target as HTMLInputElement
+  const selectedFiles = input.files
+  if (selectedFiles) {
+    try {
+      Array.from(selectedFiles).forEach(async (element) => {
+        uploadFileLoading.value = true
+        // 调用上传API上传图片
+        const resp = await UploadApi.uploadImage(element)
+        imageUrls.value.push(resp.data.url)
+      })
+    } catch (error) {
+      // 捕获上传过程中的异常，显示通用错误信息
+      Message.error('上传失败')
+    } finally {
+      uploadFileLoading.value = false
+    }
+  }
+}
+
 const stop = watch(() => inputValue.value, handleAutoLineChange)
 
 onMounted(async () => {
@@ -1219,7 +1269,7 @@ onUnmounted(() => {
         </div>
         <div class="flex-1 flex flex-col gap-1 justify-center items-center">
           <div class="text-gray-700 font-bold">{{ currentConversation?.name }}</div>
-          <div class="text-xs text-gray-400">内容由 AI 生成</div>
+          <div class="text-[10px] text-gray-400">内容由 AI 生成</div>
         </div>
         <div class="flex items-center gap-1">
           <a-tooltip content="分享对话">
@@ -1318,7 +1368,11 @@ onUnmounted(() => {
                         <div class="flex items-center justify-center">
                           <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
                           <!-- 人类消息 -->
-                          <HumanMessage :message="item" class="flex-1" />
+                          <HumanMessage
+                            :message="item"
+                            :image-urls="item.image_urls"
+                            class="flex-1"
+                          />
                         </div>
                         <!-- AI消息 -->
                         <div class="flex items-center justify-center">
@@ -1399,7 +1453,32 @@ onUnmounted(() => {
                 :class="`flex flex-1 ${isWrapLine ? 'flex-col' : 'flex-row'} items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input`"
               >
                 <div class="w-full items-center">
-                  <form @submit.prevent="sendMessage()" class="w-full mt-0.5">
+                  <div v-if="imageUrls.length > 0" class="w-full flex items-center mt-3 mb-1 px-2">
+                    <FancyboxView>
+                      <div
+                        v-for="(imgUrl, idx) in imageUrls"
+                        :key="idx"
+                        class="relative rounded-lg group cursor-pointer"
+                      >
+                        <a data-fancybox="gallery" :href="imgUrl" :data-thumb-src="imgUrl">
+                          <img
+                            :src="imgUrl"
+                            class="w-[60px] h-[60px] rounded-lg object-cover object-center"
+                          />
+                        </a>
+                        <div
+                          class="hidden group-hover:flex items-center justify-center bg-gray-800 w-4.5 h-4.5 rounded-full absolute top-[-5px] right-[-5px]"
+                          @click="() => imageUrls.splice(idx, 1)"
+                        >
+                          <icon-close class="text-white text-xs" />
+                        </div>
+                      </div>
+                    </FancyboxView>
+                  </div>
+                  <form
+                    @submit.prevent="sendMessage()"
+                    class="w-full flex-shrink-0 min-h-[46px] flex items-center"
+                  >
                     <a-textarea
                       v-model="inputValue"
                       type="text"
@@ -1418,24 +1497,43 @@ onUnmounted(() => {
                   </form>
                 </div>
                 <div class="flex items-center self-end h-12">
-                  <a-button type="text" shape="circle">
-                    <template #icon>
-                      <icon-plus
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="w-4 h-4 text-gray-600"
-                      />
-                    </template>
-                  </a-button>
-                  <a-button type="text" shape="circle">
-                    <template #icon>
-                      <icon-voice
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="w-4 h-4 text-gray-600"
-                      />
-                    </template>
-                  </a-button>
+                  <div>
+                    <input
+                      type="file"
+                      ref="fileInput"
+                      accept="image/*"
+                      multiple
+                      @change="handleFileChange"
+                      class="hidden"
+                    />
+                    <a-tooltip v-if="isImageInput" content="上传图片(最多同时上传5张)">
+                      <a-button
+                        :loading="uploadFileLoading"
+                        type="text"
+                        shape="circle"
+                        @click="triggerFileInput"
+                      >
+                        <template #icon>
+                          <icon-plus
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="w-4 h-4 text-gray-600"
+                          />
+                        </template>
+                      </a-button>
+                    </a-tooltip>
+                  </div>
+                  <a-tooltip v-if="isSpeechToText" content="语音输入">
+                    <a-button type="text" shape="circle">
+                      <template #icon>
+                        <icon-voice
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="w-4 h-4 text-gray-600"
+                        />
+                      </template>
+                    </a-button>
+                  </a-tooltip>
                   <a-button
                     :disabled="isDisabled"
                     type="text"
@@ -1457,29 +1555,33 @@ onUnmounted(() => {
           </div>
           <div
             v-if="isShareMessages"
-            class="flex items-center justify-between w-full h-[100px] flex-shrink-0 border-t border-gray-200"
+            class="flex items-center border-t border-gray-200 w-full h-[100px]"
           >
-            <a-checkbox
-              :model-value="checkedAll"
-              :indeterminate="indeterminate"
-              @change="handleChangeAll"
-              >全选
-            </a-checkbox>
-            <div class="flex items-center gap-2">
-              <a-button
-                :disabled="shareMessages.length == 0"
-                type="primary"
-                class="bg-white border border-gray-200 text-gray-600 hover:bg-gray-200"
-                @click="shareMessagesToImage"
-                >分享图片</a-button
-              >
-              <a-button
-                :loading="shareMessagesLinkLoading"
-                :disabled="shareMessages.length == 0"
-                type="primary"
-                @click="copyShareMessagesLink"
-                >复制链接</a-button
-              >
+            <div
+              class="flex-1 flex items-center justify-between flex-shrink-0 max-w-[780px] mx-auto"
+            >
+              <a-checkbox
+                :model-value="checkedAll"
+                :indeterminate="indeterminate"
+                @change="handleChangeAll"
+                >全选
+              </a-checkbox>
+              <div class="flex items-center gap-2">
+                <a-button
+                  :disabled="shareMessages.length == 0"
+                  type="primary"
+                  class="bg-white border border-gray-200 text-gray-600 hover:bg-gray-200"
+                  @click="shareMessagesToImage"
+                  >分享图片</a-button
+                >
+                <a-button
+                  :loading="shareMessagesLinkLoading"
+                  :disabled="shareMessages.length == 0"
+                  type="primary"
+                  @click="copyShareMessagesLink"
+                  >复制链接</a-button
+                >
+              </div>
             </div>
           </div>
         </a-spin>
