@@ -64,6 +64,7 @@ const shareMessagesLinkLoading = ref(false)
 const isWrapLine = ref(false)
 const textareaWidth = ref(0)
 const hiddenSpanRef = ref<HTMLElement | null>(null)
+const isShowScrollBottomBtn = ref(false)
 
 /**
  * 获取调试对话消息数据
@@ -151,6 +152,15 @@ const deleteConversationMessages = async () => {
 const handleScroll = async (e: Event) => {
   // 将事件目标转换为HTMLElement类型，以便访问其滚动相关属性
   const target = e.target as HTMLElement
+  const { scrollHeight, scrollTop, clientHeight } = target
+  // 计算距离底部的距离
+  const distanceToBottom = scrollHeight - (scrollTop + clientHeight)
+
+  if (distanceToBottom > 360) {
+    isShowScrollBottomBtn.value = true
+  } else {
+    isShowScrollBottomBtn.value = false
+  }
 
   // 当滚动到顶部时（scrollTop <= 0），触发加载更多历史消息
   // 这样可以实现向上滚动加载更多历史记录的效果
@@ -223,7 +233,7 @@ const sendMessage = async (query?: string) => {
   inputValue.value = ''
   // 滚动到底部以显示新消息
   if (scrollRef.value) {
-    scrollRef.value.scrollToBottom()
+    scrollToBottom()
   }
 
   try {
@@ -241,7 +251,7 @@ const sendMessage = async (query?: string) => {
       // 更新建议问题列表
       openingQuestions.value = data
       // 延迟滚动到底部，确保建议问题可见
-      setTimeout(() => scrollRef.value.scrollToBottom(), 360)
+      scrollToBottom()
     }
   } catch (error) {
     // TODO: 可以添加用户友好的错误提示
@@ -624,6 +634,21 @@ const copyShareMessagesLink = async () => {
   }
 }
 
+const scrollToBottom = () => {
+  const scrollContainer = document.querySelector('.vue-recycle-scroller')
+
+  // 确保滚动容器存在
+  if (scrollContainer) {
+    // 将滚动条滚动到底部，显示最新消息
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth',
+      })
+    }, 60)
+  }
+}
+
 const handleAutoLineChange = () => {
   if (inputValue.value == '') {
     isWrapLine.value = false
@@ -711,6 +736,23 @@ onUnmounted(() => {
     <a-spin :loading="loading" class="flex-1 flex flex-col h-full min-h-0 px-6">
       <!-- 调试消息列表 -->
       <div v-if="messages.length > 0" class="flex flex-col h-full relative">
+        <div
+          v-if="isShowScrollBottomBtn"
+          class="absolute bottom-10 right-0 z-10 rounded-full shadow-lg"
+        >
+          <a-button
+            type="text"
+            class="h-10 w-10 rounded-full border border-gray-200 bg-gray-50 p-0"
+            @click="scrollToBottom"
+          >
+            <icon-down
+              class="text-gray-600 w-4.5 h-4.5"
+              :stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </a-button>
+        </div>
         <DynamicScroller
           ref="scroller"
           :items="messages.slice().reverse()"
@@ -783,7 +825,7 @@ onUnmounted(() => {
       <div
         class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
       ></div>
-      <div class="flex items-center px-6 gap-4">
+      <div class="flex items-center px-6 gap-1.5">
         <a-tooltip content="删除对话记录">
           <a-button
             class="flex-shrink-0"

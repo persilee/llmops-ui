@@ -94,6 +94,8 @@ const accountStore = useAccountStore()
 const isWrapLine = ref(false)
 const textareaWidth = ref(0)
 const hiddenSpanRef = ref<HTMLElement | null>(null)
+const isShowScrollBottomBtn = ref(false)
+const isHideSidebar = ref(false)
 
 /**
  * 获取对话消息的异步函数
@@ -499,6 +501,15 @@ const handleCancelShareMessages = () => {
 const handleScroll = async (e: Event) => {
   // 将事件目标转换为HTMLElement类型，以便访问其滚动相关属性
   const target = e.target as HTMLElement
+  const { scrollHeight, scrollTop, clientHeight } = target
+  // 计算距离底部的距离
+  const distanceToBottom = scrollHeight - (scrollTop + clientHeight)
+
+  if (distanceToBottom > 360) {
+    isShowScrollBottomBtn.value = true
+  } else {
+    isShowScrollBottomBtn.value = false
+  }
 
   // 当滚动到顶部时（scrollTop <= 0），触发加载更多历史消息
   // 这样可以实现向上滚动加载更多历史记录的效果
@@ -631,9 +642,7 @@ const sendMessage = async (query?: string) => {
   // 清空输入框
   inputValue.value = ''
   // 滚动到底部以显示新消息
-  if (scrollRef.value) {
-    scrollRef.value.scrollToBottom()
-  }
+  scrollToBottom()
 
   try {
     // 调用调试API发送消息
@@ -657,7 +666,7 @@ const sendMessage = async (query?: string) => {
       // 更新建议问题列表
       openingQuestions.value = data
       // 延迟滚动到底部，确保建议问题可见
-      setTimeout(() => scrollRef.value.scrollToBottom(), 360)
+      scrollToBottom()
     }
   } catch (error) {
     // TODO: 可以添加用户友好的错误提示
@@ -984,6 +993,21 @@ const copyShareMessagesLink = async () => {
   }
 }
 
+const scrollToBottom = () => {
+  const scrollContainer = document.querySelector('.vue-recycle-scroller')
+
+  // 确保滚动容器存在
+  if (scrollContainer) {
+    // 将滚动条滚动到底部，显示最新消息
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth',
+      })
+    }, 60)
+  }
+}
+
 const handleAutoLineChange = () => {
   if (inputValue.value == '') {
     isWrapLine.value = false
@@ -1022,6 +1046,10 @@ const handleShiftEnter = (e: KeyboardEvent) => {
   textarea.selectionStart = textarea.selectionEnd = start + 1
 }
 
+const handleHideSidebar = () => {
+  isHideSidebar.value = !isHideSidebar.value
+}
+
 const stop = watch(() => inputValue.value, handleAutoLineChange)
 
 onMounted(async () => {
@@ -1044,10 +1072,12 @@ onUnmounted(() => {
 
 <template>
   <div
-    :class="`flex min-h-screen h-full bg-gray-50 ${accountStore.codeEditorVisible ? 'w-1/2' : 'w-full'}`"
+    :class="`flex min-h-screen h-full bg-gray-50 ${accountStore.codeEditorVisible ? 'w-1/2' : 'w-full'} relative`"
   >
     <!-- 左侧会话记录 -->
-    <div class="w-[260px] flex-shrink-0 bg-gray-50 p-2">
+    <div
+      :class="`w-[260px] h-full flex-shrink-0 bg-gray-50 p-2 ${isHideSidebar ? 'absolute  left-[-260px]' : 'transition-all duration-300'}`"
+    >
       <div
         class="w-full h-full bg-white flex flex-col rounded-lg p-4 border border-gray-50 shadow-xs"
       >
@@ -1169,19 +1199,63 @@ onUnmounted(() => {
       <!-- 顶部会话名称 -->
       <div
         v-if="messages.length > 0 && !isShareMessages"
-        class="flex-shrink-0 h-[56px] flex items-center justify-between px-4"
+        class="flex-shrink-0 h-[56px] flex items-center px-4"
       >
-        <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-1">
+          <a-tooltip :content="isHideSidebar ? '显示侧边栏' : '隐藏侧边栏'">
+            <a-button type="text" @click="handleHideSidebar">
+              <template #icon>
+                <icon-layout class="text-gray-700 w-4.5 h-4.5" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip content="新增对话">
+            <a-button type="text" @click="addConversation">
+              <template #icon>
+                <icon-edit class="text-gray-700 w-4.5 h-4.5" />
+              </template>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div class="flex-1 flex flex-col gap-1 justify-center items-center">
           <div class="text-gray-700 font-bold">{{ currentConversation?.name }}</div>
           <div class="text-xs text-gray-400">内容由 AI 生成</div>
         </div>
-        <a-tooltip content="分享对话">
-          <a-button type="text" @click="shareConversation">
-            <template #icon>
-              <icon-share-alt class="text-gray-700 w-4.5 h-4.5" />
+        <div class="flex items-center gap-1">
+          <a-tooltip content="分享对话">
+            <a-button type="text" @click="shareConversation">
+              <template #icon>
+                <icon-share-alt class="text-gray-700 w-4.5 h-4.5" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-dropdown position="br">
+            <a-button type="text" @click.stop>
+              <template #icon>
+                <icon-more class="text-gray-700 w-4.5 h-4.5" />
+              </template>
+            </a-button>
+            <template #content>
+              <a-doption
+                @click="() => currentConversation && handleUpdateName(currentConversation)"
+              >
+                <div class="flex items-center gap-2">
+                  <icon-edit />
+                  重命名
+                </div>
+              </a-doption>
+              <a-doption
+                class="text-red-600"
+                @click="() => currentConversation && deleteConversation(currentConversation)"
+              >
+                <div class="flex items-center gap-2">
+                  <icon-delete />
+                  删除
+                </div>
+              </a-doption>
             </template>
-          </a-button>
-        </a-tooltip>
+          </a-dropdown>
+        </div>
       </div>
       <!-- 中间消息列表 -->
       <div :class="`flex-1 flex flex-col min-h-0 ${isShareMessages ? 'relative pt-[56px]' : ''}`">
@@ -1200,196 +1274,212 @@ onUnmounted(() => {
           </div>
         </div>
         <a-spin :loading="loading" class="flex-1 flex flex-col w-full h-full">
-          <div class="flex flex-col w-full h-full max-w-[780px] mx-auto">
-            <div :class="`flex-1 flex flex-col w-full h-full min-h-0 px-6`">
-              <!-- 调试消息列表 -->
-              <div v-if="messages.length > 0" class="flex flex-col h-full relative">
-                <DynamicScroller
-                  ref="scroller"
-                  :items="messages.slice().reverse()"
-                  :min-item-size="1"
-                  @scroll="handleScroll"
-                  class="scrollbar-w-none py-6"
+          <div :class="`flex-1 flex flex-col w-full h-full min-h-0 px-6`">
+            <!-- 调试消息列表 -->
+            <div v-if="messages.length > 0" class="flex flex-col h-full relative">
+              <div
+                v-if="isShowScrollBottomBtn"
+                :class="`absolute ${isShowStopBtn ? 'bottom-13' : 'bottom-10'}  left-[50%] transform translate-x-[-50%] z-10 rounded-full shadow-lg`"
+              >
+                <a-button
+                  type="text"
+                  class="h-10 w-10 rounded-full border border-gray-200 bg-gray-50 p-0"
+                  @click="scrollToBottom"
                 >
-                  <template v-slot="{ item, index, active }">
-                    <DynamicScrollerItem
-                      :item="item"
-                      :active="active"
-                      :data-index="item.id"
-                      class="flex flex-col"
-                    >
-                      <a-checkbox-group
-                        v-model="checkboxMessages"
-                        @change="handleCheckboxMessagesChange"
-                      >
-                        <div
-                          :class="`${checkboxMessages.includes(item.id) ? 'bg-blue-100 p-3 rounded-xl mb-1' : ''}`"
-                        >
-                          <div class="flex items-center justify-center">
-                            <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
-                            <!-- 人类消息 -->
-                            <HumanMessage :message="item" class="flex-1" />
-                          </div>
-                          <!-- AI消息 -->
-                          <div class="flex items-center justify-center">
-                            <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
-                            <AIMessage
-                              class="flex-1"
-                              :message="item"
-                              :opening-questions="item.id === messageId ? openingQuestions : []"
-                              :is-show-dot="aiMessageLoading && item.id === messageId"
-                              :is-show-cursor="isShowCursor && item.id === messageId"
-                              :agent-thoughts="
-                                item.agent_thoughts.sort(
-                                  (a: any, b: any) => a.position - b.position,
-                                )
-                              "
-                              :latency="item.latency"
-                              :total-token-count="item.total_token_count"
-                              :loading="thoughtLoading && item.id === messageId"
-                              :is-last-item="index === messages.length - 1"
-                              :icon="item.icon"
-                              :name="item.name"
-                              :is-share-messages="isShareMessages"
-                              @select-opening-question="handleSelectOpeningQuestion"
-                              @delete-message="handleDeleteMessage"
-                              @regenerate="handleRegenerate"
-                              @share-messages="handleShareMessages"
-                            />
-                          </div>
-                        </div>
-                      </a-checkbox-group>
-                    </DynamicScrollerItem>
-                  </template>
-                </DynamicScroller>
-                <!-- 停止响应按钮 -->
-                <div
-                  v-if="isShowStopBtn"
-                  class="flex items-center justify-center absolute z-50 bottom-3 left-0 right-0"
-                >
-                  <div
-                    class="inline-block py-1.5 px-3.5 border border-gray-200 bg-white rounded-lg shadow-lg cursor-pointer hover:bg-gray-300"
-                    @click="handleStopResponse"
+                  <icon-down
+                    class="text-gray-600 w-4.5 h-4.5"
+                    :stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </a-button>
+              </div>
+              <DynamicScroller
+                ref="scroller"
+                :items="messages.slice().reverse()"
+                :min-item-size="1"
+                @scroll="handleScroll"
+                class="scrollbar-w-none py-6"
+              >
+                <template v-slot="{ item, index, active }">
+                  <DynamicScrollerItem
+                    :item="item"
+                    :active="active"
+                    :data-index="item.id"
+                    class="flex flex-col max-w-[780px] mx-auto"
                   >
-                    <icon-record-stop />
-                    <span class="text-gray-900 font-bold ml-1">停止响应</span>
-                  </div>
+                    <a-checkbox-group
+                      v-model="checkboxMessages"
+                      @change="handleCheckboxMessagesChange"
+                    >
+                      <div
+                        :class="`${checkboxMessages.includes(item.id) ? 'bg-blue-100 p-3 rounded-xl mb-1' : ''}`"
+                      >
+                        <div class="flex items-center justify-center">
+                          <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
+                          <!-- 人类消息 -->
+                          <HumanMessage :message="item" class="flex-1" />
+                        </div>
+                        <!-- AI消息 -->
+                        <div class="flex items-center justify-center">
+                          <a-checkbox v-if="isShareMessages" :value="item.id"> </a-checkbox>
+                          <AIMessage
+                            class="flex-1"
+                            :message="item"
+                            :opening-questions="item.id === messageId ? openingQuestions : []"
+                            :is-show-dot="aiMessageLoading && item.id === messageId"
+                            :is-show-cursor="isShowCursor && item.id === messageId"
+                            :agent-thoughts="
+                              item.agent_thoughts.sort((a: any, b: any) => a.position - b.position)
+                            "
+                            :latency="item.latency"
+                            :total-token-count="item.total_token_count"
+                            :loading="thoughtLoading && item.id === messageId"
+                            :is-last-item="index === messages.length - 1"
+                            :icon="item.icon"
+                            :name="item.name"
+                            :is-share-messages="isShareMessages"
+                            @select-opening-question="handleSelectOpeningQuestion"
+                            @delete-message="handleDeleteMessage"
+                            @regenerate="handleRegenerate"
+                            @share-messages="handleShareMessages"
+                          />
+                        </div>
+                      </div>
+                    </a-checkbox-group>
+                  </DynamicScrollerItem>
+                </template>
+              </DynamicScroller>
+              <!-- 停止响应按钮 -->
+              <div
+                v-if="isShowStopBtn"
+                class="flex items-center justify-center absolute z-50 bottom-3 left-0 right-0"
+              >
+                <div
+                  class="inline-block py-1.5 px-3.5 border border-gray-200 bg-white rounded-lg shadow-lg cursor-pointer hover:bg-gray-300"
+                  @click="handleStopResponse"
+                >
+                  <icon-record-stop />
+                  <span class="text-gray-900 font-bold ml-1">停止响应</span>
                 </div>
               </div>
-              <!-- 空消息显示 Agent 图标和名字 -->
-              <DebugEmptyMessage
-                v-else
-                :icon="webAppInfo?.icon"
-                :name="webAppInfo?.name"
-                :opening-statement="webAppInfo?.app_config.opening_statement"
-                :opening-questions="webAppInfo?.app_config.opening_questions"
-                @select-opening-question="handleSelectOpeningQuestion"
-              />
             </div>
-            <!-- 输入框 -->
-            <div v-if="!isShareMessages" class="flex flex-col w-full flex-shrink-0 relative">
+            <!-- 空消息显示 Agent 图标和名字 -->
+            <DebugEmptyMessage
+              v-else
+              :icon="webAppInfo?.icon"
+              :name="webAppInfo?.name"
+              :opening-statement="webAppInfo?.app_config.opening_statement"
+              :opening-questions="webAppInfo?.app_config.opening_questions"
+              @select-opening-question="handleSelectOpeningQuestion"
+            />
+          </div>
+          <!-- 输入框 -->
+          <div
+            v-if="!isShareMessages"
+            class="flex flex-col w-full max-w-[780px] mx-auto flex-shrink-0 relative"
+          >
+            <div
+              class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
+            ></div>
+            <div class="flex items-center gap-1.5 pr-9">
+              <a-tooltip content="删除对话记录">
+                <a-button
+                  class="flex-shrink-0"
+                  type="text"
+                  shape="circle"
+                  @click="deleteConversationMessages"
+                >
+                  <template #icon
+                    ><img src="@/assets/images/icon-clear.png" class="w-4 h-4"
+                  /></template>
+                </a-button>
+              </a-tooltip>
               <div
-                class="h-[66px] w-full absolute top-[-66px] linear-gradient-transparency pointer-events-none"
-              ></div>
-              <div class="flex items-center px-6 gap-4">
-                <a-tooltip content="删除对话记录">
+                :class="`flex flex-1 ${isWrapLine ? 'flex-col' : 'flex-row'} items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input`"
+              >
+                <div class="w-full items-center">
+                  <form @submit.prevent="sendMessage()" class="w-full mt-0.5">
+                    <a-textarea
+                      v-model="inputValue"
+                      type="text"
+                      :auto-size="{
+                        minRows: 1,
+                        maxRows: 5,
+                      }"
+                      :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
+                      class="flex-1 w-full outline-0 bg-transparent focus-within:border-none border-none items-center leading-1.5"
+                      @keydown.enter.exact.prevent="sendMessage()"
+                      @keydown.shift.enter="handleShiftEnter"
+                    />
+                    <span ref="hiddenSpanRef" class="hidden-span px-3 ml-1.5">{{
+                      inputValue
+                    }}</span>
+                  </form>
+                </div>
+                <div class="flex items-center self-end h-12">
+                  <a-button type="text" shape="circle">
+                    <template #icon>
+                      <icon-plus
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="w-4 h-4 text-gray-600"
+                      />
+                    </template>
+                  </a-button>
+                  <a-button type="text" shape="circle">
+                    <template #icon>
+                      <icon-voice
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="w-4 h-4 text-gray-600"
+                      />
+                    </template>
+                  </a-button>
                   <a-button
-                    class="flex-shrink-0"
+                    :disabled="isDisabled"
                     type="text"
                     shape="circle"
-                    @click="deleteConversationMessages"
+                    @click="sendMessage()"
                   >
                     <template #icon
-                      ><img src="@/assets/images/icon-clear.png" class="w-4 h-4"
+                      ><img
+                        src="@/assets/images/icon-send.png"
+                        :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
                     /></template>
                   </a-button>
-                </a-tooltip>
-                <div
-                  :class="`flex flex-1 ${isWrapLine ? 'flex-col' : 'flex-row'} items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input`"
-                >
-                  <div class="w-full items-center">
-                    <form @submit.prevent="sendMessage()" class="w-full mt-0.5">
-                      <a-textarea
-                        v-model="inputValue"
-                        type="text"
-                        :auto-size="{
-                          minRows: 1,
-                          maxRows: 5,
-                        }"
-                        :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
-                        class="flex-1 w-full outline-0 bg-transparent focus-within:border-none border-none items-center leading-1.5"
-                        @keydown.enter.exact.prevent="sendMessage()"
-                        @keydown.shift.enter="handleShiftEnter"
-                      />
-                      <span ref="hiddenSpanRef" class="hidden-span px-3 ml-1.5">{{
-                        inputValue
-                      }}</span>
-                    </form>
-                  </div>
-                  <div class="flex items-center self-end h-12">
-                    <a-button type="text" shape="circle">
-                      <template #icon>
-                        <icon-plus
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="w-4 h-4 text-gray-600"
-                        />
-                      </template>
-                    </a-button>
-                    <a-button type="text" shape="circle">
-                      <template #icon>
-                        <icon-voice
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="w-4 h-4 text-gray-600"
-                        />
-                      </template>
-                    </a-button>
-                    <a-button
-                      :disabled="isDisabled"
-                      type="text"
-                      shape="circle"
-                      @click="sendMessage()"
-                    >
-                      <template #icon
-                        ><img
-                          src="@/assets/images/icon-send.png"
-                          :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
-                      /></template>
-                    </a-button>
-                  </div>
                 </div>
               </div>
-              <div class="text-center text-gray-500 text-xs py-4">
-                内容由AI生成，无法确保真实准确，仅供参考。
-              </div>
             </div>
-            <div
-              v-if="isShareMessages"
-              class="flex items-center justify-between w-full h-[100px] flex-shrink-0 border-t border-gray-200"
-            >
-              <a-checkbox
-                :model-value="checkedAll"
-                :indeterminate="indeterminate"
-                @change="handleChangeAll"
-                >全选
-              </a-checkbox>
-              <div class="flex items-center gap-2">
-                <a-button
-                  :disabled="shareMessages.length == 0"
-                  type="primary"
-                  class="bg-white border border-gray-200 text-gray-600 hover:bg-gray-200"
-                  @click="shareMessagesToImage"
-                  >分享图片</a-button
-                >
-                <a-button
-                  :loading="shareMessagesLinkLoading"
-                  :disabled="shareMessages.length == 0"
-                  type="primary"
-                  @click="copyShareMessagesLink"
-                  >复制链接</a-button
-                >
-              </div>
+            <div class="text-center text-gray-500 text-xs py-4">
+              内容由AI生成，无法确保真实准确，仅供参考。
+            </div>
+          </div>
+          <div
+            v-if="isShareMessages"
+            class="flex items-center justify-between w-full h-[100px] flex-shrink-0 border-t border-gray-200"
+          >
+            <a-checkbox
+              :model-value="checkedAll"
+              :indeterminate="indeterminate"
+              @change="handleChangeAll"
+              >全选
+            </a-checkbox>
+            <div class="flex items-center gap-2">
+              <a-button
+                :disabled="shareMessages.length == 0"
+                type="primary"
+                class="bg-white border border-gray-200 text-gray-600 hover:bg-gray-200"
+                @click="shareMessagesToImage"
+                >分享图片</a-button
+              >
+              <a-button
+                :loading="shareMessagesLinkLoading"
+                :disabled="shareMessages.length == 0"
+                type="primary"
+                @click="copyShareMessagesLink"
+                >复制链接</a-button
+              >
             </div>
           </div>
         </a-spin>
