@@ -7,6 +7,7 @@ import {
 import type { Options as HTMLToImageOptions } from 'html-to-image/es/types'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
+import { isCrossOrigin } from './util'
 export type ImageType = 'jpeg' | 'png' | 'svg'
 
 /**
@@ -151,6 +152,17 @@ export function useScreenshot(): UseScreenshot {
    */
   function toPng(el: HTMLElement, options: HTMLToImageOptions = { quality: 0.95 }) {
     error.value = null
+    const filterOption = {
+      filter: (node: any) => {
+        // 跳过跨域图片
+        if (node.tagName === 'IMG' && isCrossOrigin(node.src)) {
+          return false
+        }
+        return true
+      },
+    }
+
+    const finalOptions = { ...options, ...filterOption }
 
     return ElToPng(el, options)
       .then((data) => {

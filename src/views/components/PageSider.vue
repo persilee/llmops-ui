@@ -85,7 +85,15 @@ onMounted(() => {
         <!-- Logo区域 -->
         <div class="flex justify-between items-center mb-4 mt-1">
           <router-link v-if="!collapsed" to="/home" class="rounded-lg text-center">
-            <img src="/src/assets/images/logo.png" alt="logo" class="h-7" />
+            <div class="flex items-center relative">
+              <img src="/src/assets/images/icon-avatar.png" alt="logo" class="h-8 w-8" />
+              <div class="text-gray-900 text-base ml-2 font-bold">虎子</div>
+              <img
+                src="/src/assets/images/icon-logo-text.png"
+                alt="logo"
+                class="h-2.5 w-auto absolute bottom-[-8px]"
+              />
+            </div>
           </router-link>
           <a-tooltip :content="collapsed ? '展开侧边栏' : '关闭侧边栏'" position="right">
             <a-button type="text" @click="handleCollapsed">

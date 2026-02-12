@@ -310,6 +310,21 @@ export const generateRandomString = (length: number): string => {
   return result
 }
 
+/**
+ * 检查图片URL是否为跨域
+ * @param url - 图片URL
+ * @returns 返回布尔值，表示是否为跨域图片
+ */
+export const isCrossOrigin = (url: string): boolean => {
+  try {
+    const currentOrigin = window.location.origin
+    const imageUrl = new URL(url)
+    return imageUrl.origin !== currentOrigin
+  } catch {
+    return true // 如果URL解析失败，认为是跨域
+  }
+}
+
 export const supportedLanguages = [
   'javascript',
   'typescript',

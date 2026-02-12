@@ -89,7 +89,7 @@ const handleDownloadImage = async () => {
         type: 'png', // 图片格式
         skipFonts: false, // 是否跳过字体加载
         pixelRatio: window.devicePixelRatio || 2, // 像素比例，默认为2
-        fileName: `${name.value ?? '分享对话'}-小智`, // 下载文件名
+        fileName: `${name.value ?? '分享对话'}-虎子`, // 下载文件名
       })
       // 显示下载成功提示
       Message.success('下载图片成功')
@@ -196,16 +196,19 @@ onUnmounted(() => {
                       v-if="message.image_urls.length == 1"
                       :src="imgUrl"
                       class="w-[248px] h-auto rounded-lg object-cover object-center"
+                      crossorigin="anonymous"
                     />
                     <img
                       v-else-if="message.image_urls.length == 2"
                       :src="imgUrl"
                       class="w-[188px] h-[188px] rounded-lg object-cover object-center"
+                      crossorigin="anonymous"
                     />
                     <img
                       v-else
                       :src="imgUrl"
                       class="w-[120px] h-[120px] rounded-lg object-cover object-center"
+                      crossorigin="anonymous"
                     />
                   </a>
                 </div>
@@ -227,7 +230,7 @@ onUnmounted(() => {
                 <img :src="avatarIcon" />
               </a-avatar>
               <div class="flex flex-col">
-                <div class="text-gray-500 font-bold">小智</div>
+                <div class="text-gray-500 font-bold">虎子</div>
                 <div class="text-gray-400 text-xs">你的AI助手，助力每日工作学习</div>
               </div>
             </div>

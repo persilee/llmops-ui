@@ -64,16 +64,19 @@ onMounted(async () => {
                         v-if="message.image_urls.length == 1"
                         :src="imgUrl"
                         class="w-[248px] h-auto rounded-lg object-cover object-center"
+                        crossorigin="anonymous"
                       />
                       <img
                         v-else-if="message.image_urls.length == 2"
                         :src="imgUrl"
                         class="w-[188px] h-[188px] rounded-lg object-cover object-center"
+                        crossorigin="anonymous"
                       />
                       <img
                         v-else
                         :src="imgUrl"
                         class="w-[120px] h-[120px] rounded-lg object-cover object-center"
+                        crossorigin="anonymous"
                       />
                     </a>
                   </div>
@@ -91,7 +94,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="h-12 flex-shrink-0 flex items-center justify-center">
-          <div class="text-gray-400 font-semibold">小智 •&nbsp;</div>
+          <div class="text-gray-400 font-semibold">虎子 •&nbsp;</div>
           <div class="text-gray-400">你的AI助手，助力每日工作学习</div>
         </div>
       </div>

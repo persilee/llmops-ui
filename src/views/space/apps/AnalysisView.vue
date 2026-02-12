@@ -97,6 +97,7 @@ const getAnalysisData = async () => {
 
 onMounted(() => {
   getAnalysisData()
+  document.title = `${store.app?.name ?? '应用详情'} · 统计 - 虎子 AI 智能体`
 })
 </script>
 

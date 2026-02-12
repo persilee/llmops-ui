@@ -320,6 +320,7 @@ const handleSearch = (value: string) => {
 onMounted(async () => {
   await fetchData()
   await fetchDocumentById()
+  window.document.title = `${document.value?.name ?? '文档'} - 知识库 - 虎子`
 })
 
 /**

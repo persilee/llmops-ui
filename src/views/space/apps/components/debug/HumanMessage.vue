@@ -29,17 +29,20 @@ const accountStore = useAccountStore()
                 <img
                   v-if="imageUrls.length == 1"
                   :src="imgUrl"
-                  class="w-[248px] h-auto rounded-lg object-cover object-center"
+                  class="w-[248px] h-auto rounded-lg overflow-clip object-cover object-center"
+                  crossorigin="anonymous"
                 />
                 <img
                   v-else-if="imageUrls.length == 2"
                   :src="imgUrl"
-                  class="w-[188px] h-[188px] rounded-lg object-cover object-center"
+                  class="w-[188px] h-[188px] rounded-lg overflow-clip object-cover object-center"
+                  crossorigin="anonymous"
                 />
                 <img
                   v-else
                   :src="imgUrl"
-                  class="w-[120px] h-[120px] rounded-lg object-cover object-center"
+                  class="w-[120px] h-[120px] rounded-lg overflow-clip object-cover object-center"
+                  crossorigin="anonymous"
                 />
               </a>
             </div>

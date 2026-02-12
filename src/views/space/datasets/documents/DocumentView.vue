@@ -255,6 +255,7 @@ const handleRowClick = (row: GetDocumentsWithPage, ev: Event) => {
 onMounted(async () => {
   await fetchDatasetById()
   await fetchData()
+  window.document.title = `${dataset.value?.name ?? '文档'} - 知识库 - 虎子`
 })
 </script>
 

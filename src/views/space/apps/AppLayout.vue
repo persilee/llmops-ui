@@ -126,8 +126,8 @@ const handleHistoryVersionClick = () => {
 
 // 组件挂载完成后执行的生命周期钩子
 // 在这里调用fetchData获取初始数据，确保页面加载时显示数据
-onMounted(() => {
-  fetchAppData()
+onMounted(async () => {
+  await fetchAppData()
 })
 </script>
 

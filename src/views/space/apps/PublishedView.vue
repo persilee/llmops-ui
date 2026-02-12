@@ -79,8 +79,9 @@ const goToWebApp = () => {
   }
 }
 
-onMounted(() => {
-  fetchPublishedConfig()
+onMounted(async () => {
+  await fetchPublishedConfig()
+  document.title = `${store.app?.name ?? '应用详情'} · 发布 - 虎子 AI 智能体`
 })
 </script>
 

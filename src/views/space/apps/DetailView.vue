@@ -35,9 +35,10 @@ const fetchDraftAppConfig = async () => {
 }
 
 // 在组件挂载完成后执行
-onMounted(() => {
+onMounted(async () => {
   // 获取应用的草稿配置
-  fetchDraftAppConfig()
+  await fetchDraftAppConfig()
+  document.title = `${store.app?.name ?? '应用详情'} - 虎子 AI 智能体`
 })
 </script>
 

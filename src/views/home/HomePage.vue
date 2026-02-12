@@ -820,7 +820,7 @@ onUnmounted(() => {
                         :loading="thoughtLoading && item.id === messageId"
                         :is-last-item="index === messages.length - 1"
                         :icon="avatarIcon"
-                        :name="'小智'"
+                        :name="'虎子'"
                         :is-share-messages="isShareMessages"
                         @select-opening-question="handleSelectOpeningQuestion"
                         @delete-message="handleDeleteMessage"
@@ -851,7 +851,7 @@ onUnmounted(() => {
         <DebugEmptyMessage
           v-else
           :icon="avatarIcon"
-          :name="'我是 AI 应用构建器助手，小智'"
+          :name="'我是 AI 应用构建器助手，虎子'"
           :opening-statement="`
             <b>你好，欢迎来到LLMOps 🎉</b><br><br>
             LLMOps是新一代大模型 AI 应用开发平台。无论你是否有编程基础，都可以快速搭建出各种 AI 应用，并一键发布到各大社交平台，或者轻松部署到自己的网站。<br><br>
@@ -900,6 +900,7 @@ onUnmounted(() => {
                       <img
                         :src="imgUrl"
                         class="w-[60px] h-[60px] rounded-lg object-cover object-center"
+                        crossorigin="anonymous"
                       />
                     </a>
                     <div

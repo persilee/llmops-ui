@@ -264,6 +264,7 @@ const handleDebugClick = () => {
 onMounted(async () => {
   await fetchData()
   isInit.value = false
+  document.title = `${store.workflow?.name ?? '详情'} - 工作流 - 智能体平台`
 })
 </script>
 

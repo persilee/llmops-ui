@@ -31,7 +31,7 @@ const hasOpeningQuestions = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center h-full">
+  <div class="flex flex-col items-center justify-center h-full max-w-[780px] mx-auto">
     <div class="flex-1 flex flex-col justify-center items-center w-fit">
       <!-- 图标 -->
       <a-avatar :size="64" shape="square" style="background-color: transparent">

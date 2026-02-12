@@ -310,7 +310,9 @@ const changeConversation = async (conversation: GetConversationsResp) => {
   await getConversationMessages(conversation.id)
   if (scrollRef.value) {
     // 将滚动条滚动到底部，显示最新消息
-    scrollRef.value.scrollToBottom()
+    setTimeout(() => {
+      scrollRef.value.scrollToBottom()
+    }, 360)
   }
 }
 
@@ -1101,6 +1103,12 @@ const handleFileChange = async (e: Event) => {
 }
 
 const stop = watch(() => inputValue.value, handleAutoLineChange)
+const stopTitle = watch(
+  () => currentConversation.value,
+  (newVal) => {
+    document.title = `${currentConversation.value?.name ?? 'WebApp'} - 虎子`
+  },
+)
 
 onMounted(async () => {
   await fetchData()
@@ -1117,6 +1125,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stop()
+  stopTitle()
 })
 </script>
 
@@ -1464,6 +1473,7 @@ onUnmounted(() => {
                           <img
                             :src="imgUrl"
                             class="w-[60px] h-[60px] rounded-lg object-cover object-center"
+                            crossorigin="anonymous"
                           />
                         </a>
                         <div
