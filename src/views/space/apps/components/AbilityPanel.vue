@@ -44,7 +44,7 @@ const defaultActiveKey = [
         <OpeningStatement />
         <!-- 用户建议问题 -->
         <SuggestedAfterAnswer />
-        <!-- 语音输入 -->
+        <!-- 输入方式 -->
         <SpeechToText />
         <!-- 语音输出 -->
         <TextToSpeech />

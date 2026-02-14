@@ -22,15 +22,17 @@
     box-shadow: 0 0 26px 0 #c8efffa1 !important;
   }
 
+  .gradient-input-active:before,
   .gradient-input:focus-within:before {
     content: '';
-    background: linear-gradient(91.42deg, #b5edf6, #b5edf6 31%, #8fbdff 73%, #8fbdff);
+    background: linear-gradient(91.42deg, #8fbdff, #51a2ff 31%, #2b7fff 73%, #155dfc);
     border-radius: 24px;
     position: absolute;
     inset: -1px;
     z-index: -1;
   }
 
+  .gradient-input-active:after,
   .gradient-input:focus-within:after {
     background: #fff;
     background-clip: content-box;

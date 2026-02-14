@@ -6,6 +6,7 @@ import type { AgentThought, GetDebugConversationMessagesWithPage } from '@/servi
 import UploadApi from '@/services/api/upload-file'
 import type { Paginator } from '@/services/types'
 import FancyboxView from '@/views/components/FancyboxView.vue'
+import RecordButton from '@/views/components/RecordButton.vue'
 import ShareMessagesModel from '@/views/components/ShareMessagesModel.vue'
 import { Message } from '@arco-design/web-vue'
 import { remove } from 'lodash-es'
@@ -30,12 +31,10 @@ const thoughtLoading = ref(false)
 const aiMessageLoading = ref(false)
 // 控制光标显示状态，用于显示AI正在输入的效果
 const isShowCursor = ref(false)
-// 控制停止响应按钮的显示状态
-const isShowStopBtn = ref(false)
 // 滚动容器的高度，用于计算滚动位置
 const scrollerHeight = ref(0)
 // 计算属性：判断发送按钮是否禁用，当AI正在思考或输入为空时禁用
-const isDisabled = computed(() => thoughtLoading.value || inputValue.value.trim() === '')
+const isDisabledSend = computed(() => thoughtLoading.value || inputValue.value.trim() === '')
 // 应用状态管理store实例
 const store = useAppStore()
 // 分页信息对象，用于管理消息列表的分页加载
@@ -70,15 +69,13 @@ const isShowScrollBottomBtn = ref(false)
 const uploadFileLoading = ref(false)
 const imageUrls = ref<string[]>([])
 const fileInput = ref<any>(null)
+const isSpeech = ref(false)
 
-const isImageInput = computed(() => {
-  // return store.draftAppConfig?.model_config?.features.includes('image_input')
-  return true
+const isShowSpeechBtn = computed(() => {
+  return (
+    !thoughtLoading.value && !inputValue.value.trim() && store.draftAppConfig?.speech_to_text.enable
+  )
 })
-const isSpeechToText = computed(() => {
-  return store.draftAppConfig?.speech_to_text.enable
-})
-
 /**
  * 获取调试对话消息数据
  * @param {boolean} isLoadMore - 是否为加载更多操作，默认为false
@@ -212,7 +209,7 @@ const handleScroll = async (e: Event) => {
  */
 const sendMessage = async (query?: string) => {
   // 检查是否有对话正在进行中或ID不存在，如果有则停止当前对话
-  if ((!query && isDisabled.value) || !store.app?.id) {
+  if ((!query && isDisabledSend.value) || !store.app?.id) {
     Message.info('对话正在进行中，请等待对话结束，或手动停止对话')
     return
   }
@@ -276,7 +273,6 @@ const sendMessage = async (query?: string) => {
     thoughtLoading.value = false // 重置思考加载状态
     isShowCursor.value = false // 隐藏光标
     aiMessageLoading.value = false // 重置AI消息加载状态
-    isShowStopBtn.value = false // 隐藏停止按钮
   }
 }
 
@@ -295,9 +291,6 @@ const handleEventData = (eventResponse: Record<string, any>) => {
 
   // 如果是ping事件，直接返回，不做处理
   if (event === QueueEvent.ping) return
-
-  // 显示停止响应按钮
-  isShowStopBtn.value = true
 
   // 处理消息ID和对话ID的初始化
   if (!messageId.value && data.message_id) {
@@ -412,8 +405,6 @@ const handleStopResponse = async () => {
       await AppsApi.stopDebugChat(store.app.id, taskId.value)
       // 重置任务ID
       taskId.value = ''
-      // 隐藏停止按钮
-      isShowStopBtn.value = false
     }
   } catch (error) {
     // 错误处理：捕获并处理可能出现的异常
@@ -673,8 +664,10 @@ const handleAutoLineChange = () => {
 
   if (!hiddenSpanRef.value) return
   const textWidth = hiddenSpanRef.value.offsetWidth
+  console.log('textWidth', textWidth)
+  console.log('textareaWidth', textareaWidth.value)
 
-  if (textWidth > textareaWidth.value) {
+  if (textWidth > textareaWidth.value - 25) {
     isWrapLine.value = true
   } else {
     isWrapLine.value = false
@@ -682,7 +675,9 @@ const handleAutoLineChange = () => {
 }
 
 const getTextareaWidth = () => {
-  const textarea = document.querySelector('textarea')
+  const textarea = document.querySelector('.textarea-container textarea')
+  console.log(textarea)
+
   if (textarea) {
     return parseInt(getComputedStyle(textarea).width)
   }
@@ -732,6 +727,18 @@ const handleFileChange = async (e: Event) => {
     } finally {
       uploadFileLoading.value = false
     }
+  }
+}
+
+const toggleSpeechInput = (text?: string) => {
+  isSpeech.value = !isSpeech.value
+  if (text) {
+    inputValue.value = inputValue.value ? inputValue.value + text : text
+
+    setTimeout(() => {
+      const textarea = document.querySelector('.textarea-container textarea') as HTMLTextAreaElement
+      textarea?.focus()
+    }, 160)
   }
 }
 
@@ -851,19 +858,6 @@ onUnmounted(() => {
             </DynamicScrollerItem>
           </template>
         </DynamicScroller>
-        <!-- 停止响应按钮 -->
-        <div
-          v-if="isShowStopBtn"
-          class="flex items-center justify-center absolute z-50 bottom-3 left-0 right-0"
-        >
-          <div
-            class="inline-block py-1.5 px-3.5 border border-gray-200 bg-white rounded-lg shadow-lg cursor-pointer hover:bg-gray-300"
-            @click="handleStopResponse"
-          >
-            <icon-record-stop />
-            <span class="text-gray-900 font-bold ml-1">停止响应</span>
-          </div>
-        </div>
       </div>
       <!-- 空消息显示 Agent 图标和名字 -->
       <DebugEmptyMessage v-else @select-opening-question="handleSelectOpeningQuestion" />
@@ -885,7 +879,7 @@ onUnmounted(() => {
           </a-button>
         </a-tooltip>
         <div
-          :class="`flex flex-1 ${isWrapLine ? 'flex-col' : 'flex-row'} items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input`"
+          :class="`flex ${isWrapLine ? 'flex-col' : 'flex-row'} flex-1 items-center h-fit min-h-12 px-4 border border-gray-200 rounded-6 gradient-input ${isSpeech ? 'gradient-input-active' : ''}`"
         >
           <div class="w-full items-center">
             <div v-if="imageUrls.length > 0" class="w-full flex items-center mt-3 mb-1 px-2">
@@ -910,7 +904,14 @@ onUnmounted(() => {
                 </div>
               </FancyboxView>
             </div>
+            <RecordButton
+              v-if="isSpeech"
+              v-model:visible="isSpeech"
+              :type="'waveform'"
+              @success="(text) => toggleSpeechInput(text)"
+            />
             <form
+              v-else
               @submit.prevent="sendMessage()"
               class="w-full flex-shrink-0 min-h-[46px] flex items-center"
             >
@@ -922,14 +923,14 @@ onUnmounted(() => {
                   maxRows: 5,
                 }"
                 :placeholder="messages.length > 0 ? '继续对话...' : '发送消息...'"
-                class="flex-1 w-full outline-0 bg-transparent focus-within:border-none border-none items-center leading-1.5"
+                class="flex-1 w-full outline-0 bg-transparent focus-within:border-none border-none items-center leading-1.5 textarea-container"
                 @keydown.enter.exact.prevent="sendMessage()"
                 @keydown.shift.enter="handleShiftEnter"
               />
-              <span ref="hiddenSpanRef" class="hidden-span px-3 ml-1.5">{{ inputValue }}</span>
+              <span ref="hiddenSpanRef" class="px-3 hidden-span">{{ inputValue }}</span>
             </form>
           </div>
-          <div class="flex items-center self-end h-12">
+          <div v-if="!isSpeech" class="flex items-center self-end h-12">
             <div>
               <input
                 type="file"
@@ -939,7 +940,7 @@ onUnmounted(() => {
                 @change="handleFileChange"
                 class="hidden"
               />
-              <a-tooltip v-if="isImageInput" content="上传图片(最多同时上传5张)">
+              <a-tooltip content="上传图片(最多同时上传5张)">
                 <a-button
                   :loading="uploadFileLoading"
                   type="text"
@@ -956,8 +957,8 @@ onUnmounted(() => {
                 </a-button>
               </a-tooltip>
             </div>
-            <a-tooltip v-if="isSpeechToText" content="语音输入">
-              <a-button type="text" shape="circle">
+            <a-tooltip v-if="isShowSpeechBtn" content="语音输入">
+              <a-button type="text" shape="circle" @click="toggleSpeechInput()">
                 <template #icon>
                   <icon-voice
                     stroke-linecap="round"
@@ -967,12 +968,29 @@ onUnmounted(() => {
                 </template>
               </a-button>
             </a-tooltip>
-            <a-button :disabled="isDisabled" type="text" shape="circle" @click="sendMessage()">
+            <a-button
+              v-if="(inputValue.trim() && !thoughtLoading) || !isShowSpeechBtn"
+              :disabled="inputValue.trim() ? false : true"
+              type="text"
+              shape="circle"
+              @click="sendMessage()"
+            >
               <template #icon
                 ><img
                   src="@/assets/images/icon-send.png"
-                  :class="['w-4', 'h-4', { 'send-icon-active': !isDisabled }]"
+                  :class="['w-4', 'h-4', { 'send-icon-active': inputValue.trim() }]"
               /></template>
+            </a-button>
+            <a-button
+              v-if="!inputValue.trim() && thoughtLoading"
+              type="text"
+              shape="circle"
+              class="bg-gray-100"
+              @click="handleStopResponse()"
+            >
+              <template #icon>
+                <icon-record-stop class="text-gray-600 text-lg" />
+              </template>
             </a-button>
           </div>
         </div>

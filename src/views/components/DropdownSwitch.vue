@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+const props = defineProps<{ options?: { label: string }[] }>()
 // 定义组件的事件发射器，用于向父组件传递选择事件
 const emit = defineEmits(['select'])
 // 定义组件的v-model双向绑定值，用于控制开关状态
@@ -28,15 +29,21 @@ const popupVisibleChange = (v: boolean) => {
 <template>
   <a-dropdown @select="handleSelect" @popup-visible-change="popupVisibleChange" @click.stop>
     <div
-      :class="`flex items-center justify-between w-20 h-6 px-2 border ${isActive ? 'border-blue-600' : 'border-gray-300'} rounded-lg hover:cursor-pointer hover:bg-gray-200`"
+      :class="`flex items-center justify-between min-w-20 w-fit h-6 px-2 border ${isActive ? 'border-blue-600' : 'border-gray-300'} rounded-lg hover:cursor-pointer hover:bg-gray-200`"
     >
-      <div class="text-sm">{{ value ? '开启' : '关闭' }}</div>
+      <div class="text-sm">
+        {{ value ? (options ? options[0].label : '开启') : options ? options[1].label : '关闭' }}
+      </div>
       <icon-down class="h-3.5 w-3.5" />
     </div>
     <template #content>
-      <div class="w-20">
-        <a-doption :disabled="value" value="true">开启</a-doption>
-        <a-doption :disabled="!value" value="false">关闭</a-doption>
+      <div class="min-w-20 w-fit">
+        <a-doption :disabled="value" value="true">
+          {{ options ? options[0].label : '开启' }}</a-doption
+        >
+        <a-doption :disabled="!value" value="false">{{
+          options ? options[1].label : '关闭'
+        }}</a-doption>
       </div>
     </template>
   </a-dropdown>
