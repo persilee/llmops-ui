@@ -840,6 +840,7 @@ onUnmounted(() => {
                         :icon="avatarIcon"
                         :name="'虎子'"
                         :is-share-messages="isShareMessages"
+                        :is-text-to-speech="true"
                         @select-opening-question="handleSelectOpeningQuestion"
                         @delete-message="handleDeleteMessage"
                         @regenerate="handleRegenerate"

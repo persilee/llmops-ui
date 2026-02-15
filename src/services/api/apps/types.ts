@@ -197,7 +197,7 @@ export interface InputsConfig {
 export interface TextToSpeech {
   auto_play: boolean
   enable: boolean
-  voice: string
+  voice: number
 }
 
 export interface Tool {

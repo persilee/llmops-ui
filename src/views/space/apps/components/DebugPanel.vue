@@ -847,6 +847,7 @@ onUnmounted(() => {
                       :loading="thoughtLoading && item.id === messageId"
                       :is-last-item="index === messages.length - 1"
                       :is-share-messages="isShareMessages"
+                      :is-text-to-speech="store.draftAppConfig?.text_to_speech.enable"
                       @select-opening-question="handleSelectOpeningQuestion"
                       @regenerate="handleRegenerate"
                       @delete-message="handleDeleteMessage"

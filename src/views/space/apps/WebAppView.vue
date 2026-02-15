@@ -1417,6 +1417,7 @@ onUnmounted(() => {
                             :icon="item.icon"
                             :name="item.name"
                             :is-share-messages="isShareMessages"
+                            :is-text-to-speech="webAppInfo?.app_config.text_to_speech.enable"
                             @select-opening-question="handleSelectOpeningQuestion"
                             @delete-message="handleDeleteMessage"
                             @regenerate="handleRegenerate"
