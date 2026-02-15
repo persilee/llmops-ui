@@ -53,7 +53,7 @@ export const useAppStore = defineStore(
       },
       text_to_speech: {
         enable: false,
-        voice: 'echo',
+        voice: 4194,
         auto_play: false,
       },
       review_config: {
@@ -67,6 +67,11 @@ export const useAppStore = defineStore(
           enable: false,
         },
       },
+    })
+
+    const cacheSpeech = ref({
+      data: '',
+      url: '',
     })
 
     /**
@@ -244,6 +249,7 @@ export const useAppStore = defineStore(
       conversationId,
       draftAppConfig,
       loading,
+      cacheSpeech,
       getApp,
       getDraftAppConfig,
       updateDraftAppConfig,

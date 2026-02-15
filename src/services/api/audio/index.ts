@@ -1,7 +1,7 @@
 import { BASE_URL } from '@/config'
-import { ssePost, upload } from '@/services/request'
+import { post, ssePost, upload } from '@/services/request'
 import { useCredentialStore } from '@/stores/credential'
-import type { AudioToTextResp } from './types'
+import type { AudioToTextResp, MessageToAudioResp } from './types'
 
 class AudioApi {
   /**
@@ -36,20 +36,18 @@ class AudioApi {
    * @returns 返回一个Promise，解析为音频数据
    */
   static async messageToAudio(messageId: string) {
-    const store = useCredentialStore()
-    const token = store.credential?.access_token
-    return await fetch(`${BASE_URL}/audio/tts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        message_id: messageId,
-      }),
+    return post<MessageToAudioResp>({
+      url: '/audio/tts',
+      body: { message_id: messageId },
     })
   }
 
+  /**
+   * 将文本转换为音频
+   * @param text 要转换的文本内容
+   * @param voice 语音类型，使用数字标识不同的语音风格
+   * @returns 返回一个Promise，解析为音频数据的Response对象
+   */
   static async textToAudio(text: string, voice: number) {
     const store = useCredentialStore()
     const token = store.credential?.access_token

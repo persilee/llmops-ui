@@ -2,7 +2,8 @@
 import IconAudioWave from '@/components/icons/IconAudioWave.vue'
 import AudioApi from '@/services/api/audio'
 import { Message } from '@arco-design/web-vue'
-import { onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
+import { useAppStore } from '../space/apps/AppView.store'
 const isShowIconAudioWave = ref(false)
 const audioElement = ref<HTMLAudioElement>()
 const isAudioLoaded = ref(false)
@@ -13,19 +14,40 @@ const props = defineProps<{
   text?: string
   voice?: number
   size?: string
+  isTooltip?: boolean
 }>()
+const store = useAppStore()
 const DEFAULT_VOICE_ID = 4194
+
+const getTooltipContent = computed(() => {
+  if (!isShowIconAudioWave.value) return '语音朗读'
+  if (isPlaying.value) return '暂停朗读'
+  if (isAudioLoaded.value) return '继续朗读'
+  return '语音朗读'
+})
 
 const fetchAudioStream = async (): Promise<string | undefined> => {
   try {
-    const resp = props.messageId
-      ? await AudioApi.messageToAudio(props.messageId)
-      : await AudioApi.textToAudio(props.text!, props.voice ?? DEFAULT_VOICE_ID)
-
-    const arrayBuffer = await resp.arrayBuffer()
-    const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' })
-    return URL.createObjectURL(audioBlob)
+    if (props.messageId) {
+      if (props.messageId == store.cacheSpeech.data) {
+        return store.cacheSpeech.url
+      }
+      // 直接获取后端返回的音频URL（AudioApi需返回字符串格式的URL）
+      const resp = await AudioApi.messageToAudio(props.messageId)
+      const url = resp.data.speech_url
+      store.cacheSpeech = { data: props.messageId, url: url }
+      return url
+    } else {
+      // 保留原文本转语音逻辑（返回Blob URL）
+      const resp = await AudioApi.textToAudio(props.text!, props.voice ?? DEFAULT_VOICE_ID)
+      const arrayBuffer = await resp.arrayBuffer()
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' })
+      const url = URL.createObjectURL(audioBlob)
+      store.cacheSpeech = { data: props.text!, url: url }
+      return url
+    }
   } catch (error) {
+    onAudioPause()
     const errorMessage = error instanceof Error ? error.message : String(error)
     Message.error(`音频流获取失败: ${errorMessage}`)
     return undefined
@@ -68,6 +90,7 @@ const handelTextToSpeech = async () => {
 
   try {
     const audioUrl = await fetchAudioStream()
+    if (!audioUrl) return
 
     // 初始化音频元素
     audioElement.value = new Audio(audioUrl)
@@ -233,26 +256,28 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <a-button
-    v-if="!isShowIconAudioWave"
-    type="text"
-    :style="{ width: `${size}px`, height: `${size}px` }"
-    @click="handelTextToSpeech()"
-  >
-    <template #icon>
-      <slot>
-        <icon-sound class="text-gray-500 w-3.5 h-3.5" />
-      </slot>
-    </template>
-  </a-button>
-  <div
-    v-else
-    :style="{ width: `${size}px`, height: `${size}px` }"
-    class="hover:bg-gray-200 flex items-center justify-center rounded-lg p-1 cursor-pointer"
-    @click="handelPauseToggle()"
-  >
-    <IconAudioWave :is-playing="isPlaying" />
-  </div>
+  <a-tooltip :content="getTooltipContent" :disabled="isTooltip">
+    <a-button
+      v-if="!isShowIconAudioWave"
+      type="text"
+      :style="{ width: `${size}px`, height: `${size}px` }"
+      @click="handelTextToSpeech()"
+    >
+      <template #icon>
+        <slot>
+          <icon-sound class="text-gray-500 w-3.5 h-3.5" />
+        </slot>
+      </template>
+    </a-button>
+    <div
+      v-else
+      :style="{ width: `${size}px`, height: `${size}px` }"
+      class="hover:bg-gray-200 flex items-center justify-center rounded-lg p-1 cursor-pointer"
+      @click="handelPauseToggle()"
+    >
+      <IconAudioWave :is-playing="isPlaying" />
+    </div>
+  </a-tooltip>
 </template>
 
 <style scoped></style>

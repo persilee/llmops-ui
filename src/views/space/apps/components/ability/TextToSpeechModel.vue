@@ -77,7 +77,13 @@ onUnmounted(() => {
             <img :src="voice.icon" />
           </a-avatar>
           <div class="text-gray-600 mr-3">{{ voice.label }}</div>
-          <SpeechButton :text="voice.text" :voice="voice.value" size="32" @click.stop>
+          <SpeechButton
+            :text="voice.text"
+            :voice="voice.value"
+            :is-tooltip="true"
+            size="32"
+            @click.stop
+          >
             <icon-play-circle-fill class="text-2xl text-gray-300" />
           </SpeechButton>
         </div>

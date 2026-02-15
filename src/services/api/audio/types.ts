@@ -3,5 +3,5 @@ export interface AudioToTextResp {
 }
 
 export interface MessageToAudioResp {
-  text: string
+  speech_url: string
 }
