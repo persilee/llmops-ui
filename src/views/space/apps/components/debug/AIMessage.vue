@@ -112,6 +112,7 @@ const copyToClipboard = async (text: string) => {
               v-if="isTextToSpeech"
               :text="message.answer.length <= 600 ? message.answer : ''"
               :message-id="message.answer.length > 600 ? message.id : ''"
+              :voice="store.draftAppConfig.text_to_speech.voice"
               size="24"
               class="hover:bg-gray-200 rounded-lg"
             />

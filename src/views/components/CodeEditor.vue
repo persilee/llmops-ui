@@ -5,7 +5,7 @@ import { copyToClipboard } from '@/utils/util'
 import { merge } from 'lodash-es'
 import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import CodeEditorDrawer from './CodeEditorDrawer.vue'
 
 const props = defineProps<{
@@ -220,10 +220,26 @@ const handExpand = () => {
   store.codeEditorVisible = true
 }
 
+const stop = watch(
+  () => props.language,
+  (val) => {
+    if (!editorInstance || !val) return
+    const model = editorInstance.getModel()
+    if (model) {
+      monaco.editor.setModelLanguage(model, val)
+    }
+    editorOptions.language = val
+  },
+)
+
 onMounted(() => {
   nextTick(() => {
     loadTheme()
   })
+})
+
+onUnmounted(() => {
+  stop()
 })
 </script>
 
@@ -236,7 +252,9 @@ onMounted(() => {
       :class="`flex items-center justify-between py-1.5 px-2 gap-1 ${store.isEditorDark ? 'bg-[#24262b] text-white' : 'bg-gray-100 text-gray-700'}`"
     >
       <div class="flex items-center font-medium gap-1">
-        <icon-code class="text-sm" />{{ String(languageName ?? language) }}
+        <slot name="language">
+          <icon-code class="text-sm" />{{ String(languageName ?? language) }}
+        </slot>
       </div>
       <div class="flex items-center gap-0.5">
         <a-tooltip content="复制代码">

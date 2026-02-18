@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CodeEditor from '@/views/components/CodeEditor.vue'
-import { Message, type TextareaInstance } from '@arco-design/web-vue'
+import { Message, Modal, type TextareaInstance } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import { computed, ref, watch, type PropType } from 'vue'
@@ -21,6 +21,7 @@ const store = useWorkflowStore()
 const descriptionVisible = ref(false)
 const descriptionRef = ref<TextareaInstance | null>(null)
 const isShowCodeEditor = ref(false)
+const language = ref('python')
 
 // 定义输入变量引用选项
 const inputRefOptions = computed(() => {
@@ -70,6 +71,53 @@ const addFormOutputField = () => {
   })
 }
 
+const normalizeCode = (code: string) => {
+  return code.replace(/\s/g, '')
+}
+
+const selectedLanguage = (value: string) => {
+  const pythonDefaultCode =
+    '# 在这里，您可以通过 \'arg1\'和\'arg2\'，获取节点中的输入变量，并通过 \'result\' 输出结果；\n# 函数名必须为main，参数只有一个且固定为params。\n# 下面是一个示例：\ndef main(params):\n\n    return {\n        "result": params.get("arg1") + params.get("arg2"),\n    }\n'
+  const javascriptDefaultCode =
+    "// 在这里，您可以通过 'arg1'和'arg2'，获取节点中的输入变量，并通过 'result' 输出结果；\n// 函数名必须为main，参数只有一个且固定为params。\n// 下面是一个示例：\nfunction main(params) {\n\n    const arg1 = params?.arg1 ?? '';\n    const arg2 = params?.arg2 ?? '';\n\n    // 输出结果到result字段\n    return {\n        result: arg1 + arg2\n    };\n}\n"
+
+  const currentDefaultCode =
+    form.value.language === 'python' ? pythonDefaultCode : javascriptDefaultCode
+  const currentCode = form.value.code
+
+  if (normalizeCode(currentCode) != normalizeCode(currentDefaultCode)) {
+    Modal.warning({
+      title: '切换语言', // 对话框标题
+      content: '切换语言将清除当前代码并替换成目标语言的模板', // 取消发布警告内容
+      hideCancel: false, // 显示取消按钮，允许用户取消操作
+      titleAlign: 'start', // 标题左对齐显示
+      simple: false, // 使用完整模式显示对话框
+      onOk: async () => {
+        language.value = value
+        form.value.language = value
+        if (value === 'python') {
+          form.value.code = pythonDefaultCode
+        } else {
+          form.value.code = javascriptDefaultCode
+        }
+        handleUpdateNodeInfo()
+      },
+      onCancel: () => {
+        language.value = form.value.language
+      },
+    })
+  } else {
+    language.value = value
+    form.value.language = value
+    if (value === 'python') {
+      form.value.code = pythonDefaultCode
+    } else {
+      form.value.code = javascriptDefaultCode
+    }
+    handleUpdateNodeInfo()
+  }
+}
+
 // 定义表单移除输出变量函数
 const removeFormOutputField = (idx: number) => {
   form.value?.outputs.splice(idx, 1)
@@ -88,6 +136,7 @@ const handleUpdateNodeInfo = () => {
     title: form.value.title,
     description: form.value.description,
     code: form.value.code,
+    language: language.value,
     inputs: cloneInputs.map((input: any) => {
       return {
         name: input.name,
@@ -119,6 +168,7 @@ const nodeToFrom = (newNode: any) => {
     title: newNode.data.title,
     description: newNode.data.description,
     code: newNode.data.code,
+    language: newNode.data.language,
     inputs: cloneInputs.map((input: any) => {
       // 5.1 计算引用的变量值信息
       const ref =
@@ -153,6 +203,7 @@ watch(
   () => props.node,
   (newNode) => {
     form.value = nodeToFrom(newNode)
+    language.value = newNode.data.language
   },
   { immediate: true },
 )
@@ -167,10 +218,27 @@ watch(
       <CodeEditor
         v-if="isShowCodeEditor"
         v-model:code="form.code"
+        :language="language"
         :options="{ lineNumbersMinChars: 3 }"
         @blur="handleUpdateNodeInfo"
         class="rounded-l-lg pointer-events-auto overflow-hidden"
       >
+        <template #language>
+          <div class="flex items-center gap-1">
+            <icon-code class="text-sm" />
+            <a-select
+              v-model="language"
+              :default-value="language"
+              size="mini"
+              placeholder="请选择语言"
+              class="border border-gray-200 rounded-md"
+              @change="selectedLanguage"
+            >
+              <a-option :value="'python'">Python</a-option>
+              <a-option :value="'javascript'">JavaScript</a-option>
+            </a-select>
+          </div>
+        </template>
         <a-button
           type="text"
           size="mini"
@@ -351,9 +419,26 @@ watch(
                   <CodeEditor
                     v-model:code="form.code"
                     :height="230"
+                    :language="language"
                     @blur="handleUpdateNodeInfo"
                     class="rounded-lg overflow-hidden"
                   >
+                    <template #language>
+                      <div class="flex items-center gap-1">
+                        <icon-code class="text-sm" />
+                        <a-select
+                          v-model="language"
+                          :default-value="language"
+                          size="mini"
+                          placeholder="请选择语言"
+                          class="border border-gray-200 rounded-md"
+                          @change="selectedLanguage"
+                        >
+                          <a-option :value="'python'">Python</a-option>
+                          <a-option :value="'javascript'">JavaScript</a-option>
+                        </a-select>
+                      </div>
+                    </template>
                     <a-button
                       type="text"
                       size="mini"

@@ -68,7 +68,7 @@ const getDate = (app: GetBuiltinAppsResp) => {
   return `${accountStore.account.name} • 最近编辑 ${formatDate(app.created_at, 'MM-DD HH:mm')}`
 }
 
-const handleToolCardClick = (index: number) => {}
+const handleToolCardClick = async (builtinApp: GetBuiltinAppsResp) => {}
 
 /**
  * 获取应用数据
@@ -152,7 +152,7 @@ onMounted(() => {
           :lg="8"
           :xl="6"
           :xxl="4"
-          v-for="(builtinApp, idx) in filterBuiltinApps"
+          v-for="builtinApp in filterBuiltinApps"
           :key="builtinApp.id"
         >
           <PageCard
@@ -162,7 +162,7 @@ onMounted(() => {
             :sub-label="getSubLabel(builtinApp)"
             :description="builtinApp.description"
             :date="getDate(builtinApp)"
-            @click="handleToolCardClick(idx)"
+            @click="handleToolCardClick(builtinApp)"
           >
             <a-dropdown position="br" @select="(v: string) => handleSelect(v, builtinApp)">
               <a-button @click.stop type="text" class="rounded-lg text-gray-700" size="small">

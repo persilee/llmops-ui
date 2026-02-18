@@ -334,9 +334,10 @@ export const useWorkflowStore = defineStore(
         ],
       },
       code: {
-        title: 'Python代码执行',
+        title: '代码执行',
         description: '编写代码，处理输入输出变量来生成返回值',
         code: '# 在这里，您可以通过 \'arg1\'和\'arg2\'，获取节点中的输入变量，并通过 \'result\' 输出结果；\n# 函数名必须为main，参数只有一个且固定为params。\n# 下面是一个示例：\ndef main(params):\n    return {\n        "result": params.get("arg1") + params.get("arg2"),\n    }\n',
+        language: 'python',
         inputs: [
           {
             meta: {},
