@@ -3,6 +3,7 @@ import MarkdownIt from 'markdown-it'
 import markdownItTaskLists from 'markdown-it-task-lists'
 import { h, nextTick, ref, render, watch } from 'vue'
 import CodePreview from './CodePreview.vue'
+import FancyboxView from './FancyboxView.vue'
 import TablePreview from './TablePreview.vue'
 
 interface Props {
@@ -48,6 +49,17 @@ md.renderer.rules.fence = function (tokens, idx, options, env, self) {
       data-lang="${lang}"
     >
     </CodePreview>
+  `
+}
+
+md.renderer.rules.image = function (tokens, idx, options, env, self) {
+  const token = tokens[idx]
+  // 获取图片属性
+  const src = token.attrGet('src')
+
+  return `
+    <FancyboxView data-src="${src}">
+    </FancyboxView>
   `
 }
 
@@ -140,12 +152,32 @@ const mountTable = async () => {
   })
 }
 
+const mountImage = async () => {
+  // 等待 DOM 更新完成，确保占位符元素已被渲染到页面中
+  await nextTick()
+
+  // 找到所有自定义占位符
+  const placeholders = markdownRoot.value?.querySelectorAll('fancyboxview')
+  if (!placeholders) return
+  placeholders.forEach((placeholder) => {
+    const src = placeholder.getAttribute('data-src') ?? ''
+    const imageVNode = h(FancyboxView, { imgSrc: src })
+    // 创建一个新的div作为挂载点
+    const mountPoint = document.createElement('div')
+    placeholder.parentElement?.replaceChild(mountPoint, placeholder)
+
+    // 使用render函数挂载组件
+    render(imageVNode, mountPoint)
+  })
+}
+
 watch(
   () => props.source,
   (newValue) => {
     renderedMarkdown.value = md.render(newValue)
     mountCodeBlocks()
     mountTable()
+    mountImage()
   },
   { immediate: true },
 )
@@ -242,5 +274,12 @@ watch(
 /* 设置最后一行的最后一个单元格的右下角圆角 */
 .markdown-body tbody tr:last-child td:last-child {
   border-bottom-right-radius: 8px;
+}
+
+.markdown-body li,
+.markdown-body a {
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
 }
 </style>

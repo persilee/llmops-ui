@@ -6,6 +6,7 @@ import { onMounted, onUnmounted, onUpdated, ref } from 'vue'
 
 const props = defineProps<{
   fancyboxOptions?: any
+  imgSrc?: string
 }>()
 const containerRef = ref(null)
 const defaultOptions = {
@@ -49,7 +50,15 @@ onUnmounted(() => {
 
 <template>
   <div ref="container" class="flex items-center gap-2">
-    <slot></slot>
+    <slot>
+      <a data-fancybox="gallery" :href="imgSrc" :data-thumb-src="imgSrc">
+        <img
+          :src="imgSrc"
+          class="w-[248px] h-auto rounded-lg overflow-clip object-cover object-center"
+          crossorigin="anonymous"
+        />
+      </a>
+    </slot>
   </div>
 </template>
 

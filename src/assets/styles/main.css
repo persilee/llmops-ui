@@ -117,4 +117,49 @@
   .node-z-index {
     z-index: 1000 !important;
   }
+
+  /* 全局滚动条样式 */
+  /* 适配WebKit内核浏览器：Chrome、Safari、Edge */
+  ::-webkit-scrollbar {
+    /* 滚动条宽度 */
+    width: 6px;
+    height: 6px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background: rgba(144, 147, 153, 0.3);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+
+  /* 滑块hover时 */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(144, 147, 153, 0.6);
+  }
+
+  /* 滑块激活时（点击拖动） */
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(144, 147, 153, 0.8);
+  }
+
+  /* 适配Firefox浏览器 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(144, 147, 153, 0.3) transparent;
+  }
+
+  /* 可选：设置滚动容器的自动隐藏滚动条（仅WebKit） */
+  .scroll-container {
+    /* 滚动条自动隐藏，只有滚动时显示 */
+    scrollbar-gutter: stable both-edges;
+    /* 或者使用以下方式，部分浏览器支持 */
+    -webkit-scrollbar-auto-hide: show;
+  }
 }

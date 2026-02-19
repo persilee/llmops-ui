@@ -5,6 +5,7 @@ import type {
   AgentThought as AgentThoughtType,
   GetDebugConversationMessagesWithPage,
 } from '@/services/api/apps/types'
+import FancyboxView from '@/views/components/FancyboxView.vue'
 import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import SpeechButton from '@/views/components/SpeechButton.vue'
 import { Message } from '@arco-design/web-vue'

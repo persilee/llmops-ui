@@ -5,6 +5,7 @@ import { copyToClipboard } from '@/utils/util'
 import { merge } from 'lodash-es'
 import * as monaco from 'monaco-editor'
 import { CodeEditor as MonacoCodeEditor, type EditorOptions } from 'monaco-editor-vue3'
+
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import CodeEditorDrawer from './CodeEditorDrawer.vue'
 
@@ -181,7 +182,6 @@ const handleChangeTheme = () => {
 
 const handleEditorDidMount = async (editor: any) => {
   editorInstance = editor
-
   try {
     // 执行Monaco内置的格式化动作
     await editor?.getAction('editor.action.formatDocument')?.run()

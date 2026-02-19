@@ -79,7 +79,7 @@ const selectedLanguage = (value: string) => {
   const pythonDefaultCode =
     '# 在这里，您可以通过 \'arg1\'和\'arg2\'，获取节点中的输入变量，并通过 \'result\' 输出结果；\n# 函数名必须为main，参数只有一个且固定为params。\n# 下面是一个示例：\ndef main(params):\n\n    return {\n        "result": params.get("arg1") + params.get("arg2"),\n    }\n'
   const javascriptDefaultCode =
-    "// 在这里，您可以通过 'arg1'和'arg2'，获取节点中的输入变量，并通过 'result' 输出结果；\n// 函数名必须为main，参数只有一个且固定为params。\n// 下面是一个示例：\nfunction main(params) {\n\n    const arg1 = params?.arg1 ?? '';\n    const arg2 = params?.arg2 ?? '';\n\n    // 输出结果到result字段\n    return {\n        result: arg1 + arg2\n    };\n}\n"
+    "// 在这里，您可以通过 'arg1'和'arg2'，获取节点中的输入变量，并通过 'result' 输出结果；\n// 函数名必须为main，参数只有一个且固定为params。\n// 下面是一个示例：\nfunction main({ params }) { \n\n    return {\n        result: (params.arg1 || '') + (params.arg2 || '')\n    }; \n}\n"
 
   const currentDefaultCode =
     form.value.language === 'python' ? pythonDefaultCode : javascriptDefaultCode
@@ -126,6 +126,7 @@ const removeFormOutputField = (idx: number) => {
 
 const handleUpdateNodeInfo = () => {
   const node = nodeToFrom(props.node)
+
   if (isEqual(node, form.value)) return
   // 深度拷贝表单数据内容
   const cloneInputs = cloneDeep(form.value.inputs)
@@ -431,7 +432,7 @@ watch(
                           :default-value="language"
                           size="mini"
                           placeholder="请选择语言"
-                          class="border border-gray-200 rounded-md"
+                          class="border border-gray-200 rounded-md px-1 py-0"
                           @change="selectedLanguage"
                         >
                           <a-option :value="'python'">Python</a-option>
