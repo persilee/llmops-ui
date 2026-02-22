@@ -21,6 +21,12 @@ const router = createRouter({
           meta: { title: '首页 - 虎子' },
         },
         {
+          path: 'setting',
+          name: 'account-setting',
+          component: () => import('@/views/account/AccountSetting.vue'),
+          meta: { title: '账号设置 - 虎子' },
+        },
+        {
           path: 'space',
           component: () => import('@/views/space/SpaceView.vue'),
           children: [

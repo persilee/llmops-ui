@@ -11,7 +11,6 @@ import IconTool from '@/components/icons/IconTool.vue'
 import IconToolFull from '@/components/icons/IconToolFull.vue'
 import { useAccountStore } from '@/stores/account'
 import * as Storage from '@/utils/storage'
-import AccountSetting from '@/views/components/AccountSetting.vue'
 import PageRouterLink from '@/views/components/PageRouterLink.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -41,7 +40,7 @@ const handleLogout = () => {
 
 // 打开账号设置弹窗
 const handleAccountSetting = () => {
-  visible.value = true
+  router.push({ name: 'account-setting' })
 }
 
 // 打开创建应用弹窗
@@ -198,7 +197,6 @@ onMounted(() => {
         </template>
       </a-dropdown>
     </div>
-    <AccountSetting v-model:visible="visible" />
     <AppModel
       v-model:visible="spaceStore.appModal.isOpen"
       :app="appStore.app"

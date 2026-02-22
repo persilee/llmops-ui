@@ -6,6 +6,7 @@ export interface AccountResp {
   last_login_at: number
   last_login_ip: string
   name: string
+  phone_number: string
 }
 
 export interface AuthorizeResp {

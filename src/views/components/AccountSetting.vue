@@ -20,6 +20,7 @@ const formData = reactive({
   email: '', // 用户邮箱
   avatar: '', // 用户头像URL
   password: '', // 用户密码
+  phone: '', // 用户手机号
 })
 
 // 当前正在编辑的字段标识
@@ -156,6 +157,8 @@ const updateFormData = async () => {
   })
 }
 
+const handleBindEmail = () => {}
+
 /**
  * 监听弹窗显示状态的变化
  * 当弹窗打开时，更新表单数据
@@ -249,12 +252,7 @@ onUnmounted(() => {
                 />
               </div>
             </a-form-item>
-            <a-form-item
-              field="password"
-              label="账号密码"
-              asterisk-position="end"
-              :rules="[{ required: true, message: '账号密码不能为空' }]"
-            >
+            <a-form-item field="password" label="账号密码">
               <div v-if="editActive == 'password'" class="flex flex-1 gap-3">
                 <a-input v-model="formData.password" default-value="******" allow-clear />
                 <a-button
@@ -274,9 +272,17 @@ onUnmounted(() => {
                 />
               </div>
             </a-form-item>
-            <a-form-item field="email" label="绑定邮箱">
-              <div class="flex items-center text-gray-500">
+            <div class="flex items-center gap-2">
+              <div class="flex flex-col text-gray-500">
+                <div class="text-gray-700 mb-1">绑定邮箱</div>
                 {{ formData.email }}
+              </div>
+              <div class="flex-1 text-gray-500">可通过手机验证码快捷登录</div>
+              <a-button type="primary" @click="handleBindEmail">绑定</a-button>
+            </div>
+            <a-form-item field="email" label="绑定手机号">
+              <div class="flex items-center text-gray-500">
+                {{ formData.phone }}
               </div>
             </a-form-item>
           </a-spin>
