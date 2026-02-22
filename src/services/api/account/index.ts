@@ -3,7 +3,13 @@ import type {
   AccountResp,
   AuthorizeResp,
   GetProviderResp,
+  IsEmailBoundReq,
+  IsEmailBoundResp,
+  IsPhoneNumberBoundReq,
+  IsPhoneNumberBoundResp,
   PasswordLoginReq,
+  SendMailCodeReq,
+  SendSMSCodeReq,
   UpdateAvatarReq,
   UpdateNameReq,
   UpdatePasswordReq,
@@ -100,6 +106,54 @@ class AccountApi {
   static updatePassword(req: UpdatePasswordReq) {
     return post({
       url: '/account/update-password',
+      body: req,
+    })
+  }
+
+  /**
+   * 检查手机号是否已绑定
+   * @param req 包含手机号的请求对象
+   * @returns 返回检查结果的Promise对象
+   */
+  static isPhoneNumberBound(req: IsPhoneNumberBoundReq) {
+    return post<IsPhoneNumberBoundResp>({
+      url: '/account/is-phone-number-bound',
+      body: req,
+    })
+  }
+
+  /**
+   * 检查邮箱是否已绑定
+   * @param req 包含邮箱地址的请求对象
+   * @returns 返回检查结果的Promise对象
+   */
+  static isEmailBound(req: IsEmailBoundReq) {
+    return post<IsEmailBoundResp>({
+      url: '/account/is-email-bound',
+      body: req,
+    })
+  }
+
+  /**
+   * 发送短信验证码
+   * @param req 包含手机号的请求对象
+   * @returns 返回发送短信验证码操作的Promise对象
+   */
+  static sendSmsCode(req: SendSMSCodeReq) {
+    return post({
+      url: '/auth/send-sms-code',
+      body: req,
+    })
+  }
+
+  /**
+   * 发送邮件验证码
+   * @param req 包含邮件地址的请求对象
+   * @returns 返回发送邮件验证码操作的Promise对象
+   */
+  static sendMailCode(req: SendMailCodeReq) {
+    return post({
+      url: '/auth/send-mail-code',
       body: req,
     })
   }

@@ -36,3 +36,26 @@ export interface UpdateNameReq {
 export interface UpdatePasswordReq {
   password: string
 }
+
+export interface IsEmailBoundReq {
+  email: string
+}
+
+export interface IsPhoneNumberBoundReq {
+  phone_number: string
+}
+
+export interface SendSMSCodeReq {
+  phone_number: string
+}
+
+export interface SendMailCodeReq {
+  email: string
+}
+
+export interface IsEmailBoundResp {
+  is_bound: boolean
+}
+export interface IsPhoneNumberBoundResp {
+  is_bound: boolean
+}

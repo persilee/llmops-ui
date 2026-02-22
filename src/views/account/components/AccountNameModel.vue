@@ -2,7 +2,7 @@
 import AccountApi from '@/services/api/account'
 import { useAccountStore } from '@/stores/account'
 import { Message } from '@arco-design/web-vue'
-import { onMounted, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 const formData = ref({ name: '' })
@@ -32,8 +32,17 @@ const handleSubmit = async () => {
   }
 }
 
-onMounted(() => {
-  formData.value.name = store.account.name
+const stop = watch(
+  () => visible.value,
+  (val) => {
+    if (val) {
+      formData.value.name = store.account.name
+    }
+  },
+)
+
+onUnmounted(() => {
+  stop()
 })
 </script>
 
@@ -43,6 +52,7 @@ onMounted(() => {
     :width="420"
     :title="'编辑账号昵称'"
     :footer="false"
+    :unmount-on-close="true"
     title-align="start"
     class="rounded-xl"
     @cancel="handleCloseModal"
@@ -63,7 +73,9 @@ onMounted(() => {
           @click="handleCloseModal"
           >取消</a-button
         >
-        <a-button :loading="loading" type="primary" html-type="submit">确定</a-button>
+        <a-button :loading="loading" type="primary" html-type="submit" :disabled="!formData.name"
+          >确定</a-button
+        >
       </div>
     </a-form>
   </a-modal>
