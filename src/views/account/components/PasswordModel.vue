@@ -72,7 +72,7 @@ onUnmounted(() => {
         asterisk-position="end"
         :rules="[{ required: true, message: '账号密码不能为空' }]"
       >
-        <a-input-password v-model="formData.password" allow-clear />
+        <a-input-password v-model="formData.password" allow-clear placeholder="请输入密码" />
         <template #extra>
           <div>密码最少包含一个字母、一个数字，并且长度是8-16</div>
         </template>

@@ -64,7 +64,7 @@ onUnmounted(() => {
         asterisk-position="end"
         :rules="[{ required: true, message: '账号昵称不能为空' }]"
       >
-        <a-input v-model="formData.name" allow-clear />
+        <a-input v-model="formData.name" allow-clear placeholder="请输入昵称" />
       </a-form-item>
       <div class="flex justify-end mt-5">
         <a-button

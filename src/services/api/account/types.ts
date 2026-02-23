@@ -12,6 +12,7 @@ export interface AccountResp {
 export interface AuthorizeResp {
   access_token: string
   expire_at: number
+  is_new_user: boolean
   session_id?: string
   user_id?: string
 }
@@ -21,7 +22,7 @@ export interface GetProviderResp {
 }
 
 export interface PasswordLoginReq {
-  email: string
+  account: string
   password: string
 }
 
@@ -66,6 +67,11 @@ export interface BindEmailReq {
 }
 
 export interface BindPhoneNumberReq {
+  code: string
+  phone_number: string
+}
+
+export interface PhoneNumberLoginReq {
   code: string
   phone_number: string
 }

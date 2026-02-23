@@ -10,6 +10,7 @@ import type {
   IsPhoneNumberBoundReq,
   IsPhoneNumberBoundResp,
   PasswordLoginReq,
+  PhoneNumberLoginReq,
   SendMailCodeReq,
   SendSMSCodeReq,
   UpdateAvatarReq,
@@ -180,6 +181,18 @@ class AccountApi {
   static bindPhoneNumber(req: BindPhoneNumberReq) {
     return post({
       url: '/account/bind-phone-number',
+      body: req,
+    })
+  }
+
+  /**
+   * 手机号登录
+   * @param req 手机号登录请求参数，包含手机号和验证码等信息
+   * @returns Promise<any> 返回登录结果，包含token等信息
+   */
+  static phoneNumberLogin(req: PhoneNumberLoginReq) {
+    return post<AuthorizeResp>({
+      url: '/auth/phone-number-login',
       body: req,
     })
   }

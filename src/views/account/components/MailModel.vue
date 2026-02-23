@@ -97,7 +97,12 @@ onUnmounted(() => {
         :help="validateEmailHelpText"
         :validate-status="validateEmailStatus"
       >
-        <a-input v-model="formData.email" allow-clear @blur="isEmailBound" />
+        <a-input
+          v-model="formData.email"
+          allow-clear
+          @blur="isEmailBound"
+          placeholder="请输入邮箱"
+        />
       </a-form-item>
       <a-form-item
         field="code"
@@ -109,11 +114,7 @@ onUnmounted(() => {
         ]"
       >
         <div class="w-full flex items-center justify-between">
-          <a-verification-code
-            v-model="formData.code"
-            :length="6"
-            style="width: 260px"
-          />
+          <a-verification-code v-model="formData.code" :length="6" style="width: 260px" />
           <CountdownButton @click="handleSendCode" />
         </div>
       </a-form-item>

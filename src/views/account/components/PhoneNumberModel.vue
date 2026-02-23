@@ -84,7 +84,12 @@ const handleSendCode = async () => {
         :help="validatePhoneHelpText"
         :validate-status="validatePhoneStatus"
       >
-        <a-input v-model="formData.phoneNumber" allow-clear @blur="isPhoneBound" />
+        <a-input
+          v-model="formData.phoneNumber"
+          allow-clear
+          @blur="isPhoneBound"
+          placeholder="请输入手机号"
+        />
       </a-form-item>
       <a-form-item
         field="code"

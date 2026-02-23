@@ -2,7 +2,7 @@
 import { onUnmounted, ref } from 'vue'
 
 const emits = defineEmits(['click'])
-const buttonText = ref('发送验证码') // 默认按钮文字
+const buttonText = ref('获取验证码') // 默认按钮文字
 const buttonType = ref('primary') // 按钮类型
 
 // 倒计时状态控制
