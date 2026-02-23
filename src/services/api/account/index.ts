@@ -2,6 +2,8 @@ import { get, post } from '@/services/request'
 import type {
   AccountResp,
   AuthorizeResp,
+  BindEmailReq,
+  BindPhoneNumberReq,
   GetProviderResp,
   IsEmailBoundReq,
   IsEmailBoundResp,
@@ -154,6 +156,30 @@ class AccountApi {
   static sendMailCode(req: SendMailCodeReq) {
     return post({
       url: '/auth/send-mail-code',
+      body: req,
+    })
+  }
+
+  /**
+   * 绑定邮箱
+   * @param req 包含邮箱地址和验证码的请求对象
+   * @returns 返回绑定操作的Promise对象
+   */
+  static bindEmail(req: BindEmailReq) {
+    return post({
+      url: '/account/bind-email',
+      body: req,
+    })
+  }
+
+  /**
+   * 绑定手机号
+   * @param req 绑定手机号请求参数
+   * @returns Promise<any> 返回绑定结果
+   */
+  static bindPhoneNumber(req: BindPhoneNumberReq) {
+    return post({
+      url: '/account/bind-phone-number',
       body: req,
     })
   }

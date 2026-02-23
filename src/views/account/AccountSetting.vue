@@ -7,6 +7,7 @@ import { onMounted, ref } from 'vue'
 import AccountNameModel from './components/AccountNameModel.vue'
 import MailModel from './components/MailModel.vue'
 import PasswordModel from './components/PasswordModel.vue'
+import PhoneNumberModel from './components/PhoneNumberModel.vue'
 
 // 加载状态标识，用于显示加载动画
 const loading = ref(false)
@@ -136,6 +137,7 @@ onMounted(() => {
     <AccountNameModel v-model:visible="visibleName" />
     <PasswordModel v-model:visible="visiblePassword" />
     <MailModel v-model:visible="visibleMail" />
+    <PhoneNumberModel v-model:visible="visiblePhone" />
   </div>
 </template>
 

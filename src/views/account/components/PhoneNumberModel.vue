@@ -3,47 +3,34 @@ import AccountApi from '@/services/api/account'
 import { useAccountStore } from '@/stores/account'
 import CountdownButton from '@/views/components/CountdownButton.vue'
 import { Message } from '@arco-design/web-vue'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 const visible = defineModel('visible', { type: Boolean, default: false })
-const formData = ref({ email: '', code: '' })
 const store = useAccountStore()
+const formData = ref({ phoneNumber: '', code: '' })
 const loading = ref(false)
-const validateEmailHelpText = ref('')
-const validateEmailStatus = ref('')
+const validatePhoneHelpText = ref('')
+const validatePhoneStatus = ref('')
 
 const isDisabled = computed(() => {
-  return !formData.value.email || !formData.value.code || validateEmailStatus.value == 'error'
+  return !formData.value.phoneNumber || !formData.value.code || validatePhoneStatus.value == 'error'
 })
 
 const handleCloseModal = () => {
   visible.value = false
 }
 
-const isEmailBound = async () => {
-  try {
-    const resp = await AccountApi.isEmailBound({ email: formData.value.email })
-    if (resp.data.is_bound) {
-      validateEmailHelpText.value = '邮箱已绑定'
-      validateEmailStatus.value = 'error'
-    } else {
-      validateEmailHelpText.value = ''
-      validateEmailStatus.value = 'success'
-    }
-  } catch (error) {}
-}
-
 const handleSubmit = async () => {
   try {
     loading.value = true
-    const resp = await AccountApi.bindEmail({
-      email: formData.value.email,
+    const resp = await AccountApi.bindPhoneNumber({
+      phone_number: formData.value.phoneNumber,
       code: formData.value.code,
     })
     if (resp.message) {
       Message.success(resp.message)
       formData.value.code = ''
-      store.account.email = formData.value.email
+      store.account.phone_number = formData.value.phoneNumber
       handleCloseModal()
     }
   } catch (error) {
@@ -54,34 +41,34 @@ const handleSubmit = async () => {
   }
 }
 
+const isPhoneBound = async () => {
+  try {
+    const resp = await AccountApi.isPhoneNumberBound({ phone_number: formData.value.phoneNumber })
+    if (resp.data.is_bound) {
+      validatePhoneHelpText.value = '手机号已绑定'
+      validatePhoneStatus.value = 'error'
+    } else {
+      validatePhoneHelpText.value = ''
+      validatePhoneStatus.value = 'success'
+    }
+  } catch (error) {}
+}
+
 const handleSendCode = async () => {
   try {
-    const resp = await AccountApi.sendMailCode({ email: formData.value.email })
+    const resp = await AccountApi.sendSmsCode({ phone_number: formData.value.phoneNumber })
     if (resp.message) {
       Message.success(resp.message)
     }
   } catch (error) {}
 }
-
-const stop = watch(
-  () => visible.value,
-  (val) => {
-    if (val) {
-      formData.value.email = store.account.email
-    }
-  },
-)
-
-onUnmounted(() => {
-  stop()
-})
 </script>
 
 <template>
   <a-modal
     :visible="visible"
     :width="460"
-    :title="store.account.email ? '修改邮箱' : '绑定邮箱'"
+    :title="store.account.phone_number ? '修改手机号' : '绑定手机号'"
     :footer="false"
     :unmount-on-close="true"
     title-align="start"
@@ -90,14 +77,14 @@ onUnmounted(() => {
   >
     <a-form :model="formData" @submit="handleSubmit" layout="vertical">
       <a-form-item
-        field="email"
-        label="邮箱"
+        field="phoneNumber"
+        label="手机号"
         asterisk-position="end"
-        :rules="[{ required: true, message: '邮箱不能为空', trigger: ['blur'] }]"
-        :help="validateEmailHelpText"
-        :validate-status="validateEmailStatus"
+        :rules="[{ required: true, message: '手机号不能为空', trigger: ['blur'] }]"
+        :help="validatePhoneHelpText"
+        :validate-status="validatePhoneStatus"
       >
-        <a-input v-model="formData.email" allow-clear @blur="isEmailBound" />
+        <a-input v-model="formData.phoneNumber" allow-clear @blur="isPhoneBound" />
       </a-form-item>
       <a-form-item
         field="code"
@@ -109,11 +96,7 @@ onUnmounted(() => {
         ]"
       >
         <div class="w-full flex items-center justify-between">
-          <a-verification-code
-            v-model="formData.code"
-            :length="6"
-            style="width: 260px"
-          />
+          <a-verification-code v-model="formData.code" :length="6" style="width: 260px" />
           <CountdownButton @click="handleSendCode" />
         </div>
       </a-form-item>

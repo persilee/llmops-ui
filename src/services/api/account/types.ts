@@ -59,3 +59,13 @@ export interface IsEmailBoundResp {
 export interface IsPhoneNumberBoundResp {
   is_bound: boolean
 }
+
+export interface BindEmailReq {
+  code: string
+  email: string
+}
+
+export interface BindPhoneNumberReq {
+  code: string
+  phone_number: string
+}
