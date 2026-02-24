@@ -92,7 +92,7 @@ onUnmounted(() => {
             class="flex items-center gap-2 text-xs bg-gray-50 border border-gray-100 p-1.5 rounded-md"
           >
             <!-- 左侧知识库图标 -->
-            <a-avatar :size="16" shape="square" :image-url="dataset?.icon" />
+            <img :src="dataset?.icon" class="w-4 h-4 rounded-sm" crossorigin="anonymous" />
             <!-- 右侧知识库名称 -->
             <div class="text-gray-700">{{ dataset?.name }}</div>
           </div>

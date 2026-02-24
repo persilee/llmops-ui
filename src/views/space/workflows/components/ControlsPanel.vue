@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useScreenshot, type ImageType } from '@/utils/el-to-image'
 import { Message } from '@arco-design/web-vue'
-import { Panel, useVueFlow, type VueFlowStore } from '@vue-flow/core'
+import { Panel, Position, useVueFlow, type VueFlowStore } from '@vue-flow/core'
 import dagre from 'dagre'
 import { cloneDeep } from 'lodash-es'
 import { ref } from 'vue'
@@ -78,9 +78,8 @@ const autoLayout = () => {
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({
     rankdir: 'LR', // 纵向布局
-    align: 'UL', // 左上对齐
     nodesep: 80, // 节点间距
-    ranksep: 60, // 层次间距
+    ranksep: 120, // 层次间距
     edgesep: 10, // 边间距
   })
 
@@ -96,12 +95,43 @@ const autoLayout = () => {
   })
 
   dagre.layout(dagreGraph)
+  // 计算所有节点的边界（基于调整后的节点位置）
+  const nodeBounds = cloneNodes.map((node) => {
+    const { x, y } = dagreGraph.node(node.id)
+    return {
+      left: x - node.dimensions.width / 2, // vue-flow节点的左上角x
+      top: y - node.dimensions.height / 2, // vue-flow节点的左上角y
+      right: x + node.dimensions.width / 2, // 节点右下角x
+      bottom: y + node.dimensions.height / 2, // 节点右下角y
+    }
+  })
 
+  // 计算整个图的最小/最大边界
+  const minX = Math.min(...nodeBounds.map((b) => b.left))
+  const maxX = Math.max(...nodeBounds.map((b) => b.right))
+  const minY = Math.min(...nodeBounds.map((b) => b.top))
+  const maxY = Math.max(...nodeBounds.map((b) => b.bottom))
+
+  // 计算居中偏移量（这里用窗口宽高作为画布基准，也可以用vue-flow的画布宽高）
+  const canvasWidth = window.innerWidth - 80 // 减去页面边距
+  const canvasHeight = window.innerHeight - 80
+  // 水平居中偏移量：让整个图的水平中心与画布中心对齐
+  const offsetX = (canvasWidth - (maxX - minX)) / 2 - minX
+  // 垂直居中偏移量：让整个图的垂直中心与画布中心对齐
+  const offsetY = (canvasHeight - (maxY - minY)) / 2 - minY
+
+  // dagre返回的是节点中心点坐标，vue-flow的position是节点左上角坐标，需要转换
   store.draftGraph.nodes = cloneNodes.map((node: any) => {
     const { x, y } = dagreGraph.node(node.id)
     return {
       ...node,
-      position: { x, y },
+      targetPosition: Position.Left,
+      sourcePosition: Position.Right,
+      // 转换为vue-flow的左上角坐标，并加上居中偏移量
+      position: {
+        x: x - node.dimensions.width / 2 + offsetX,
+        y: y - node.dimensions.height / 2 + offsetY,
+      },
     }
   })
 }
