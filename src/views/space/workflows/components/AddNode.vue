@@ -217,7 +217,7 @@ const addNode = (nodeType: string, nodeData: any = null) => {
 
     if (!node) return
 
-    xPosition = node.position.x + NODE_WIDTH
+    xPosition = node.position.x + NODE_WIDTH + NODE_SPACING
     yPosition = node.position.y
     const nodeId = v4()
     // 创建新节点并添加到图中

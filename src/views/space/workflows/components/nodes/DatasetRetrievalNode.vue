@@ -4,6 +4,7 @@ import { onUnmounted, ref, watch } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import NodeHandle from './NodeHandle.vue'
 import NodeRunInfo from './NodeRunInfo.vue'
+import NodeTitleInfo from './NodeTitleInfo.vue'
 
 // 定义自定义组件所需数据
 const props = defineProps<NodeProps>()
@@ -29,12 +30,11 @@ onUnmounted(() => {
     >
       <div class="flow-node__bg w-full h-[160px] absolute top-0 left-0 rounded-xl z-0"></div>
       <!-- 节点标题信息 -->
-      <div class="flex items-center gap-2 mb-1">
+      <NodeTitleInfo v-model:node-result="nodeResult" :node="props">
         <a-avatar shape="square" :size="24" class="bg-violet-500 rounded-lg flex-shrink-0">
           <icon-storage :size="16" />
         </a-avatar>
-        <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
-      </div>
+      </NodeTitleInfo>
       <!-- 输入变量列表 -->
       <div class="flex flex-col items-start py-2">
         <!-- 标题(分成左右两部分) -->

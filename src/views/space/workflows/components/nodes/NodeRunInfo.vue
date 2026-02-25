@@ -8,6 +8,7 @@ const props = defineProps<{
   data: any
   isHideInput?: boolean
   isHideOutput?: boolean
+  loading?: boolean
 }>()
 
 const handleClick = () => {
@@ -29,7 +30,13 @@ const handleClick = () => {
 
 <template>
   <div class="mt-2 w-[360px]" @click.stop="handleClick">
-    <a-collapse class="rounded-lg bg-white" expand-icon-position="right">
+    <a-spin
+      v-if="isEmpty(data)"
+      :loading="isEmpty(data)"
+      class="rounded-lg bg-white w-full h-full px-3 py-2 border border-gray-200"
+    >
+    </a-spin>
+    <a-collapse v-else class="rounded-lg bg-white" expand-icon-position="right">
       <a-collapse-item :key="data.id">
         <template #header>
           <div class="flex items-center justify-between w-full" @click.stop>
@@ -46,7 +53,7 @@ const handleClick = () => {
               </div>
               <div class="text-gray-700 font-medium">运行成功</div>
               <a-tag class="rounded-md text-[#00b23c]" size="small" color="#69d18c4d"
-                >{{ (data.latency as number).toFixed(3) }}s</a-tag
+                >{{ (data.latency as number)?.toFixed(3) }}s</a-tag
               >
             </div>
           </div>
