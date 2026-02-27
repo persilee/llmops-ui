@@ -8,7 +8,6 @@ import { useWorkflowStore } from '../../Workflow.store'
 const props = defineProps<{
   node: NodeProps
 }>()
-const nodeResult = defineModel('nodeResult', { type: Object })
 const emits = defineEmits(['debugNode', 'renameNode'])
 const { removeNodes, updateNode } = useVueFlow()
 const localTitle = ref(props.node.data.title)
@@ -46,21 +45,56 @@ const handleBlur = () => {
 
 const handleDebugNode = async () => {
   try {
+    store.runNode = props.node
+    for (const item of props.node.data.inputs) {
+      if (item.value.type == 'literal') {
+        if (!item.value?.content) {
+          store.isDebug = true
+          return
+        }
+      } else if (item.value.type == 'ref') {
+        store.nodeDebugVisible = true
+        return
+      }
+    }
+
     if (store.workflow && store.workflow.id) {
-      nodeResult.value = {}
+      store.isNodeDebugRunning = true
+      store.nodeDebugLoading = true
+      store.nodeDebugVisible = false
       const resp = await WorkFlowApi.debugWorkflow({
         workflowId: store.workflow.id,
         req: { inputs: props.node.data.inputs, node_id: props.node.id },
         onData: async (event_response) => {
           const data = event_response?.data
-          console.log('data', data)
+          console.log('event_response', data)
 
-          nodeResult.value = data.node_results[0]
+          if (props.node.type == 'code') {
+            store.codeNodeResult = data
+          } else if (props.node.type == 'dataset_retrieval') {
+            store.datasetRetrievalNodeResult = data
+          } else if (props.node.type == 'llm') {
+            store.llmNodeResult = data
+          } else if (props.node.type == 'tool') {
+            store.toolNodeResult = data
+          } else if (props.node.type == 'http_request') {
+            store.httpRequestNodeResult = data
+          } else if (props.node.type == 'question_classifier') {
+            store.questionClassifierNodeResult = data
+          } else if (props.node.type == 'iteration') {
+            store.iterationNodeResult = data
+          } else if (props.node.type == 'template_transform') {
+            store.templateTransformNodeResult = data
+          }
+
           if (!data) return
         },
       })
     }
-  } catch (error) {}
+  } catch (error) {
+  } finally {
+    store.nodeDebugLoading = false
+  }
 }
 </script>
 
@@ -81,7 +115,7 @@ const handleDebugNode = async () => {
     </div>
     <div class="flex items-center gap-0.5">
       <a-tooltip content="测试该节点">
-        <a-button type="text" size="small" @click.stop="handleDebugNode">
+        <a-button type="text" size="small" @click="handleDebugNode">
           <template #icon>
             <icon-play-arrow-fill class="text-gray-500 text-[22px]" />
           </template>

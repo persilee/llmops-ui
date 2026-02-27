@@ -32,6 +32,7 @@ import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInf
 import EndNodeInfo from './components/infos/EndNodeInfo.vue'
 import HttpRequestNodeInfo from './components/infos/HttpRequestNodeInfo.vue'
 import LLMNodeInfo from './components/infos/LLMNodeInfo.vue'
+import NodeDebugModel from './components/infos/NodeDebugModel.vue'
 import StartNodeInfo from './components/infos/StartNodeInfo.vue'
 import TemplateTransformNodeInfo from './components/infos/TemplateTransformNodeInfo.vue'
 import ToolNodeInfo from './components/infos/ToolNodeInfo.vue'
@@ -253,6 +254,8 @@ const handleUpdateNode = (node_data: Record<string, any>) => {
 const handleCloseNodeInfo = () => {
   selectNode.value = null
   nodeInfoVisible.value = false
+  store.isDebug = false
+  store.isNodeDebugRunning = false
 }
 
 const handleDebugClick = () => {
@@ -264,6 +267,7 @@ const handleDebugClick = () => {
 onMounted(async () => {
   await fetchData()
   isInit.value = false
+  store.resetNodeResult()
   document.title = `${store.workflow?.name ?? '详情'} - 工作流 - 智能体平台`
 })
 </script>
@@ -400,6 +404,7 @@ onMounted(async () => {
         @close-node-info="handleCloseNodeInfo"
         @update-node="handleUpdateNode"
       />
+      <NodeDebugModel />
     </div>
 
     <!-- 工作流信息弹窗（更新工作流） -->

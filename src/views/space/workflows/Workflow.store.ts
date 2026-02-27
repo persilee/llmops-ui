@@ -50,6 +50,28 @@ export const useWorkflowStore = defineStore(
     const codeNodeResult = ref<any>({})
     const questionClassifierNodeResult = ref<any>({})
     const iterationNodeResult = ref<any>({})
+    const isDebug = ref(false)
+    const nodeDebugVisible = ref(false)
+    const isNodeDebugRunning = ref(false)
+    const nodeDebugLoading = ref(false)
+    const runNode = ref<any>({})
+
+    const resetNodeResult = () => {
+      nodeResult.value = {}
+      startNodeResult.value = {}
+      httpRequestNodeResult.value = {}
+      endNodeResult.value = {}
+      datasetRetrievalNodeResult.value = {}
+      llmNodeResult.value = {}
+      toolNodeResult.value = {}
+      templateTransformNodeResult.value = {}
+      codeNodeResult.value = {}
+      questionClassifierNodeResult.value = {}
+      isDebug.value = false
+      isNodeDebugRunning.value = false
+      nodeDebugVisible.value = false
+      runNode.value = {}
+    }
 
     const getWorkflow = async (workflowId: string) => {
       try {
@@ -430,6 +452,11 @@ export const useWorkflowStore = defineStore(
       toolNodeResult,
       templateTransformNodeResult,
       codeNodeResult,
+      isDebug,
+      nodeDebugVisible,
+      isNodeDebugRunning,
+      nodeDebugLoading,
+      runNode,
       questionClassifierNodeResult,
       iterationNodeResult,
       getWorkflow,
@@ -438,6 +465,7 @@ export const useWorkflowStore = defineStore(
       buildReverseAdjList,
       getPredecessorsByNodeId,
       getReferencedVariables,
+      resetNodeResult,
     }
   },
   {

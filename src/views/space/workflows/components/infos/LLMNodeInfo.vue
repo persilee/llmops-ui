@@ -5,9 +5,10 @@ import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import type { editor } from 'monaco-editor'
 import * as monaco from 'monaco-editor'
-import { computed, reactive, ref, useTemplateRef, watch, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, useTemplateRef, watch, type PropType } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import LLMModelConfig from './LLMModelConfig.vue'
+import NodeRunResult from './NodeRunResult.vue'
 
 // 1.定义自定义组件所需数据
 const props = defineProps({
@@ -31,6 +32,13 @@ const popupPosition = reactive({
 })
 const cursorPosition = ref<any>(null)
 let editorRef: any = null
+
+const activatedTab = computed({
+  get: () => (store.isNodeDebugRunning ? 'running' : 'setting'),
+  set: (val) => {
+    store.isNodeDebugRunning = val === 'running'
+  },
+})
 
 // 定义节点可引用的变量选项
 const inputRefOptions = computed(() => {
@@ -62,6 +70,7 @@ const handleUpdateDesc = () => {
 }
 
 const handleUpdateNodeInfo = () => {
+  store.isDebug = false
   const node = nodeToFrom(props.node)
   if (isEqual(node, form.value)) return
 
@@ -298,6 +307,10 @@ watch(
   },
   { immediate: true },
 )
+
+onMounted(() => {
+  store.isNodeDebugRunning = false
+})
 </script>
 
 <template>
@@ -351,208 +364,230 @@ watch(
         >
           {{ form.description }}
         </div>
-        <!-- 分隔符 -->
-        <a-divider class="my-3.5" />
-        <!-- 表单信息 -->
-        <a-form size="mini" :model="form" layout="vertical">
-          <!-- 模型选择 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题 -->
-            <div class="flex items-center gap-2 text-gray-700 font-semibold mb-1">
-              <div class="">语言模型配置</div>
-              <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
-                <icon-question-circle />
-              </a-tooltip>
-            </div>
-            <!-- 选择模型 -->
-            <LLMModelConfig
-              v-model:model_config="form.language_model_config"
-              @update-model-config="handleUpdateModelConfig"
-            />
-          </div>
-          <a-divider class="my-4" />
-          <!-- 输入参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">输入数据</div>
-                <a-tooltip
-                  content="输入给大模型的参数，可在下方提示词中引用。所有输入参数会被转为string输入。"
-                >
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧新增字段按钮 -->
-              <a-button
-                type="text"
-                size="mini"
-                class="!text-gray-700"
-                @click="() => addFormInputField()"
-              >
-                <template #icon>
-                  <icon-plus />
-                </template>
-              </a-button>
-            </div>
-            <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[30%]">参数名</div>
-              <div class="w-[25%]">类型</div>
-              <div class="w-[37%]">值</div>
-              <div class="w-[8%]"></div>
-            </div>
-            <!-- 循环遍历字段列表 -->
-            <div v-for="(input, idx) in form?.inputs" :key="idx" class="flex items-center gap-1">
-              <div class="w-[30%] flex-shrink-0">
-                <a-input
-                  v-model="input.name"
-                  size="mini"
-                  placeholder="请输入参数名"
-                  class="!px-2"
-                  @blur="handleUpdateNodeInfo"
+        <a-tabs v-model:active-key="activatedTab" size="mini" :header-padding="false" class="mt-3">
+          <a-tab-pane key="setting" title="设置">
+            <!-- 表单信息 -->
+            <a-form size="mini" :model="form" layout="vertical">
+              <!-- 模型选择 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题 -->
+                <div class="flex items-center gap-2 text-gray-700 font-semibold mb-1">
+                  <div class="">语言模型配置</div>
+                  <a-tooltip content="选择不同的大语言模型作为节点的底座模型">
+                    <icon-question-circle />
+                  </a-tooltip>
+                </div>
+                <!-- 选择模型 -->
+                <LLMModelConfig
+                  v-model:model_config="form.language_model_config"
+                  @update-model-config="handleUpdateModelConfig"
                 />
               </div>
-              <div class="w-[25%] flex-shrink-0">
-                <a-select
-                  size="mini"
-                  v-model="input.type"
-                  class="px-2"
-                  @change="handleUpdateNodeInfo"
-                  :options="[
-                    { label: '引用', value: 'ref' },
-                    { label: 'STRING', value: 'string' },
-                    { label: 'INT', value: 'int' },
-                    { label: 'FLOAT', value: 'float' },
-                    { label: 'BOOLEAN', value: 'boolean' },
-                    { label: 'LIST[STRING]', value: 'list[string]' },
-                    { label: 'LIST[INT]', value: 'list[int]' },
-                    { label: 'LIST[FLOAT]', value: 'list[float]' },
-                    { label: 'LIST[BOOLEAN]', value: 'list[boolean]' },
-                  ]"
-                />
-              </div>
-              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                <a-input-tag
-                  v-if="input.type.startsWith('list')"
-                  size="mini"
-                  v-model="input.content"
-                  :default-value="[]"
-                  placeholder="请输入参数值，按回车结束"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-input
-                  v-else-if="input.type !== 'ref'"
-                  size="mini"
-                  v-model="input.content"
-                  placeholder="请输入参数值"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-select
-                  v-else
-                  placeholder="请选择引用变量"
-                  size="mini"
-                  tag-nowrap
-                  v-model="input.ref"
-                  :options="inputRefOptions"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[8%] text-right">
-                <icon-minus-circle
-                  class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
-                  @click="() => removeFormInputField(Number(idx))"
-                />
-              </div>
-            </div>
-            <!-- 空数据状态 -->
-            <a-empty v-if="form?.inputs.length <= 0" class="my-4">该节点暂无输入数据</a-empty>
-          </div>
-          <a-divider class="my-4" />
-          <!-- 提示词 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">提示词</div>
-                <a-tooltip
-                  content="作为人类消息传递给大语言模型，可以使用{{参数名}}插入引用/创建的变量。"
-                >
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-            </div>
-            <!-- 提示词输入框 -->
-            <a-form-item field="prompt" hide-label hide-asterisk required>
-              <div
-                ref="editorContainer"
-                :class="`h-[200px] w-full ${isShowVariablesMenu ? 'relative' : 'static'}`"
-              >
-                <CodeEditor
-                  v-model:code="form.prompt"
-                  :height="200"
-                  class="rounded-lg overflow-hidden"
-                  language-name="jinja"
-                  :is-plaintext="true"
-                  :placeholder="'输入 \{\{ 插入变量，编写大模型的提示词，使大模型实现对应的功能。通过插入\{\{参数名\}\}可以引用对应的参数值。'"
-                  @change-cursor-position="handleChangeCursorPosition"
-                  @blur="handleCodeEditorBlur"
-                />
+              <a-divider class="my-4" />
+              <!-- 输入参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 左侧标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">输入数据</div>
+                    <a-tooltip
+                      content="输入给大模型的参数，可在下方提示词中引用。所有输入参数会被转为string输入。"
+                    >
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                  <!-- 右侧新增字段按钮 -->
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="!text-gray-700"
+                    @click="() => addFormInputField()"
+                  >
+                    <template #icon>
+                      <icon-plus />
+                    </template>
+                  </a-button>
+                </div>
+                <!-- 字段名 -->
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <div class="w-[30%]">参数名</div>
+                  <div class="w-[25%]">类型</div>
+                  <div class="w-[37%]">值</div>
+                  <div class="w-[8%]"></div>
+                </div>
+                <!-- 循环遍历字段列表 -->
                 <div
-                  v-if="isShowVariablesMenu"
-                  class="flex flex-col gap-1.5 bg-white py-3 px-1 rounded-lg w-[220px] max-h-[460px] border border-gray-100 shadow-lg absolute z-1000 overflow-y-scroll scrollbar-w-none"
-                  :style="{
-                    top: `${popupPosition.top}px`,
-                    left: `${popupPosition.left}px`,
-                  }"
+                  v-for="(input, idx) in form?.inputs"
+                  :key="idx"
+                  class="flex items-start justify-center gap-1"
                 >
-                  <div v-for="(item, idx) in inputRefOptions" :key="idx" class="">
-                    <div class="flex items-center text-gray-500 text-xs font-semibold px-2 mb-1">
-                      {{ item.label }}
+                  <div class="w-[30%] flex-shrink-0">
+                    <a-input
+                      v-model="input.name"
+                      size="mini"
+                      placeholder="请输入参数名"
+                      class="!px-2"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[25%] flex-shrink-0">
+                    <a-select
+                      size="mini"
+                      v-model="input.type"
+                      class="px-2"
+                      @change="handleUpdateNodeInfo"
+                      :options="[
+                        { label: '引用', value: 'ref' },
+                        { label: 'STRING', value: 'string' },
+                        { label: 'INT', value: 'int' },
+                        { label: 'FLOAT', value: 'float' },
+                        { label: 'BOOLEAN', value: 'boolean' },
+                        { label: 'LIST[STRING]', value: 'list[string]' },
+                        { label: 'LIST[INT]', value: 'list[int]' },
+                        { label: 'LIST[FLOAT]', value: 'list[float]' },
+                        { label: 'LIST[BOOLEAN]', value: 'list[boolean]' },
+                      ]"
+                    />
+                  </div>
+                  <div class="flex flex-col w-[37%] items-start">
+                    <div class="flex items-center gap-1 w-full">
+                      <a-input-tag
+                        v-if="input.type.startsWith('list')"
+                        size="mini"
+                        v-model="input.content"
+                        :default-value="[]"
+                        placeholder="请输入参数值，按回车结束"
+                        @blur="handleUpdateNodeInfo"
+                        :class="`${!input.content && store.isDebug ? 'bg-red-100' : ''}`"
+                      />
+                      <a-input
+                        v-else-if="input.type !== 'ref'"
+                        size="mini"
+                        v-model="input.content"
+                        placeholder="请输入参数值"
+                        @blur="handleUpdateNodeInfo"
+                        :class="`${!input.content && store.isDebug ? 'bg-red-100' : ''}`"
+                      />
+                      <a-select
+                        v-else
+                        placeholder="请选择引用变量"
+                        size="mini"
+                        tag-nowrap
+                        v-model="input.ref"
+                        :options="inputRefOptions"
+                        @change="handleUpdateNodeInfo"
+                        :class="`${!input.ref && store.isDebug ? 'bg-red-100' : ''}`"
+                      />
                     </div>
                     <div
-                      v-for="option in item.options"
-                      :key="option.value"
-                      class="flex item-center gap-1 px-2 py-0.5 hover:bg-gray-100 rounded-sm cursor-pointer"
-                      @click.stop="addFormInputFieldToCodeEditor(option)"
+                      v-if="!input.content && !input.ref && store.isDebug"
+                      class="text-red-500 text-xs mt-1"
                     >
-                      <div class="flex-1 flex items-center gap-1">
-                        <img src="@/assets/images/icon-var.svg" class="w-5 h-5" />
+                      参数值不能为空
+                    </div>
+                  </div>
+                  <div class="w-[8%] text-right">
+                    <icon-minus-circle
+                      class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
+                      @click="() => removeFormInputField(Number(idx))"
+                    />
+                  </div>
+                </div>
+                <!-- 空数据状态 -->
+                <a-empty v-if="form?.inputs.length <= 0" class="my-4">该节点暂无输入数据</a-empty>
+              </div>
+              <a-divider class="my-4" />
+              <!-- 提示词 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 左侧标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">提示词</div>
+                    <a-tooltip
+                      content="作为人类消息传递给大语言模型，可以使用{{参数名}}插入引用/创建的变量。"
+                    >
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                </div>
+                <!-- 提示词输入框 -->
+                <a-form-item field="prompt" hide-label hide-asterisk required>
+                  <div
+                    ref="editorContainer"
+                    :class="`h-[200px] w-full ${isShowVariablesMenu ? 'relative' : 'static'}`"
+                  >
+                    <CodeEditor
+                      v-model:code="form.prompt"
+                      :height="200"
+                      class="rounded-lg overflow-hidden"
+                      language-name="jinja"
+                      :is-plaintext="true"
+                      :placeholder="'输入 \{\{ 插入变量，编写大模型的提示词，使大模型实现对应的功能。通过插入\{\{参数名\}\}可以引用对应的参数值。'"
+                      @change-cursor-position="handleChangeCursorPosition"
+                      @blur="handleCodeEditorBlur"
+                    />
+                    <div
+                      v-if="isShowVariablesMenu"
+                      class="flex flex-col gap-1.5 bg-white py-3 px-1 rounded-lg w-[220px] max-h-[460px] border border-gray-100 shadow-lg absolute z-1000 overflow-y-scroll scrollbar-w-none"
+                      :style="{
+                        top: `${popupPosition.top}px`,
+                        left: `${popupPosition.left}px`,
+                      }"
+                    >
+                      <div v-for="(item, idx) in inputRefOptions" :key="idx" class="">
                         <div
-                          class="text-gray-800 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[110px]"
+                          class="flex items-center text-gray-500 text-xs font-semibold px-2 mb-1"
                         >
-                          {{ option.label }}
+                          {{ item.label }}
+                        </div>
+                        <div
+                          v-for="option in item.options"
+                          :key="option.value"
+                          class="flex item-center gap-1 px-2 py-0.5 hover:bg-gray-100 rounded-sm cursor-pointer"
+                          @click.stop="addFormInputFieldToCodeEditor(option)"
+                        >
+                          <div class="flex-1 flex items-center gap-1">
+                            <img src="@/assets/images/icon-var.svg" class="w-5 h-5" />
+                            <div
+                              class="text-gray-800 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[110px]"
+                            >
+                              {{ option.label }}
+                            </div>
+                          </div>
+                          <div
+                            class="text-gray-400 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[80px]"
+                          >
+                            {{ String(option.type).toLocaleUpperCase() }}
+                          </div>
                         </div>
                       </div>
-                      <div
-                        class="text-gray-400 text-xs overflow-hidden text-ellipsis whitespace-nowrap max-w-[80px]"
-                      >
-                        {{ String(option.type).toLocaleUpperCase() }}
-                      </div>
+                    </div>
+                  </div>
+                </a-form-item>
+              </div>
+              <a-divider class="mb-4 mt-0" />
+              <!-- 输出参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 输出标题 -->
+                <div class="font-semibold text-gray-700">输出数据</div>
+                <!-- 字段标题 -->
+                <div class="text-gray-500 text-xs">参数名</div>
+                <!-- 输出参数列表 -->
+                <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="text-gray-700">{{ output.name }}</div>
+                    <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded">
+                      {{ output.type }}
                     </div>
                   </div>
                 </div>
               </div>
-            </a-form-item>
-          </div>
-          <a-divider class="mb-4 mt-0" />
-          <!-- 输出参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 输出标题 -->
-            <div class="font-semibold text-gray-700">输出数据</div>
-            <!-- 字段标题 -->
-            <div class="text-gray-500 text-xs">参数名</div>
-            <!-- 输出参数列表 -->
-            <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
-              <div class="flex items-center gap-2">
-                <div class="text-gray-700">{{ output.name }}</div>
-                <div class="text-gray-500 bg-gray-100 px-1 py-0.5 rounded">{{ output.type }}</div>
-              </div>
-            </div>
-          </div>
-        </a-form>
+            </a-form>
+          </a-tab-pane>
+          <NodeRunResult :node-result="store.llmNodeResult" :loading="store.nodeDebugLoading" />
+        </a-tabs>
       </div>
     </div>
   </div>

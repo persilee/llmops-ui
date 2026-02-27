@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { type NodeProps, Position } from '@vue-flow/core'
+import { isEmpty } from 'lodash-es'
 import { onUnmounted, ref, watch } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import NodeHandle from './NodeHandle.vue'
 import NodeRunInfo from './NodeRunInfo.vue'
+import NodeTitleInfo from './NodeTitleInfo.vue'
 
 // 1.定义自定义组件所需数据
 const props = defineProps<NodeProps>()
@@ -12,7 +14,7 @@ const store = useWorkflowStore()
 const nodeResult = ref<any>()
 
 const stop = watch(
-  () => store.httpRequestNodeResult.value,
+  () => store.httpRequestNodeResult,
   (newData) => {
     nodeResult.value = newData
   },
@@ -30,12 +32,11 @@ onUnmounted(() => {
     >
       <div class="flow-node__bg w-full h-[160px] absolute top-0 left-0 rounded-xl z-0"></div>
       <!-- 节点标题信息 -->
-      <div class="flex items-center gap-2 mb-1">
+      <NodeTitleInfo v-model:node-result="nodeResult" :node="props">
         <a-avatar shape="square" :size="24" class="bg-rose-500 rounded-lg flex-shrink-0">
           <icon-link :size="16" />
         </a-avatar>
-        <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
-      </div>
+      </NodeTitleInfo>
       <!-- 输入变量列表 -->
       <div class="flex flex-col items-start py-2">
         <!-- 标题(分成左右两部分) -->
@@ -104,7 +105,7 @@ onUnmounted(() => {
       <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
       <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
     </div>
-    <NodeRunInfo v-if="nodeResult" :data="nodeResult" />
+    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading" />
   </div>
 </template>
 

@@ -77,7 +77,7 @@ const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | u
       loading.value = true
       const resp = await WorkFlowApi.debugWorkflow({
         workflowId: store.workflow.id,
-        req: form.value,
+        req: { inputs: form.value },
         onData: async (event_response) => {
           const data = event_response?.data
           if (!data) return
@@ -88,7 +88,7 @@ const onSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | u
 
           if (storeKey) {
             const key = storeKey as keyof WorkflowStoreType
-            store[key].value = data
+            store[key] = data
           }
         },
       })
@@ -193,7 +193,7 @@ onUnmounted(() => {
       <div class="flex-1 flex flex-col">
         <!-- tab面板 -->
         <div class="flex-1">
-          <a-tabs v-model:active-key="activatedTab">
+          <a-tabs v-model:active-key="activatedTab" :header-padding="false">
             <a-tab-pane
               key="input"
               title="输入"

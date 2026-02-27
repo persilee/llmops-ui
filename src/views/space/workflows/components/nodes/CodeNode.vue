@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type NodeProps, Position } from '@vue-flow/core'
+import { isEmpty } from 'lodash-es'
 import { onUnmounted, ref, watch } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import NodeHandle from './NodeHandle.vue'
@@ -12,7 +13,7 @@ const store = useWorkflowStore()
 const nodeResult = ref<any>()
 
 const stop = watch(
-  () => store.codeNodeResult.value,
+  () => store.codeNodeResult,
   (newData) => {
     nodeResult.value = newData
   },
@@ -103,7 +104,7 @@ onUnmounted(() => {
       <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
       <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
     </div>
-    <NodeRunInfo v-if="nodeResult" :data="nodeResult" />
+    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading" />
   </div>
 </template>
 

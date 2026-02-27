@@ -2,8 +2,9 @@
 import { type TextareaInstance } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
-import { computed, ref, watch, type PropType } from 'vue'
+import { computed, onMounted, ref, watch, type PropType } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
+import NodeRunResult from './NodeRunResult.vue'
 
 // 定义自定义组件所需数据
 const props = defineProps({
@@ -30,6 +31,13 @@ const variableTypes = [
   { label: 'LIST[FLOAT]', value: 'list[float]' },
   { label: 'LIST[BOOLEAN]', value: 'list[boolean]' },
 ]
+
+const activatedTab = computed({
+  get: () => (store.isNodeDebugRunning ? 'running' : 'setting'),
+  set: (val) => {
+    store.isNodeDebugRunning = val === 'running'
+  },
+})
 
 // 定义输入变量引用选项
 const inputRefOptions = computed(() => {
@@ -72,6 +80,7 @@ const removeFormInputField = (meta_type: string, idx: number) => {
 }
 
 const handleUpdateNodeInfo = () => {
+  store.isDebug = false
   const node = nodeToFrom(props.node)
   if (isEqual(node, form.value)) return
 
@@ -168,6 +177,10 @@ watch(
   },
   { immediate: true },
 )
+
+onMounted(() => {
+  store.isNodeDebugRunning = false
+})
 </script>
 
 <template>
@@ -221,328 +234,348 @@ watch(
         >
           {{ form.description }}
         </div>
-        <!-- 分隔符 -->
-        <a-divider class="my-3.5" />
-        <!-- 表单信息 -->
-        <a-form size="mini" :model="form" layout="vertical">
-          <!-- 请求基础信息 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">基本信息</div>
-                <a-tooltip content="配置请求的基础方法与基础URL地址">
-                  <icon-question-circle />
-                </a-tooltip>
+        <a-tabs v-model:active-key="activatedTab" size="mini" :header-padding="false" class="mt-3">
+          <a-tab-pane key="setting" title="设置">
+            <!-- 表单信息 -->
+            <a-form size="mini" :model="form" layout="vertical">
+              <!-- 请求基础信息 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">基本信息</div>
+                    <a-tooltip content="配置请求的基础方法与基础URL地址">
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                </div>
+                <!-- 字段信息 -->
+                <div class="flex items-center gap-2 mt-1">
+                  <div class="w-[25%] flex-shrink-0">
+                    <a-select
+                      v-model="form.method"
+                      size="mini"
+                      default-value="get"
+                      :options="[
+                        { label: 'GET', value: 'get' },
+                        { label: 'POST', value: 'post' },
+                        { label: 'PUT', value: 'put' },
+                        { label: 'PATCH', value: 'patch' },
+                        { label: 'DELETE', value: 'delete' },
+                        { label: 'HEAD', value: 'head' },
+                        { label: 'OPTIONS', value: 'options' },
+                      ]"
+                      placeholder="请选择请求方法"
+                      class="px-2 rounded-sm"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[75%]">
+                    <a-input
+                      v-model="form.url"
+                      size="mini"
+                      placeholder="请填写请求URL"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <!-- 字段信息 -->
-            <div class="flex items-center gap-2 mt-1">
-              <div class="w-[25%] flex-shrink-0">
-                <a-select
-                  v-model="form.method"
-                  size="mini"
-                  default-value="get"
-                  :options="[
-                    { label: 'GET', value: 'get' },
-                    { label: 'POST', value: 'post' },
-                    { label: 'PUT', value: 'put' },
-                    { label: 'PATCH', value: 'patch' },
-                    { label: 'DELETE', value: 'delete' },
-                    { label: 'HEAD', value: 'head' },
-                    { label: 'OPTIONS', value: 'options' },
-                  ]"
-                  placeholder="请选择请求方法"
-                  class="px-2 rounded-sm"
-                  @change="handleUpdateNodeInfo"
-                />
+              <a-divider class="my-4" />
+              <!-- HEADERS参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 左侧标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">HEADERS参数</div>
+                    <a-tooltip content="附加到URL中headers的参数信息">
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                  <!-- 右侧新增字段按钮 -->
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="!text-gray-700"
+                    @click="() => addFormInputField('headers')"
+                  >
+                    <template #icon>
+                      <icon-plus />
+                    </template>
+                  </a-button>
+                </div>
+                <!-- 字段名 -->
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <div class="w-[30%]">参数名</div>
+                  <div class="w-[25%]">类型</div>
+                  <div class="w-[37%]">值</div>
+                  <div class="w-[8%]"></div>
+                </div>
+                <div
+                  v-for="(input, idx) in form?.headersInputs"
+                  :key="idx"
+                  class="flex items-center gap-1"
+                >
+                  <div class="w-[30%] flex-shrink-0">
+                    <a-input
+                      v-model="input.name"
+                      size="mini"
+                      placeholder="请输入参数名"
+                      class="!px-2"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[25%] flex-shrink-0">
+                    <a-select
+                      size="mini"
+                      v-model="input.type"
+                      class="px-2"
+                      :options="variableTypes"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
+                    <a-input-tag
+                      v-if="input.type.startsWith('list')"
+                      size="mini"
+                      v-model="input.content"
+                      :default-value="[]"
+                      placeholder="请输入参数值，按回车结束"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                    <a-input
+                      v-else-if="input.type !== 'ref'"
+                      size="mini"
+                      v-model="input.content"
+                      placeholder="请输入参数值"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                    <a-select
+                      v-else
+                      placeholder="请选择引用变量"
+                      size="mini"
+                      tag-nowrap
+                      v-model="input.ref"
+                      :options="inputRefOptions"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[8%] text-right">
+                    <icon-minus-circle
+                      class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
+                      @click="() => removeFormInputField('headers', Number(idx))"
+                    />
+                  </div>
+                </div>
+                <!-- 空数据状态 -->
+                <a-empty v-if="form?.headersInputs.length <= 0" class="my-4"
+                  >该节点暂无HEADERS参数</a-empty
+                >
               </div>
-              <div class="w-[75%] flex-shrink-0">
-                <a-input
-                  v-model="form.url"
-                  size="mini"
-                  placeholder="请填写请求URL"
-                  @blur="handleUpdateNodeInfo"
-                />
+              <a-divider class="my-4" />
+              <!-- PARAMS参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 左侧标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">PARAMS参数</div>
+                    <a-tooltip content="附加到URL中query中的参数信息">
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                  <!-- 右侧新增字段按钮 -->
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="!text-gray-700"
+                    @click="() => addFormInputField('params')"
+                  >
+                    <template #icon>
+                      <icon-plus />
+                    </template>
+                  </a-button>
+                </div>
+                <!-- 字段名 -->
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <div class="w-[30%]">参数名</div>
+                  <div class="w-[25%]">类型</div>
+                  <div class="w-[37%]">值</div>
+                  <div class="w-[8%]"></div>
+                </div>
+                <!-- 循环遍历字段列表 -->
+                <div
+                  v-for="(input, idx) in form?.paramsInputs"
+                  :key="idx"
+                  class="flex items-center gap-1"
+                >
+                  <div class="w-[30%] flex-shrink-0">
+                    <a-input
+                      v-model="input.name"
+                      size="mini"
+                      placeholder="请输入参数名"
+                      class="!px-2"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[25%] flex-shrink-0">
+                    <a-select
+                      size="mini"
+                      v-model="input.type"
+                      class="px-2"
+                      :options="variableTypes"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
+                    <a-input
+                      v-if="input.type !== 'ref'"
+                      size="mini"
+                      v-model="input.content"
+                      placeholder="请输入参数值"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                    <a-select
+                      v-else
+                      placeholder="请选择引用变量"
+                      size="mini"
+                      tag-nowrap
+                      v-model="input.ref"
+                      :options="inputRefOptions"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[8%] text-right">
+                    <icon-minus-circle
+                      class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
+                      @click="() => removeFormInputField('params', Number(idx))"
+                    />
+                  </div>
+                </div>
+                <!-- 空数据状态 -->
+                <a-empty v-if="form?.paramsInputs.length <= 0" class="my-4"
+                  >该节点暂无PARAMS参数</a-empty
+                >
               </div>
-            </div>
-          </div>
-          <a-divider class="my-4" />
-          <!-- HEADERS参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">HEADERS参数</div>
-                <a-tooltip content="附加到URL中headers的参数信息">
-                  <icon-question-circle />
-                </a-tooltip>
+              <a-divider class="my-4" />
+              <!-- BODY参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 标题&操作按钮 -->
+                <div class="flex items-center justify-between">
+                  <!-- 左侧标题 -->
+                  <div class="flex items-center gap-2 text-gray-700 font-semibold">
+                    <div class="">BODY参数</div>
+                    <a-tooltip content="附加到URL中body的参数信息">
+                      <icon-question-circle />
+                    </a-tooltip>
+                  </div>
+                  <!-- 右侧新增字段按钮 -->
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="!text-gray-700"
+                    @click="() => addFormInputField('body')"
+                  >
+                    <template #icon>
+                      <icon-plus />
+                    </template>
+                  </a-button>
+                </div>
+                <!-- 字段名 -->
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <div class="w-[30%]">参数名</div>
+                  <div class="w-[25%]">类型</div>
+                  <div class="w-[37%]">值</div>
+                  <div class="w-[8%]"></div>
+                </div>
+                <div
+                  v-for="(input, idx) in form?.bodyInputs"
+                  :key="idx"
+                  class="flex items-start justify-center gap-1"
+                >
+                  <div class="w-[30%] flex-shrink-0">
+                    <a-input
+                      v-model="input.name"
+                      size="mini"
+                      placeholder="请输入参数名"
+                      class="!px-2"
+                      @blur="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="w-[25%] flex-shrink-0">
+                    <a-select
+                      size="mini"
+                      v-model="input.type"
+                      class="px-2"
+                      :options="variableTypes"
+                      @change="handleUpdateNodeInfo"
+                    />
+                  </div>
+                  <div class="flex flex-col w-[37%] items-start">
+                    <div class="flex items-center gap-1 w-full">
+                      <a-input
+                        v-if="input.type !== 'ref'"
+                        size="mini"
+                        v-model="input.content"
+                        placeholder="请输入参数值"
+                        @blur="handleUpdateNodeInfo"
+                        :class="`${!input.ref && store.isDebug ? 'bg-red-100' : ''}`"
+                      />
+                      <a-select
+                        v-else
+                        placeholder="请选择引用变量"
+                        size="mini"
+                        tag-nowrap
+                        v-model="input.ref"
+                        :options="inputRefOptions"
+                        @change="handleUpdateNodeInfo"
+                        :class="`${!input.ref && store.isDebug ? 'bg-red-100' : ''}`"
+                      />
+                    </div>
+                    <div
+                      v-if="!input.content && !input.ref && store.isDebug"
+                      class="text-red-500 text-xs mt-1"
+                    >
+                      参数值不能为空
+                    </div>
+                  </div>
+                  <div class="w-[8%] text-right">
+                    <icon-minus-circle
+                      class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
+                      @click="() => removeFormInputField('body', Number(idx))"
+                    />
+                  </div>
+                </div>
+                <!-- 空数据状态 -->
+                <a-empty v-if="form?.bodyInputs.length <= 0" class="my-4"
+                  >该节点暂无BODY参数</a-empty
+                >
               </div>
-              <!-- 右侧新增字段按钮 -->
-              <a-button
-                type="text"
-                size="mini"
-                class="!text-gray-700"
-                @click="() => addFormInputField('headers')"
-              >
-                <template #icon>
-                  <icon-plus />
-                </template>
-              </a-button>
-            </div>
-            <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[30%]">参数名</div>
-              <div class="w-[25%]">类型</div>
-              <div class="w-[37%]">值</div>
-              <div class="w-[8%]"></div>
-            </div>
-            <div
-              v-for="(input, idx) in form?.headersInputs"
-              :key="idx"
-              class="flex items-center gap-1"
-            >
-              <div class="w-[30%] flex-shrink-0">
-                <a-input
-                  v-model="input.name"
-                  size="mini"
-                  placeholder="请输入参数名"
-                  class="!px-2"
-                  @blur="handleUpdateNodeInfo"
-                />
+              <a-divider class="my-4" />
+              <!-- 输出参数 -->
+              <div class="flex flex-col gap-2">
+                <!-- 输出标题 -->
+                <div class="font-semibold text-gray-700">输出数据</div>
+                <!-- 字段标题 -->
+                <div class="text-gray-500 text-xs">参数名</div>
+                <!-- 输出参数列表 -->
+                <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2">
+                    <div class="text-gray-700">{{ output.name }}</div>
+                    <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">
+                      {{ output.type }}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="w-[25%] flex-shrink-0">
-                <a-select
-                  size="mini"
-                  v-model="input.type"
-                  class="px-2"
-                  :options="variableTypes"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                <a-input-tag
-                  v-if="input.type.startsWith('list')"
-                  size="mini"
-                  v-model="input.content"
-                  :default-value="[]"
-                  placeholder="请输入参数值，按回车结束"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-input
-                  v-else-if="input.type !== 'ref'"
-                  size="mini"
-                  v-model="input.content"
-                  placeholder="请输入参数值"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-select
-                  v-else
-                  placeholder="请选择引用变量"
-                  size="mini"
-                  tag-nowrap
-                  v-model="input.ref"
-                  :options="inputRefOptions"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[8%] text-right">
-                <icon-minus-circle
-                  class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
-                  @click="() => removeFormInputField('headers', Number(idx))"
-                />
-              </div>
-            </div>
-            <!-- 空数据状态 -->
-            <a-empty v-if="form?.headersInputs.length <= 0" class="my-4"
-              >该节点暂无HEADERS参数</a-empty
-            >
-          </div>
-          <a-divider class="my-4" />
-          <!-- PARAMS参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">PARAMS参数</div>
-                <a-tooltip content="附加到URL中query中的参数信息">
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧新增字段按钮 -->
-              <a-button
-                type="text"
-                size="mini"
-                class="!text-gray-700"
-                @click="() => addFormInputField('params')"
-              >
-                <template #icon>
-                  <icon-plus />
-                </template>
-              </a-button>
-            </div>
-            <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[30%]">参数名</div>
-              <div class="w-[25%]">类型</div>
-              <div class="w-[37%]">值</div>
-              <div class="w-[8%]"></div>
-            </div>
-            <!-- 循环遍历字段列表 -->
-            <div
-              v-for="(input, idx) in form?.paramsInputs"
-              :key="idx"
-              class="flex items-center gap-1"
-            >
-              <div class="w-[30%] flex-shrink-0">
-                <a-input
-                  v-model="input.name"
-                  size="mini"
-                  placeholder="请输入参数名"
-                  class="!px-2"
-                  @blur="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[25%] flex-shrink-0">
-                <a-select
-                  size="mini"
-                  v-model="input.type"
-                  class="px-2"
-                  :options="variableTypes"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                <a-input
-                  v-if="input.type !== 'ref'"
-                  size="mini"
-                  v-model="input.content"
-                  placeholder="请输入参数值"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-select
-                  v-else
-                  placeholder="请选择引用变量"
-                  size="mini"
-                  tag-nowrap
-                  v-model="input.ref"
-                  :options="inputRefOptions"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[8%] text-right">
-                <icon-minus-circle
-                  class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
-                  @click="() => removeFormInputField('params', Number(idx))"
-                />
-              </div>
-            </div>
-            <!-- 空数据状态 -->
-            <a-empty v-if="form?.paramsInputs.length <= 0" class="my-4"
-              >该节点暂无PARAMS参数</a-empty
-            >
-          </div>
-          <a-divider class="my-4" />
-          <!-- BODY参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 标题&操作按钮 -->
-            <div class="flex items-center justify-between">
-              <!-- 左侧标题 -->
-              <div class="flex items-center gap-2 text-gray-700 font-semibold">
-                <div class="">BODY参数</div>
-                <a-tooltip content="附加到URL中body的参数信息">
-                  <icon-question-circle />
-                </a-tooltip>
-              </div>
-              <!-- 右侧新增字段按钮 -->
-              <a-button
-                type="text"
-                size="mini"
-                class="!text-gray-700"
-                @click="() => addFormInputField('body')"
-              >
-                <template #icon>
-                  <icon-plus />
-                </template>
-              </a-button>
-            </div>
-            <!-- 字段名 -->
-            <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <div class="w-[30%]">参数名</div>
-              <div class="w-[25%]">类型</div>
-              <div class="w-[37%]">值</div>
-              <div class="w-[8%]"></div>
-            </div>
-            <div
-              v-for="(input, idx) in form?.bodyInputs"
-              :key="idx"
-              class="flex items-center gap-1"
-            >
-              <div class="w-[30%] flex-shrink-0">
-                <a-input
-                  v-model="input.name"
-                  size="mini"
-                  placeholder="请输入参数名"
-                  class="!px-2"
-                  @blur="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[25%] flex-shrink-0">
-                <a-select
-                  size="mini"
-                  v-model="input.type"
-                  class="px-2"
-                  :options="variableTypes"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                <a-input
-                  v-if="input.type !== 'ref'"
-                  size="mini"
-                  v-model="input.content"
-                  placeholder="请输入参数值"
-                  @blur="handleUpdateNodeInfo"
-                />
-                <a-select
-                  v-else
-                  placeholder="请选择引用变量"
-                  size="mini"
-                  tag-nowrap
-                  v-model="input.ref"
-                  :options="inputRefOptions"
-                  @change="handleUpdateNodeInfo"
-                />
-              </div>
-              <div class="w-[8%] text-right">
-                <icon-minus-circle
-                  class="text-gray-500 hover:text-gray-700 cursor-pointer flex-shrink-0"
-                  @click="() => removeFormInputField('body', Number(idx))"
-                />
-              </div>
-            </div>
-            <!-- 空数据状态 -->
-            <a-empty v-if="form?.bodyInputs.length <= 0" class="my-4">该节点暂无BODY参数</a-empty>
-          </div>
-          <a-divider class="my-4" />
-          <!-- 输出参数 -->
-          <div class="flex flex-col gap-2">
-            <!-- 输出标题 -->
-            <div class="font-semibold text-gray-700">输出数据</div>
-            <!-- 字段标题 -->
-            <div class="text-gray-500 text-xs">参数名</div>
-            <!-- 输出参数列表 -->
-            <div v-for="(output, idx) in form?.outputs" :key="idx" class="flex flex-col gap-2">
-              <div class="flex items-center gap-2">
-                <div class="text-gray-700">{{ output.name }}</div>
-                <div class="text-gray-500 bg-gray-200 px-1 py-0.5 rounded">{{ output.type }}</div>
-              </div>
-            </div>
-          </div>
-        </a-form>
+            </a-form>
+          </a-tab-pane>
+          <NodeRunResult
+            :node-result="store.httpRequestNodeResult"
+            :loading="store.nodeDebugLoading"
+          />
+        </a-tabs>
       </div>
     </div>
   </div>
