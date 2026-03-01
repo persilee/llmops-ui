@@ -31,8 +31,10 @@ import CodeNodeInfo from './components/infos/CodeNodeInfo.vue'
 import DatasetRetrievalNodeInfo from './components/infos/DatasetRetrievalNodeInfo.vue'
 import EndNodeInfo from './components/infos/EndNodeInfo.vue'
 import HttpRequestNodeInfo from './components/infos/HttpRequestNodeInfo.vue'
+import IterationNodeInfo from './components/infos/IterationNodeInfo.vue'
 import LLMNodeInfo from './components/infos/LLMNodeInfo.vue'
 import NodeDebugModel from './components/infos/NodeDebugModel.vue'
+import QuestionClassifierNodeInfo from './components/infos/QuestionClassifierNodeInfo.vue'
 import StartNodeInfo from './components/infos/StartNodeInfo.vue'
 import TemplateTransformNodeInfo from './components/infos/TemplateTransformNodeInfo.vue'
 import ToolNodeInfo from './components/infos/ToolNodeInfo.vue'
@@ -391,6 +393,22 @@ onMounted(async () => {
       <!-- 网络请求节点详情 -->
       <HttpRequestNodeInfo
         v-if="selectNode && selectNode.type == 'http_request'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 迭代节点详情 -->
+      <IterationNodeInfo
+        v-if="selectNode && selectNode.type == 'iteration'"
+        v-model:visible="nodeInfoVisible"
+        :node="selectNode"
+        @close-node-info="handleCloseNodeInfo"
+        @update-node="handleUpdateNode"
+      />
+      <!-- 意图节点详情 -->
+      <QuestionClassifierNodeInfo
+        v-if="selectNode && selectNode.type == 'question_classifier'"
         v-model:visible="nodeInfoVisible"
         :node="selectNode"
         @close-node-info="handleCloseNodeInfo"

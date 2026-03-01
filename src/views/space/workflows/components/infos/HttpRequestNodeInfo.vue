@@ -315,7 +315,7 @@ onMounted(() => {
                 <div
                   v-for="(input, idx) in form?.headersInputs"
                   :key="idx"
-                  class="flex items-center gap-1"
+                  class="flex items-start justify-center gap-1"
                 >
                   <div class="w-[30%] flex-shrink-0">
                     <a-input
@@ -335,31 +335,36 @@ onMounted(() => {
                       @change="handleUpdateNodeInfo"
                     />
                   </div>
-                  <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
-                    <a-input-tag
-                      v-if="input.type.startsWith('list')"
-                      size="mini"
-                      v-model="input.content"
-                      :default-value="[]"
-                      placeholder="请输入参数值，按回车结束"
-                      @blur="handleUpdateNodeInfo"
-                    />
-                    <a-input
-                      v-else-if="input.type !== 'ref'"
-                      size="mini"
-                      v-model="input.content"
-                      placeholder="请输入参数值"
-                      @blur="handleUpdateNodeInfo"
-                    />
-                    <a-select
-                      v-else
-                      placeholder="请选择引用变量"
-                      size="mini"
-                      tag-nowrap
-                      v-model="input.ref"
-                      :options="inputRefOptions"
-                      @change="handleUpdateNodeInfo"
-                    />
+                  <div class="flex flex-col w-[55%] items-start">
+                    <div class="w-[37%] flex-shrink-0 flex items-center gap-1">
+                      <a-input-tag
+                        v-if="input.type.startsWith('list')"
+                        size="mini"
+                        v-model="input.content"
+                        :default-value="[]"
+                        placeholder="请输入参数值，按回车结束"
+                        @blur="handleUpdateNodeInfo"
+                      />
+                      <a-input
+                        v-else-if="input.type !== 'ref'"
+                        size="mini"
+                        v-model="input.content"
+                        placeholder="请输入参数值"
+                        @blur="handleUpdateNodeInfo"
+                      />
+                      <a-select
+                        v-else
+                        placeholder="请选择引用变量"
+                        size="mini"
+                        tag-nowrap
+                        v-model="input.ref"
+                        :options="inputRefOptions"
+                        @change="handleUpdateNodeInfo"
+                      />
+                    </div>
+                    <div v-if="!input.content && store.isDebug" class="text-red-500 text-xs mt-1">
+                      参数值不能为空
+                    </div>
                   </div>
                   <div class="w-[8%] text-right">
                     <icon-minus-circle

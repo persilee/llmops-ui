@@ -139,7 +139,7 @@ const handleClick = (workflow: GetWorkflowsWithPage) => {
   // 检查工作流是否已经被添加到草稿列表中
   if (isAdded(workflow)) {
     // 如果已添加，则从草稿列表中移除该工作流
-    _.remove(draftWorkflows.value, (draftDataset: Dataset) => draftDataset.id == workflow.id)
+    _.remove(draftWorkflows.value, (draftWorkflow: any) => draftWorkflow.id == workflow.id)
   } else {
     // 如果未添加，则将工作流添加到草稿列表中
     draftWorkflows.value.push({

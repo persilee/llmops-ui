@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { type NodeProps, Position } from '@vue-flow/core'
+import { isEmpty } from 'lodash-es'
 import { onUnmounted, ref, watch } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
 import NodeHandle from './NodeHandle.vue'
 import NodeRunInfo from './NodeRunInfo.vue'
+import NodeTitleInfo from './NodeTitleInfo.vue'
 
-// 1.定义自定义组件所需数据
+// 定义自定义组件所需数据
 const props = defineProps<NodeProps>()
 const store = useWorkflowStore()
 const nodeResult = ref<any>()
 
 const stop = watch(
-  () => store.iterationNodeResult.value,
+  () => store.iterationNodeResult,
   (newData) => {
     nodeResult.value = newData
   },
@@ -29,19 +31,17 @@ onUnmounted(() => {
     >
       <div class="flow-node__bg w-full h-[160px] absolute top-0 left-0 rounded-xl z-0"></div>
       <!-- 节点标题信息 -->
-      <div class="flex items-center gap-2 mb-1">
+      <NodeTitleInfo v-model:node-result="nodeResult" :node="props">
         <a-avatar shape="square" :size="24" class="bg-pink-700 rounded-lg flex-shrink-0">
           <icon-sync :size="16" />
         </a-avatar>
-        <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
-      </div>
+      </NodeTitleInfo>
       <!-- 输入变量列表 -->
       <div class="flex flex-col items-start py-2">
         <!-- 标题(分成左右两部分) -->
         <div class="w-full flex items-center mb-2 text-gray-700 text-xs gap-2">
           <!-- 左侧变量名 -->
           <div class="w-[180px] flex-shrink-0 flex items-center gap-2 text-gray-700">
-            <icon-caret-down />
             <div class="font-semibold">输入数据</div>
           </div>
           <!-- 右侧变量值 -->
@@ -83,23 +83,22 @@ onUnmounted(() => {
       <div class="flex flex-col items-start py-2">
         <!-- 标题 -->
         <div class="flex items-center gap-2 mb-2 text-gray-700">
-          <icon-caret-down />
           <div class="text-xs font-semibold">迭代工作流</div>
         </div>
         <!-- 迭代工作流 -->
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 w-full">
           <div
             v-for="workflow in props.data?.meta?.workflows ?? []"
             :key="workflow.id"
-            class="flex items-center gap-2 text-xs"
+            class="flex items-center gap-2 text-xs bg-gray-50 border border-gray-100 p-1.5 rounded-md"
           >
             <!-- 左侧工作流图标 -->
-            <a-avatar :size="16" shape="square" :image-url="workflow?.icon" />
+            <img :src="workflow?.icon" class="w-4 h-4 rounded-sm" crossorigin="anonymous" />
             <!-- 右侧工作流名称 -->
             <div class="text-gray-700">{{ workflow?.name }}</div>
           </div>
-          <div v-if="!props.data?.meta?.workflows?.length" class="text-gray-500 text-xs px-0.5">
-            -
+          <div v-if="!props.data?.meta?.workflows?.length" class="text-gray-500 text-xs mt-1">
+            暂无数据
           </div>
         </div>
       </div>
@@ -107,7 +106,6 @@ onUnmounted(() => {
       <div class="flex flex-col items-start py-2">
         <!-- 标题 -->
         <div class="flex items-center gap-2 mb-2 text-gray-700">
-          <icon-caret-down />
           <div class="text-xs font-semibold">输出数据</div>
         </div>
         <!-- 变量容器 -->
@@ -128,7 +126,7 @@ onUnmounted(() => {
       <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
       <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
     </div>
-    <NodeRunInfo v-if="nodeResult" :data="nodeResult" />
+    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading" />
   </div>
 </template>
 

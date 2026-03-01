@@ -128,7 +128,7 @@ const onSubmit = async () => {
             <a-input-tag
               v-else-if="input.type.startsWith('list')"
               v-model="form[input.name]"
-              placeholder="请输入参考值列表信息，输入后回车"
+              placeholder="请输入参考值列表信息"
               class="!rounded-lg"
             />
           </a-form-item>
