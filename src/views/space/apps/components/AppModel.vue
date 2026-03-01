@@ -20,6 +20,8 @@ const props = defineProps<{
   app?: GetAppResp | null
 }>()
 
+const defaultAppsIcon =
+  'https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2026/03/01/d5b96233-0691-42b5-b022-e8aad21d5083.png'
 /**
  * 表单数据的响应式引用
  * @type {import('vue').Ref<CreateAppReq>}
@@ -29,7 +31,7 @@ const props = defineProps<{
  * @property {string} name - 应用名称
  */
 const formData = ref<CreateAppReq>({
-  fileList: <FileItem>[],
+  fileList: <FileItem>[{ uid: '1', url: defaultAppsIcon }],
   description: '',
   icon: '',
   name: '',
@@ -188,6 +190,7 @@ const handleRemove = () => {
  */
 const resetForm = () => {
   Object.assign(formData.value, {
+    fileList: <FileItem>[{ uid: '1', url: defaultAppsIcon }], // 重置应用图标URL为默认图标
     icon: '', // 重置应用图标URL为空
     name: '', // 重置应用名称为空
     description: '', // 重置应用描述为空
@@ -235,6 +238,7 @@ onUnmounted(() => {
     :title="store.appModal.isCreateMode ? '创建 AI 应用' : '编辑 AI 应用'"
     title-align="start"
     :footer="false"
+    :unmount-on-close="true"
     modal-class="rounded-xl"
     @cancel="handleCloseModal"
   >

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconLLM from '@/components/icons/IconLLM.vue'
 import { BASE_URL } from '@/config'
 import { type NodeProps, Position } from '@vue-flow/core'
 import { isEmpty } from 'lodash-es'
@@ -34,7 +35,7 @@ onUnmounted(() => {
       <!-- 顶部节点标题 -->
       <NodeTitleInfo v-model:node-result="nodeResult" :node="props">
         <a-avatar shape="square" :size="24" class="bg-sky-500 rounded-lg flex-shrink-0">
-          <icon-language :size="16" />
+          <IconLLM class="w-4 h-4 text-white" />
         </a-avatar>
       </NodeTitleInfo>
       <!-- 输入变量列表 -->

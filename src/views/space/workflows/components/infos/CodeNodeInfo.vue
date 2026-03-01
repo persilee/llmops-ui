@@ -275,7 +275,7 @@ onMounted(() => {
             <!-- 左侧标题 -->
             <div class="flex items-center gap-1 flex-1">
               <a-avatar shape="square" :size="26" class="bg-cyan-500 rounded-lg flex-shrink-0">
-                <icon-code :size="16" />
+                <icon-code :size="14" />
               </a-avatar>
               <a-input
                 v-model="form.title"

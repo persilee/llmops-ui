@@ -3,6 +3,7 @@ import { useVueFlow } from '@vue-flow/core'
 import { cloneDeep, isEqual } from 'lodash'
 import { computed, ref, watch, type PropType } from 'vue'
 
+import IconEnd from '@/components/icons/IconEnd.vue'
 import { type ValidatedError } from '@arco-design/web-vue'
 import { useWorkflowStore } from '../../Workflow.store'
 
@@ -145,7 +146,7 @@ watch(
           <!-- 左侧标题 -->
           <div class="flex items-center gap-1 mb-1">
             <a-avatar :size="26" shape="square" class="bg-red-700 rounded-lg flex-shrink-0">
-              <icon-filter />
+              <IconEnd class="w-4 h-4" />
             </a-avatar>
             <div class="text-gray-700 font-semibold text-base">结束节点</div>
           </div>

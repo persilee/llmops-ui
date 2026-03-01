@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconEnd from '@/components/icons/IconEnd.vue'
 import { Handle, type NodeProps, Position } from '@vue-flow/core'
 import { onUnmounted, ref, watch } from 'vue'
 import { useWorkflowStore } from '../../Workflow.store'
@@ -30,7 +31,7 @@ onUnmounted(() => {
       <!-- 节点标题信息 -->
       <div class="flex items-center gap-2 mb-1">
         <a-avatar shape="square" :size="24" class="bg-red-700 rounded-lg flex-shrink-0">
-          <icon-filter :size="16" />
+          <IconEnd class="w-4 h-4" />
         </a-avatar>
         <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
       </div>

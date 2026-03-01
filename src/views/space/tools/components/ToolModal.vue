@@ -34,9 +34,11 @@ const validateSchemaLoading = ref<boolean>(false)
 const submitToolProviderLoading = ref<boolean>(false)
 const validateSchemaHelpText = ref('')
 const validateSchemaStatus = ref('')
+const defaultToolIcon =
+  'https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2026/03/01/ee85126f-9c55-49c6-a20b-ae8840438e6b.png'
 
 const formData = reactive<CreateAPIToolProviderReq>({
-  fileList: <FileItem>[],
+  fileList: <FileItem>[{ uid: '1', url: defaultToolIcon }],
   icon: '',
   name: '',
   openapi_schema: '',
@@ -189,7 +191,7 @@ const handleSchemaBlur = debounce(async () => {
 const resetForm = () => {
   // 重置表单数据
   Object.assign(formData, {
-    fileList: [],
+    fileList: [{ uid: '1', url: defaultToolIcon }],
     icon: '',
     name: '',
     openapi_schema: '',
@@ -485,6 +487,7 @@ watch(
     :title="store.toolModal.isEditMode ? '编辑插件' : '新建插件'"
     title-align="start"
     :footer="false"
+    :unmount-on-close="true"
     modal-class="rounded-xl"
     @cancel="handleCloseModal"
   >

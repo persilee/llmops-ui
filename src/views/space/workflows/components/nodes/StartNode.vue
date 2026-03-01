@@ -31,7 +31,7 @@ onUnmounted(() => {
       <!-- 节点标题信息 -->
       <div class="flex items-center gap-2 mb-1">
         <a-avatar shape="square" :size="24" class="bg-blue-700 rounded-lg">
-          <icon-home />
+          <icon-export />
         </a-avatar>
         <div class="text-gray-700 font-semibold">{{ props.data?.title }}</div>
       </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconLLM from '@/components/icons/IconLLM.vue'
 import CodeEditor from '@/views/components/CodeEditor.vue'
 import { type TextareaInstance } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
@@ -326,7 +327,7 @@ onMounted(() => {
           <!-- 左侧标题 -->
           <div class="flex items-center gap-1 flex-1">
             <a-avatar shape="square" :size="26" class="bg-sky-500 rounded-lg flex-shrink-0">
-              <icon-language :size="16" />
+              <IconLLM class="w-4 h-4 text-white" />
             </a-avatar>
             <a-input
               v-model="form.title"

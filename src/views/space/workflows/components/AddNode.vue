@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import IconEnd from '@/components/icons/IconEnd.vue'
+import IconLLM from '@/components/icons/IconLLM.vue'
 import { BASE_URL } from '@/config'
 import { Message } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
@@ -375,7 +377,7 @@ const handleAddTool = (tool: any) => {
           <div class="flex flex-col gap-2 w-[160px]">
             <div class="flex items-center gap-1">
               <a-avatar shape="square" :size="24" class="bg-blue-700 rounded-lg">
-                <icon-home />
+                <icon-export />
               </a-avatar>
               <div class="text-gray-700 font-semibold">开始节点</div>
             </div>
@@ -389,7 +391,7 @@ const handleAddTool = (tool: any) => {
           @click="() => addNode('start')"
         >
           <a-avatar shape="square" :size="24" class="bg-blue-700 rounded-lg">
-            <icon-home />
+            <icon-export />
           </a-avatar>
           <div class="text-gray-700 font-semibold">开始节点</div>
         </div>
@@ -400,7 +402,7 @@ const handleAddTool = (tool: any) => {
           <div class="flex flex-col gap-2 w-[160px]">
             <div class="flex items-center gap-1">
               <a-avatar shape="square" :size="24" class="bg-red-700 rounded-lg">
-                <icon-filter />
+                <IconEnd class="w-3.5 h-3.5" />
               </a-avatar>
               <div class="text-gray-700 font-semibold">结束节点</div>
             </div>
@@ -414,7 +416,7 @@ const handleAddTool = (tool: any) => {
           @click="() => addNode('end')"
         >
           <a-avatar shape="square" :size="24" class="bg-red-700 rounded-lg">
-            <icon-filter />
+            <IconEnd class="w-3.5 h-3.5" />
           </a-avatar>
           <div class="text-gray-700 font-semibold">结束节点</div>
         </div>
@@ -427,7 +429,7 @@ const handleAddTool = (tool: any) => {
           <div class="flex flex-col gap-2 w-[160px]">
             <div class="flex items-center gap-1">
               <a-avatar shape="square" :size="24" class="bg-sky-500 rounded-lg">
-                <icon-language />
+                <IconLLM class="w-3.5 h-3.5 text-white font-bold" />
               </a-avatar>
               <div class="text-gray-700 font-semibold">大语言模型</div>
             </div>
@@ -439,7 +441,7 @@ const handleAddTool = (tool: any) => {
           @click="() => addNode('llm')"
         >
           <a-avatar shape="square" :size="24" class="bg-sky-500 rounded-lg">
-            <icon-language />
+            <IconLLM class="w-3.5 h-3.5 text-white font-bold" />
           </a-avatar>
           <div class="text-gray-700 font-semibold">大语言模型</div>
         </div>

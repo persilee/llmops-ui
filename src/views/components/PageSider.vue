@@ -66,6 +66,7 @@ const handleCollapsed = () => {
 // 组件挂载时获取用户账户信息
 onMounted(() => {
   store.getAccount()
+  console.log('aaaaaaaa', route.path.startsWith('/space'))
 })
 </script>
 
@@ -135,7 +136,7 @@ onMounted(() => {
             label="个人空间"
             is-sider
             :collapsed="collapsed"
-            :class="route.path.startsWith('/space') ? ['bg-gray-200', 'font-bold'] : ''"
+            :is-active="route.path.startsWith('/space')"
           >
             <template #icon>
               <IconSpaceFull v-if="route.path.startsWith('/space')" /> <IconSpace v-else />
@@ -163,7 +164,7 @@ onMounted(() => {
             label="开发 API"
             is-sider
             :collapsed="collapsed"
-            :class="route.path.startsWith('/openapi') ? ['bg-gray-200', 'font-bold'] : ''"
+            :is-active="route.path.startsWith('/openapi')"
           >
             <template #icon>
               <IconOpenApiFull v-if="route.path.startsWith('/openapi')" />

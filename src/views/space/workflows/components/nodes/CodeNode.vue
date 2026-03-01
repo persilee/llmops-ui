@@ -33,7 +33,7 @@ onUnmounted(() => {
       <!-- 节点标题信息 -->
       <NodeTitleInfo v-model:node-result="nodeResult" :node="props">
         <a-avatar shape="square" :size="24" class="bg-cyan-500 rounded-lg flex-shrink-0">
-          <icon-code :size="16" />
+          <icon-code :size="14" />
         </a-avatar>
       </NodeTitleInfo>
       <!-- 输入变量列表 -->

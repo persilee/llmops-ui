@@ -24,9 +24,11 @@ const emits = defineEmits(['success'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 // 定义加载状态的响应式变量，用于控制提交时的loading效果
 const loading = ref(false)
+const defaultWorkflowIcon =
+  'https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2026/03/01/ce9f617b-0b4a-4362-bff7-c65525aff4a9.png'
 // 定义表单数据的响应式变量，包含工作流的所有字段
 const formData = ref<CreateWorkflowReq & { fileList: FileItem[] }>({
-  fileList: <FileItem>[], // 文件列表，用于上传图标
+  fileList: <FileItem>[{ uid: '1', url: defaultWorkflowIcon }], // 文件列表，用于上传图标
   description: '', // 工作流描述
   icon: '', // 工作流图标URL
   name: '', // 工作流名称
@@ -158,6 +160,7 @@ const handleRemove = () => {
  */
 const resetForm = () => {
   Object.assign(formData.value, {
+    fileList: <FileItem>[{ uid: '1', url: defaultWorkflowIcon }],
     icon: '', // 重置应用图标URL为空
     name: '', // 重置应用名称为空
     description: '', // 重置应用描述为空
@@ -202,6 +205,7 @@ onUnmounted(() => {
     :title="store.workflowModal.isEditMode ? '编辑工作流' : '创建工作流'"
     title-align="start"
     :footer="false"
+    :unmount-on-close="true"
     modal-class="rounded-xl"
     @cancel="handleCloseModal"
   >

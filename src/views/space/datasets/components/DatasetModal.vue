@@ -30,10 +30,12 @@ const store = useSpaceStore()
 
 /** 表单提交加载状态 */
 const loading = ref(false)
+const defaultDatasetIcon =
+  'https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2026/03/01/b222d405-12c3-4bc6-843e-99afa716c718.png'
 /** 表单数据对象，包含知识库的所有字段 */
 const formData = reactive<CreateDatasetReq>({
   /** 上传的文件列表 */
-  fileList: <FileItem>[],
+  fileList: <FileItem>[{ uid: '1', url: defaultDatasetIcon }],
   /** 知识库图标URL */
   icon: '',
   /** 知识库名称 */
@@ -94,6 +96,7 @@ const handleSubmit = async () => {
  */
 const resetForm = () => {
   Object.assign(formData, {
+    fileList: <FileItem>[{ uid: '1', url: defaultDatasetIcon }], // 重置文件列表为默认图标
     icon: '', // 重置图标URL为空
     name: '', // 重置名称为空
     description: '', // 重置描述为空
@@ -180,6 +183,7 @@ watch(
     :title="store.datasetModal.isEditMode ? '编辑插件' : '新建插件'"
     title-align="start"
     :footer="false"
+    :unmount-on-close="true"
     modal-class="rounded-xl"
     @cancel="handleCloseModal"
   >
