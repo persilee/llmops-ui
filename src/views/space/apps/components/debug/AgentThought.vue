@@ -59,8 +59,10 @@ const thoughtSummaryText = computed(() => {
     text.push(`${getThoughtShortName(item.event)} ${item.latency.toFixed(2)}s`)
   })
 
+  const preText = props.loading ? '正在运行' : '运行完毕'
+
   // 返回格式化的摘要文本，包含总延迟时间和各个事件的详细信息
-  return `运行完毕 ${totalLatency.toFixed(2)}s (${text.join('｜')})`
+  return `${preText} ${totalLatency.toFixed(2)}s (${text.join('｜')})`
 })
 
 // 计算属性：获取当前正在运行的思考事件的名称

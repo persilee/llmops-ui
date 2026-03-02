@@ -118,7 +118,7 @@ onMounted(() => {
             help="反映 AI 每天的会话消息总数，在指定的时间范围内，用户对应用发起的请求总次数，一问一答记一次，用于衡量用户活跃度。"
             unit="次"
             :data="appAnalysis?.total_messages?.data"
-            :pop="appAnalysis?.total_messages?.pop"
+            :pop="appAnalysis?.total_messages?.pop < 0 ? 0 : appAnalysis?.total_messages?.pop"
           >
             <template #icon>
               <img src="@/assets/images/icon-messages-total.png" class="w-4 h-4" />
@@ -129,7 +129,7 @@ onMounted(() => {
             help="指定的发布渠道和时间范围内，至少完成一轮对话的总使用用户数量，用于衡量应用吸引力。"
             unit="人"
             :data="appAnalysis?.active_accounts?.data"
-            :pop="appAnalysis?.active_accounts?.pop"
+            :pop="appAnalysis?.active_accounts?.pop < 0 ? 0 : appAnalysis?.active_accounts?.pop"
           >
             <template #icon>
               <img src="@/assets/images/icon-accounts-active.png" class="w-4 h-4" />
@@ -140,7 +140,11 @@ onMounted(() => {
             help="反映每个会话用户的持续沟通次数，如果用户与 AI 进行了 10 轮对话，即为 10，该指标反映了用户粘性。"
             unit="次"
             :data="appAnalysis?.avg_of_conversation_messages?.data"
-            :pop="appAnalysis?.avg_of_conversation_messages?.pop"
+            :pop="
+              appAnalysis?.avg_of_conversation_messages?.pop < 0
+                ? 0
+                : appAnalysis?.avg_of_conversation_messages?.pop
+            "
           >
             <template #icon>
               <img src="@/assets/images/icon-avg-messages.png" class="w-4 h-4" />
@@ -151,7 +155,7 @@ onMounted(() => {
             help="衡量 LLM 的性能，统计 LLM 从请求到输出完毕这段期间内的 Tokens 输出速度。"
             unit="Ts/秒"
             :data="appAnalysis?.token_output_rate?.data"
-            :pop="appAnalysis?.token_output_rate?.pop"
+            :pop="appAnalysis?.token_output_rate?.pop < 0 ? 0 : appAnalysis?.token_output_rate?.pop"
           >
             <template #icon>
               <img src="@/assets/images/icon-token-output.png" class="w-4 h-4" />
