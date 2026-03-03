@@ -49,7 +49,9 @@ const props = defineProps<{
               </div>
               <div class="flex-1 flex flex-col gap-1">
                 <div class="text-gray-500">总消耗</div>
-                <div class="text-gray-700 font-medium">0 Tokens</div>
+                <div class="text-gray-700 font-medium">
+                  {{ nodeResult.node_results[0].tokens ?? 0 }} Tokens
+                </div>
               </div>
               <div class="flex-1 flex flex-col gap-1">
                 <div class="text-gray-500">总用时</div>

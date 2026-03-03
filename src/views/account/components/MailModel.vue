@@ -21,6 +21,7 @@ const handleCloseModal = () => {
 }
 
 const isEmailBound = async () => {
+  if (!formData.value.email.trim()) return
   try {
     const resp = await AccountApi.isEmailBound({ email: formData.value.email })
     if (resp.data.is_bound) {

@@ -42,6 +42,7 @@ const handleSubmit = async () => {
 }
 
 const isPhoneBound = async () => {
+  if (!formData.value.phoneNumber.trim()) return
   try {
     const resp = await AccountApi.isPhoneNumberBound({ phone_number: formData.value.phoneNumber })
     if (resp.data.is_bound) {

@@ -66,7 +66,6 @@ const handleCollapsed = () => {
 // 组件挂载时获取用户账户信息
 onMounted(() => {
   store.getAccount()
-  console.log('aaaaaaaa', route.path.startsWith('/space'))
 })
 </script>
 

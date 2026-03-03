@@ -55,7 +55,7 @@ onUnmounted(() => {
       <!-- 意图识别节点-连接句柄 -->
       <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
     </div>
-    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading" />
+    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading && store.runNode.type == 'question_classifier'" />
   </div>
 </template>
 

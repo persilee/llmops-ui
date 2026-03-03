@@ -111,7 +111,7 @@ onUnmounted(() => {
       <NodeHandle type="source" :position="Position.Right" :node-id="props.id" />
       <NodeHandle type="target" :position="Position.Left" :node-id="props.id" />
     </div>
-    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading" />
+    <NodeRunInfo v-if="!isEmpty(nodeResult)" :data="nodeResult" :loading="store.nodeDebugLoading && store.runNode.type == 'tool'" />
   </div>
 </template>
 
