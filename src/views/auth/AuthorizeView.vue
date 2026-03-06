@@ -16,12 +16,18 @@ onMounted(async () => {
       route.params?.providerName as string, // 从路由参数中获取第三方提供商名称
       route.query?.code as string, // 从查询参数中获取授权码
     )
+    console.log('aaaaaaaaaaaaaaaa', resp.data)
     // 更新凭证存储中的用户信息
     store.update(resp.data)
-    // 显示授权成功的提示消息
-    Message.success('授权成功')
-    // 授权成功后重定向到首页
-    router.replace({ name: 'home-page' })
+    // 如果是新用户，则重定向到登录页面
+    if (resp.data.is_new_user) {
+      router.replace({ name: 'auth-login' })
+    } else {
+      // 显示授权成功的提示消息
+      Message.success('授权成功')
+      // 授权成功后重定向到首页
+      router.replace({ name: 'home-page' })
+    }
   } catch (error) {
     // 授权失败时重定向到登录页面
     router.replace({ name: 'auth-login' })

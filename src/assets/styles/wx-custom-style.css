@@ -1,0 +1,7 @@
+.impowerBox .info .status.status_browser > p:nth-child(2) {
+  display: none;
+}
+
+.impowerBox .title {
+  display: none;
+}

@@ -112,7 +112,7 @@ onMounted(() => {
           绑定邮箱：
         </div>
         <div class="text-blue-600 w-[160px] line-clamp-1 overflow-ellipsis">
-          {{ store.account.email ?? '暂未绑定' }}
+          {{ store.account.email ? store.account.email : '暂未绑定' }}
         </div>
         <div class="flex-1 text-gray-500">绑定邮箱后可用来账号登录，更改、找回帐号密码。</div>
         <a-button type="primary" size="small" @click="visibleMail = true">
@@ -126,11 +126,39 @@ onMounted(() => {
           绑定手机号：
         </div>
         <div class="text-blue-600 w-[160px] line-clamp-1 overflow-ellipsis">
-          {{ store.account.phone_number ?? '暂未绑定' }}
+          {{ store.account.phone_number ? store.account.phone_number : '暂未绑定' }}
         </div>
         <div class="flex-1 text-gray-500">绑定的手机号可以用验证码快速登录、找回密码。</div>
         <a-button type="primary" size="small" @click="visiblePhone = true">
           {{ store.account.phone_number ? '修改' : '绑定' }}
+        </a-button>
+      </div>
+      <a-divider type="dashed" class="my-2.5"></a-divider>
+      <div class="flex items-center gap-2">
+        <div class="text-gray-700 font-semibold w-[110px]">
+          <icon-wechat class="text-base" />
+          绑定微信：
+        </div>
+        <div class="text-blue-600 w-[160px] line-clamp-1 overflow-ellipsis">
+          {{ store.account.wechat ? '已绑定' : '暂未绑定' }}
+        </div>
+        <div class="flex-1 text-gray-500">绑定微信后可以快速登录。</div>
+        <a-button type="primary" size="small" @click="visiblePhone = true">
+          {{ store.account.wechat ? '解绑' : '绑定' }}
+        </a-button>
+      </div>
+      <a-divider type="dashed" class="my-2.5"></a-divider>
+      <div class="flex items-center gap-2">
+        <div class="text-gray-700 font-semibold w-[110px]">
+          <icon-github />
+          绑定Github：
+        </div>
+        <div class="text-blue-600 w-[160px] line-clamp-1 overflow-ellipsis">
+          {{ store.account.github ? '已绑定' : '暂未绑定' }}
+        </div>
+        <div class="flex-1 text-gray-500">绑定Github后可以快速登录。</div>
+        <a-button type="primary" size="small" @click="visiblePhone = true">
+          {{ store.account.github ? '解绑' : '绑定' }}
         </a-button>
       </div>
     </div>

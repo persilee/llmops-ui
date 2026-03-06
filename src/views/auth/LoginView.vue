@@ -10,9 +10,7 @@ import LoginForm from './components/LoginForm.vue'
     <LoginBanner />
     <!-- 右侧登录表单 -->
     <div class="relative flex flex-1 items-center justify-center pb-10">
-      <div class="flex flex-col items-center justify-center w-[366px]">
-        <LoginForm />
-      </div>
+      <LoginForm />
       <div class="absolute right-0 bottom-0 w-full">
         <CopyrightInfo :start-year="2025" author="lishaoy.net" />
       </div>

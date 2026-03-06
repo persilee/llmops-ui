@@ -9,7 +9,9 @@ import type {
   IsEmailBoundResp,
   IsPhoneNumberBoundReq,
   IsPhoneNumberBoundResp,
+  PasswordBindAccountReq,
   PasswordLoginReq,
+  PhoneNumberBindAccountReq,
   PhoneNumberLoginReq,
   SendMailCodeReq,
   SendSMSCodeReq,
@@ -42,6 +44,31 @@ class AccountApi {
       body: {
         code,
       },
+    })
+  }
+
+  /**
+   * 手机号绑定账户
+   * @param req 包含手机号和验证码的请求对象
+   * @returns 返回绑定操作的Promise对象
+   */
+  static phoneNumberBindAccount(req: PhoneNumberBindAccountReq) {
+    return post<AuthorizeResp>({
+      url: '/auth/phone-number-bind-account',
+      body: req,
+    })
+  }
+
+  /**
+   * 使用密码绑定账号
+   * @description 用户通过密码验证方式绑定已有账号
+   * @param {PasswordBindAccountReq} req - 密码绑定账号请求参数
+   * @returns {Promise<any>} 返回绑定结果
+   */
+  static passwordBindAccount(req: PasswordBindAccountReq) {
+    return post<AuthorizeResp>({
+      url: '/auth/password-bind-account',
+      body: req,
     })
   }
 

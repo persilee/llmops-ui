@@ -7,6 +7,8 @@ export interface AccountResp {
   last_login_ip: string
   name: string
   phone_number: string
+  wechat: string
+  github: string
 }
 
 export interface AuthorizeResp {
@@ -15,6 +17,7 @@ export interface AuthorizeResp {
   is_new_user: boolean
   session_id?: string
   user_id?: string
+  provider_info?: any
 }
 
 export interface GetProviderResp {
@@ -74,4 +77,25 @@ export interface BindPhoneNumberReq {
 export interface PhoneNumberLoginReq {
   code: string
   phone_number: string
+}
+
+export interface PhoneNumberBindAccountReq {
+  code: string
+  oauth_info: OauthInfo
+  phone_number: string
+}
+
+export interface OauthInfo {
+  id: string
+  name: string
+  email: string
+  avatar: string
+  provider: string
+  encrypted_token: string
+}
+
+export interface PasswordBindAccountReq {
+  account: string
+  oauth_info: OauthInfo
+  password: string
 }
