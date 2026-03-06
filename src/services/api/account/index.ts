@@ -1,6 +1,7 @@
 import { get, post } from '@/services/request'
 import type {
   AccountResp,
+  AuthLoginCreateReq,
   AuthorizeResp,
   BindEmailReq,
   BindPhoneNumberReq,
@@ -15,6 +16,7 @@ import type {
   PhoneNumberLoginReq,
   SendMailCodeReq,
   SendSMSCodeReq,
+  UnbindOAuthProviderReq,
   UpdateAvatarReq,
   UpdateNameReq,
   UpdatePasswordReq,
@@ -220,6 +222,30 @@ class AccountApi {
   static phoneNumberLogin(req: PhoneNumberLoginReq) {
     return post<AuthorizeResp>({
       url: '/auth/phone-number-login',
+      body: req,
+    })
+  }
+
+  /**
+   * 创建OAuth授权登录
+   * @param req OAuth授权登录创建请求参数
+   * @returns 返回包含授权信息的Promise对象
+   */
+  static authLoginCreate(req: AuthLoginCreateReq) {
+    return post<AuthorizeResp>({
+      url: '/oauth/authorize/create',
+      body: req,
+    })
+  }
+
+  /**
+   * 解绑OAuth第三方账号
+   * @param req 解绑请求参数，包含需要解绑的第三方账号信息
+   * @returns Promise 返回解绑操作的响应结果
+   */
+  static unbindOAuthProvider(req: UnbindOAuthProviderReq) {
+    return post({
+      url: '/account/unbind-oauth-provider',
       body: req,
     })
   }

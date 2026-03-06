@@ -13,6 +13,7 @@ import LoginWechat from './LoginWechat.vue'
 const loginLoading = ref(false)
 // GitHub登录按钮的加载状态
 const githubLoading = ref(false)
+const nextLoading = ref(false)
 // 登录表单的响应式数据
 const loginForm = reactive<PasswordLoginReq>({
   account: '',
@@ -118,6 +119,28 @@ const handleSendCode = async () => {
     }
   } catch (error) {}
 }
+
+const handleNext = async () => {
+  isNext.value = true
+  if (selectedAction.value == 'bindAccount') return
+  if (selectedAction.value == 'createAccount') {
+    try {
+      nextLoading.value = true
+      const resp = await AccountApi.authLoginCreate({
+        oauth_info: { ...store.credential.provider_info },
+      })
+      // 显示登录成功提示
+      Message.success('登录成功')
+      // 跳转到首页
+      router.replace({ name: 'home-page' })
+      // 更新用户凭证信息
+      store.update(resp.data)
+    } catch (error) {
+    } finally {
+      nextLoading.value = false
+    }
+  }
+}
 </script>
 
 <template>
@@ -125,7 +148,10 @@ const handleSendCode = async () => {
     <div v-if="isNewUser" class="flex flex-col items-center justify-center w-full">
       <div class="text-gray-900 font-bold text-2xl leading-8">欢迎使用虎子</div>
       <div class="text-base leading-6 text-gray-600">用虎子AI高效重塑生产力</div>
-      <div v-if="isNext && selectedAction" class="flex flex-col items-center w-full">
+      <div
+        v-if="isNext && selectedAction == 'bindAccount'"
+        class="flex flex-col items-center w-full"
+      >
         <BindAccountPane />
       </div>
       <div v-else>
@@ -159,7 +185,7 @@ const handleSendCode = async () => {
           long
           :class="`rounded-sm  mt-8 mb-4 ${selectedAction == '' ? 'bg-blue-300' : 'bg-blue-800'}`"
           :disabled="selectedAction == ''"
-          @click="isNext = true"
+          @click="handleNext"
         >
           下一步
         </a-button>

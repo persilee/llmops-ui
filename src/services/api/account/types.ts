@@ -99,3 +99,11 @@ export interface PasswordBindAccountReq {
   oauth_info: OauthInfo
   password: string
 }
+
+export interface AuthLoginCreateReq {
+  oauth_info: OauthInfo
+}
+
+export interface UnbindOAuthProviderReq {
+  provider_name: string
+}

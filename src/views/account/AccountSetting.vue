@@ -2,15 +2,18 @@
 import AccountApi from '@/services/api/account'
 import UploadApi from '@/services/api/upload-file'
 import { useAccountStore } from '@/stores/account'
-import { Message, type FileItem, type RequestOption } from '@arco-design/web-vue'
+import * as Storage from '@/utils/storage'
+import { Message, Modal, type FileItem, type RequestOption } from '@arco-design/web-vue'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AccountNameModel from './components/AccountNameModel.vue'
 import MailModel from './components/MailModel.vue'
 import PasswordModel from './components/PasswordModel.vue'
 import PhoneNumberModel from './components/PhoneNumberModel.vue'
 
 // 加载状态标识，用于显示加载动画
-const loading = ref(false)
+const githubLoading = ref(false)
+const wechatLoading = ref(false)
 // 当前激活的设置选项卡，默认为'account'
 const activeValue = ref('account')
 // 当前正在编辑的字段标识
@@ -22,6 +25,7 @@ const visibleName = ref(false)
 const visiblePassword = ref(false)
 const visibleMail = ref(false)
 const visiblePhone = ref(false)
+const router = useRouter()
 
 /**
  * 处理图片上传的异步函数
@@ -61,6 +65,60 @@ const handleUpload = async (option: RequestOption) => {
 const handleRemove = () => {
   store.account.avatar = '' // 清空表单中的图标URL
   return true // 允许删除操作
+}
+
+const unbindGithub = async () => {
+  Modal.warning({
+    title: '解除Github账号关联吗？', // 模态框标题
+    content: '您将无法通过Github快速登录，确定要解绑吗？', // 提示内容
+    hideCancel: false, // 显示取消按钮
+    titleAlign: 'start', // 标题左对齐
+    simple: false, // 简单模式
+    // 确认按钮的回调函数
+    onOk: async () => {
+      try {
+        githubLoading.value = true
+        await AccountApi.unbindOAuthProvider({ provider_name: 'github' })
+        await store.getAccount()
+        Message.success('解绑Github成功')
+      } finally {
+        githubLoading.value = false
+      }
+    },
+    onCancel: () => {
+      // 取消删除操作
+    },
+  })
+}
+
+const unbindWechat = async () => {
+  Modal.warning({
+    title: '解除微信账号关联吗？', // 模态框标题
+    content: '您将无法通过微信快速登录，确定要解绑吗？', // 提示内容
+    hideCancel: false, // 显示取消按钮
+    titleAlign: 'start', // 标题左对齐
+    simple: false, // 简单模式
+    // 确认按钮的回调函数
+    onOk: async () => {
+      try {
+        wechatLoading.value = true
+        await AccountApi.unbindOAuthProvider({ provider_name: 'wxmp' })
+        await store.getAccount()
+        Message.success('解绑微信成功')
+      } finally {
+        wechatLoading.value = false
+      }
+    },
+    onCancel: () => {
+      // 取消删除操作
+    },
+  })
+}
+
+// 处理用户退出登录
+const handleLogout = () => {
+  Storage.clear()
+  router.push({ name: 'auth-login' })
 }
 
 onMounted(() => {
@@ -143,8 +201,17 @@ onMounted(() => {
           {{ store.account.wechat ? '已绑定' : '暂未绑定' }}
         </div>
         <div class="flex-1 text-gray-500">绑定微信后可以快速登录。</div>
-        <a-button type="primary" size="small" @click="visiblePhone = true">
-          {{ store.account.wechat ? '解绑' : '绑定' }}
+        <a-button
+          v-if="store.account.wechat"
+          type="primary"
+          size="small"
+          :loading="wechatLoading"
+          @click="unbindWechat"
+        >
+          解绑
+        </a-button>
+        <a-button v-else type="primary" size="small" @click="handleLogout">
+          前往登录页绑定
         </a-button>
       </div>
       <a-divider type="dashed" class="my-2.5"></a-divider>
@@ -157,8 +224,17 @@ onMounted(() => {
           {{ store.account.github ? '已绑定' : '暂未绑定' }}
         </div>
         <div class="flex-1 text-gray-500">绑定Github后可以快速登录。</div>
-        <a-button type="primary" size="small" @click="visiblePhone = true">
-          {{ store.account.github ? '解绑' : '绑定' }}
+        <a-button
+          v-if="store.account.github"
+          type="primary"
+          size="small"
+          :loading="githubLoading"
+          @click="unbindGithub"
+        >
+          解绑
+        </a-button>
+        <a-button v-else type="primary" size="small" @click="handleLogout">
+          前往登录页绑定
         </a-button>
       </div>
     </div>
