@@ -1,5 +1,6 @@
 export interface OptimizePromptReq {
   prompt: string
+  app_id?: string
 }
 
 export interface GenerateSuggestedQuestionsReq {
@@ -8,6 +9,7 @@ export interface GenerateSuggestedQuestionsReq {
 
 export interface GenerateConversationNameReq {
   query: string
+  app_id?: string
 }
 
 export interface GenerateConversationNameResp {

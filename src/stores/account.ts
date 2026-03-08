@@ -18,6 +18,7 @@ export const useAccountStore = defineStore(
     const isDark = ref(false)
     const isEditorDark = ref(false)
     const codeEditorVisible = ref(false)
+    const points = ref(0)
 
     const getAccount = async () => {
       try {
@@ -41,7 +42,7 @@ export const useAccountStore = defineStore(
       account.value = initAccount
     }
 
-    return { account, isDark, isEditorDark, codeEditorVisible, getAccount, update, reset }
+    return { account, isDark, isEditorDark, codeEditorVisible, points, getAccount, update, reset }
   },
   {
     // 启用持久化存储

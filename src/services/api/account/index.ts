@@ -5,6 +5,7 @@ import type {
   AuthorizeResp,
   BindEmailReq,
   BindPhoneNumberReq,
+  GetPointsResp,
   GetProviderResp,
   IsEmailBoundReq,
   IsEmailBoundResp,
@@ -247,6 +248,16 @@ class AccountApi {
     return post({
       url: '/account/unbind-oauth-provider',
       body: req,
+    })
+  }
+
+  /**
+   * 获取用户积分信息
+   * @returns 返回包含用户积分信息的Promise对象
+   */
+  static getPoints() {
+    return get<GetPointsResp>({
+      url: '/account/points',
     })
   }
 }

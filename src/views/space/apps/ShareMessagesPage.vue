@@ -7,11 +7,13 @@ import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import moment from 'moment'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAppStore } from './AppView.store'
 
 const loading = ref(false)
 const messages = ref<Array<GetAssistantAgentMessagesWithPage>>([])
 const name = ref('')
 const route = useRoute()
+const store = useAppStore()
 
 const getShareConversation = async () => {
   try {
@@ -25,7 +27,7 @@ const getShareConversation = async () => {
     if (query.length > 2000) {
       query = query.slice(0, 2000)
     }
-    const nameResp = await AIApi.generateConversationName({ query })
+    const nameResp = await AIApi.generateConversationName({ query, app_id: store.app?.id })
     name.value = nameResp.data.name
   } catch (error) {
   } finally {

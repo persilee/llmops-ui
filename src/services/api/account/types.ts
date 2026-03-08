@@ -107,3 +107,7 @@ export interface AuthLoginCreateReq {
 export interface UnbindOAuthProviderReq {
   provider_name: string
 }
+
+export interface GetPointsResp {
+  points: string
+}

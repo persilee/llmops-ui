@@ -109,7 +109,7 @@ const optimizePromptFn = async (prompt: string) => {
         ?.setAttribute('contenteditable', 'false')
     }, 360)
     // 调用AI优化API，使用流式响应实时更新优化结果
-    await AIApi.optimizePrompt({ prompt: prompt }, (eventResp) => {
+    await AIApi.optimizePrompt({ prompt: prompt, app_id: store.app?.id }, (eventResp) => {
       // 获取当前返回的优化片段
       const data = eventResp.data.optimize_prompt
       // 根据是否有数据控制光标显示状态

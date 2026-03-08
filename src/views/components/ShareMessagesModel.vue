@@ -8,6 +8,7 @@ import moment from 'moment'
 import QRCodeVue3 from 'qrcode-vue3'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAppStore } from '../space/apps/AppView.store'
 import FancyboxView from './FancyboxView.vue'
 import MarkdownRender from './MarkdownRender.vue'
 
@@ -28,6 +29,7 @@ const loading = ref(false)
 // 回话名称
 const name = ref('')
 const route = useRoute()
+const store = useAppStore()
 
 // 处理关闭模态框的方法
 const handleCloseModal = () => {
@@ -124,7 +126,7 @@ const generateConversationName = async () => {
       query = query.slice(0, 2000)
     }
     // 调用AI API生成对话名称
-    const resp = await AIApi.generateConversationName({ query })
+    const resp = await AIApi.generateConversationName({ query, app_id: store.app?.id })
     // 将生成的名称保存到name变量中
     name.value = resp.data.name
   } catch (error) {

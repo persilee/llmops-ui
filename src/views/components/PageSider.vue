@@ -9,8 +9,11 @@ import IconSpace from '@/components/icons/IconSpace.vue'
 import IconSpaceFull from '@/components/icons/IconSpaceFull.vue'
 import IconTool from '@/components/icons/IconTool.vue'
 import IconToolFull from '@/components/icons/IconToolFull.vue'
+import AccountApi from '@/services/api/account'
 import { useAccountStore } from '@/stores/account'
+import { formatDate } from '@/utils/format-util'
 import * as Storage from '@/utils/storage'
+import { formatNumberWithCommas } from '@/utils/util'
 import PageRouterLink from '@/views/components/PageRouterLink.vue'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -63,8 +66,20 @@ const handleCollapsed = () => {
   collapsed.value = !collapsed.value
 }
 
+const getPoints = async () => {
+  try {
+    const resp = await AccountApi.getPoints()
+    store.points = Math.floor(Number(resp.data.points))
+  } catch (error) {}
+}
+
+const goToAccountPoints = () => {
+  router.push({ name: 'account-points' })
+}
+
 // 组件挂载时获取用户账户信息
 onMounted(() => {
+  getPoints()
   store.getAccount()
 })
 </script>
@@ -77,10 +92,10 @@ onMounted(() => {
     :collapsed-width="66"
   >
     <div
-      :class="`bg-white h-full w-full rounded-lg px-2 py-4 flex flex-col justify-between  shadow-xs border border-gray-100 ${collapsed ? 'items-center' : ''}`"
+      :class="`bg-white h-full w-full rounded-lg px-2 py-4 flex flex-col justify-between shadow-xs border border-gray-100 ${collapsed ? 'items-center' : ''}`"
     >
       <!-- 顶部区域：Logo和创建按钮 -->
-      <div :class="`flex flex-col ${collapsed ? 'items-center' : ''}`">
+      <div :class="`flex-1 flex flex-col ${collapsed ? 'items-center' : ''}`">
         <!-- Logo区域 -->
         <div class="flex justify-between items-center mb-4 mt-1">
           <router-link v-if="!collapsed" to="/home" class="rounded-lg text-center">
@@ -172,6 +187,21 @@ onMounted(() => {
           </PageRouterLink>
         </div>
       </div>
+      <div
+        v-if="!collapsed"
+        class="flex flex-col gap-2 border border-gray-200 rounded-md p-2 mb-2 cursor-pointer"
+        @click="goToAccountPoints"
+      >
+        <div class="flex items-center font-medium line-clamp-1 overflow-ellipsis">
+          积分：{{ formatNumberWithCommas(store.points) }}
+        </div>
+        <div class="flex items-center justify-between text-xs text-gray-500">
+          <div class="flex items-center gap-1">
+            <icon-gift class="text-sm" /> 新用户赠送1000积分
+          </div>
+          <icon-right />
+        </div>
+      </div>
       <!-- 用户信息下拉菜单 -->
       <a-dropdown v-if="store.account" position="tl">
         <!-- 用户信息展示区域 -->
@@ -183,7 +213,12 @@ onMounted(() => {
           </a-avatar>
           <div v-if="!collapsed" class="flex flex-col">
             <div class="text-sm text-gray-900">{{ store.account.name }}</div>
-            <div class="text-xs text-gray-500">{{ store.account.email }}</div>
+            <div v-if="store.account.email" class="text-xs text-gray-500">
+              {{ store.account.email }}
+            </div>
+            <div v-else class="text-xs text-gray-500">
+              {{ formatDate(store.account.last_login_at, 'MM月d HH:mm', 'zh') }}
+            </div>
           </div>
         </div>
         <!-- 下拉菜单内容 -->
