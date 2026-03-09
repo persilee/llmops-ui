@@ -5,6 +5,8 @@ import type {
   AuthorizeResp,
   BindEmailReq,
   BindPhoneNumberReq,
+  GetPointsByDateRangeReq,
+  GetPointsByDateRangeResp,
   GetPointsResp,
   GetProviderResp,
   IsEmailBoundReq,
@@ -258,6 +260,18 @@ class AccountApi {
   static getPoints() {
     return get<GetPointsResp>({
       url: '/account/points',
+    })
+  }
+
+  /**
+   * 获取指定日期范围内的用户积分信息
+   * @param req 包含开始日期和结束日期的请求参数
+   * @returns 返回包含日期范围内积分变动信息的Promise对象
+   */
+  static getPointsByDateRange(req: GetPointsByDateRangeReq) {
+    return get<GetPointsByDateRangeResp>({
+      url: '/account/get-deduct-points-by-date-range',
+      params: req,
     })
   }
 }

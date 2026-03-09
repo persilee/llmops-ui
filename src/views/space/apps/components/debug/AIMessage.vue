@@ -5,7 +5,6 @@ import type {
   AgentThought as AgentThoughtType,
   GetDebugConversationMessagesWithPage,
 } from '@/services/api/apps/types'
-import FancyboxView from '@/views/components/FancyboxView.vue'
 import MarkdownRender from '@/views/components/MarkdownRender.vue'
 import SpeechButton from '@/views/components/SpeechButton.vue'
 import { Message } from '@arco-design/web-vue'
@@ -56,8 +55,8 @@ const copyToClipboard = async (text: string) => {
 <template>
   <div class="flex flex-row gap-2 mb-6 w-full">
     <!-- AI头像 -->
-    <a-avatar class="shrink-0" :size="34" style="background-color: transparent">
-      <img :src="icon ?? store.app?.icon" class="p-0.5" />
+    <a-avatar class="shrink-0" :size="34" shape="square" style="background-color: transparent">
+      <img :src="icon ?? store.app?.icon" />
     </a-avatar>
     <div class="flex-1 flex flex-col items-start gap-2 min-w-0 pr-[42px]">
       <!-- AI名称 -->

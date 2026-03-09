@@ -41,6 +41,24 @@ export const llmTagMap: { [key: string]: string } = {
   image_input: '图片理解',
 }
 
+export enum DeductFrom {
+  ASSISTANT_AGENT = 'assistant_agent',
+  DEBUG = 'debug',
+  OPTIMIZE = 'optimize',
+  GENERATE_CONVERSATION = 'generate_conversation',
+  WEB_APP = 'web_app',
+}
+
+export const DeductFromText = {
+  MAP: {
+    [DeductFrom.ASSISTANT_AGENT]: '辅助智能体消息',
+    [DeductFrom.DEBUG]: '智能体调试消息',
+    [DeductFrom.OPTIMIZE]: '提示词优化',
+    [DeductFrom.GENERATE_CONVERSATION]: '会话名称生成',
+    [DeductFrom.WEB_APP]: 'WEB应用消息',
+  } as const,
+}
+
 /**
  * 深度比较两个对象是否相等
  * @param {any} obj1 - 第一个要比较的对象

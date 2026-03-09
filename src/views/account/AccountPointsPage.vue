@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import AccountApi from '@/services/api/account'
+import type { GetPointsByDateRangeResp } from '@/services/api/account/types'
 import { useAccountStore } from '@/stores/account'
-import { formatNumberWithCommas } from '@/utils/util'
+import { formatDate } from '@/utils/format-util'
+import { DeductFromText, formatNumberWithCommas } from '@/utils/util'
+import moment from 'moment'
 import { onUnmounted, ref, watch } from 'vue'
 
 const activatedTab = ref('recharge')
@@ -8,6 +12,12 @@ const payChannel = ref('wechat')
 const store = useAccountStore()
 const formData = ref({ amount: 10 })
 const rechargePoints = ref(0)
+const loading = ref(false)
+const pointsRecords = ref<GetPointsByDateRangeResp>()
+const now = moment()
+const startDate = now.startOf('month').format('YYYY-MM-DD')
+const endDate = now.endOf('month').format('YYYY-MM-DD')
+const dateRange = ref([startDate, endDate])
 
 const getRechargeAccount = () => {
   if (store.account.phone_number) {
@@ -17,6 +27,31 @@ const getRechargeAccount = () => {
   } else {
     return store.account.name
   }
+}
+
+const handleTabClick = async (key: string) => {
+  if (key == 'pointsRecord') {
+    await handleRecharge()
+  }
+}
+
+const handleRecharge = async () => {
+  try {
+    loading.value = true
+    const resp = await AccountApi.getPointsByDateRange({
+      start_date: dateRange.value[0],
+      end_date: dateRange.value[1],
+      include_details: true,
+    })
+    pointsRecords.value = resp.data
+  } catch (error) {
+  } finally {
+    loading.value = false
+  }
+}
+
+const onChange = (dateString: string, date: Date) => {
+  handleRecharge()
 }
 
 const stop = watch(
@@ -39,6 +74,7 @@ onUnmounted(() => {
       :header-padding="false"
       type="text"
       class="flex flex-col w-full mt-6"
+      @tab-click="handleTabClick"
     >
       <a-tab-pane key="recharge" title="积分充值" class="">
         <div class="flex flex-col h-full w-full px-4">
@@ -122,7 +158,90 @@ onUnmounted(() => {
           </div>
         </div>
       </a-tab-pane>
-      <a-tab-pane key="deduction" title="积分消耗" class=""></a-tab-pane>
+      <a-tab-pane key="pointsRecord" title="积分记录" class="">
+        <div class="flex flex-col h-full w-full px-4">
+          <div class="flex items-center justify-between">
+            <div class="text-gray-500 ml-2">
+              用量汇总: 共消耗 {{ pointsRecords?.total_deduct }} 积分
+            </div>
+            <a-range-picker v-model="dateRange" @change="onChange" class="rounded-md" />
+          </div>
+          <a-table
+            hoverable
+            :data="pointsRecords?.details"
+            :bordered="{ wrapper: false }"
+            :loading="loading"
+            :show-footer="false"
+            :pagination="false"
+            class="mt-4"
+          >
+            <template #columns>
+              <a-table-column
+                title="项目"
+                data-index="app_name"
+                :width="260"
+                header-cell-class="rounded-tl-lg bg-gray-200 text-gray-700"
+                body-cell-class="bg-transparent"
+              >
+                <template #cell="{ record }">
+                  <div class="flex items-center gap-2">
+                    <a-avatar
+                      :size="28"
+                      shape="square"
+                      :image-url="record?.app_icon"
+                      class="flex-shrink-0 bg-transparent"
+                    />
+                    <div class="line-clamp-1">{{ record.app_name }}</div>
+                  </div>
+                </template>
+              </a-table-column>
+              <a-table-column
+                title="项目类型"
+                data-index="deduct_from"
+                header-cell-class=" bg-gray-200 text-gray-700"
+                body-cell-class="bg-transparent"
+              >
+                <template #cell="{ record }">
+                  {{
+                    DeductFromText.MAP[record.deduct_from as keyof typeof DeductFromText.MAP] ||
+                    '未知类型'
+                  }}
+                </template>
+              </a-table-column>
+              <a-table-column
+                title="积分变动"
+                data-index="points_amount"
+                header-cell-class=" bg-gray-200 text-gray-700"
+                body-cell-class="bg-transparent"
+              >
+                <template #cell="{ record }">
+                  <div class="font-semibold text-amber-500">{{ record.points_amount }}</div>
+                </template>
+              </a-table-column>
+              <a-table-column
+                title="变动描述"
+                data-index="transaction_desc"
+                header-cell-class=" bg-gray-200 text-gray-700"
+                body-cell-class="bg-transparent"
+              >
+                <template #cell="{ record }">
+                  <div class="">{{ record.transaction_desc }}</div>
+                </template>
+              </a-table-column>
+              <a-table-column
+                title="变动时间"
+                data-index="created_at"
+                header-cell-class="rounded-tr-lg bg-gray-200 text-gray-700"
+                body-cell-class="bg-transparent"
+              >
+                <template #cell="{ record }">
+                  <div class="">{{ formatDate(record.created_at, 'YYYY-MM-DD HH:mm:ss') }}</div>
+                </template>
+              </a-table-column>
+            </template>
+          </a-table>
+        </div>
+      </a-tab-pane>
     </a-tabs>
   </div>
 </template>

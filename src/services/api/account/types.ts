@@ -111,3 +111,29 @@ export interface UnbindOAuthProviderReq {
 export interface GetPointsResp {
   points: string
 }
+
+export interface GetPointsByDateRangeReq {
+  start_date: string
+  end_date: string
+  include_details: boolean
+}
+
+export interface GetPointsByDateRangeResp {
+  details: Detail[]
+  total_deduct: string
+  transaction_count: number
+}
+
+export interface Detail {
+  account_id: string
+  app_icon: string
+  app_id: string
+  app_name: string
+  created_at: Date
+  id: string
+  message_id: string
+  points_amount: string
+  token_amount: number
+  transaction_desc: string
+  transaction_meta: any
+}
