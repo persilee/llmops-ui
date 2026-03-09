@@ -1,5 +1,5 @@
 # 使用官方 Node.js 镜像作为基础镜像
-FROM node:20.19.5 AS builder
+FROM registry.cn-hangzhou.aliyuncs.com/library/node:20.19.5 AS builder
 
 # 设置工作目录
 WORKDIR /app/web
@@ -21,7 +21,7 @@ ENV VITE_API_PREFIX=/api
 RUN yarn build
 
 # 二阶段使用 Nginx 来部署 Vue 静态页面
-FROM nginx:alpine AS production
+FROM registry.cn-hangzhou.aliyuncs.com/library/nginx:alpine AS production
 COPY --from=builder /app/web/dist /usr/share/nginx/html
 COPY --from=builder /app/web/docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
