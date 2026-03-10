@@ -1,5 +1,5 @@
 # 使用官方 Node.js 镜像作为基础镜像
-FROM node:20.19.5 AS builder
+FROM node:20.19.5
 
 # 设置工作目录
 WORKDIR /app/web
@@ -19,6 +19,3 @@ ENV VITE_API_PREFIX=/api
 
 # 构建/编译项目
 RUN NODE_OPTIONS=--max-old-space-size=4096 yarn build
-
-# 二阶段使用 Nginx 来部署 Vue 静态页面
-COPY --from=builder /app/web/dist /www/wwwroot/llmops
