@@ -31,8 +31,8 @@ RUN find /usr/share/nginx/html -type d -exec chmod 755 {} \;
 # 设置文件权限为 644，确保文件可以读但不可执行
 RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \;
 
-# 暴露 3000 端口号
-EXPOSE 3000
+# 暴露 80 端口号
+EXPOSE 80
 
 # 启动 Nginx
 CMD ["nginx", "-g", "daemon off;"]
