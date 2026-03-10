@@ -1,6 +1,8 @@
 <template>
   <footer class="copyright">
-    <p class="copyright-text">&copy; {{ currentYear }} {{ author }}. All rights reserved.</p>
+    <p class="copyright-text">
+      &copy; {{ currentYear }} {{ author }}. All rights reserved. 粤ICP备16026678号
+    </p>
     <p class="copyright-info" v-if="showInfo">
       {{ infoText }}
     </p>
