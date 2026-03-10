@@ -21,15 +21,4 @@ ENV VITE_API_PREFIX=/api
 RUN NODE_OPTIONS=--max-old-space-size=4096 yarn build
 
 # 二阶段使用 Nginx 来部署 Vue 静态页面
-FROM nginx:alpine AS production
-COPY --from=builder /app/web/dist /usr/share/nginx/html
-COPY --from=builder /app/web/docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
-
-# 设置文件权限为 644，确保文件可以读但不可执行
-RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \;
-
-# 暴露 80 端口号
-EXPOSE 80
-
-# 启动 Nginx
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=builder /app/web/dist /www/wwwroot/llmops
