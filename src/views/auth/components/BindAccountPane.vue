@@ -112,7 +112,11 @@ const handleSendCode = async () => {
               style="width: 260px"
               placeholder="请输入验证码"
             />
-            <CountdownButton @click="handleSendCode" class="rounded-sm bg-blue-800" />
+            <CountdownButton
+              @click="handleSendCode"
+              class="rounded-sm bg-blue-800"
+              :disabled="formData.phoneNumber.trim() === ''"
+            />
           </div>
         </a-form-item>
         <a-button

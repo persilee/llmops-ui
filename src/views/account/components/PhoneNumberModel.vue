@@ -103,7 +103,7 @@ const handleSendCode = async () => {
       >
         <div class="w-full flex items-center justify-between">
           <a-verification-code v-model="formData.code" :length="6" style="width: 260px" />
-          <CountdownButton @click="handleSendCode" />
+          <CountdownButton @click="handleSendCode" :disabled="formData.phoneNumber.trim() === ''" />
         </div>
       </a-form-item>
       <div class="flex justify-end mt-8">

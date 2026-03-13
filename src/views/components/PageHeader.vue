@@ -10,7 +10,7 @@ const emits = defineEmits(['onButtonClick'])
 <template>
   <div class="flex items-center justify-between mb-6 h-10">
     <div class="flex items-center gap-2">
-      <a-avatar :size="32" shape="square" class="bg-blue-700!">
+      <a-avatar :size="32" class="bg-blue-700!">
         <slot><icon-common :size="18" /></slot>
       </a-avatar>
       <div class="text-xl font-medium text-gray-900">{{ title }}</div>

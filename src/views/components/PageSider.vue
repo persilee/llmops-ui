@@ -208,7 +208,7 @@ onMounted(() => {
         <div
           class="flex items-center gap-2 cursor-pointer p-2 transition-all rounded-lg hover:bg-gray-100"
         >
-          <a-avatar :size="32" shape="square" class="bg-transparent rounded-full">
+          <a-avatar :size="32" class="bg-transparent rounded-full">
             <img :src="store.account.avatar" />
           </a-avatar>
           <div v-if="!collapsed" class="flex flex-col">

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
 
+const props = defineProps<{
+  disabled: boolean
+}>()
 const emits = defineEmits(['click'])
 const buttonText = ref('获取验证码') // 默认按钮文字
 const buttonType = ref('primary') // 按钮类型
@@ -48,10 +51,10 @@ onUnmounted(() => {
 <template>
   <a-button
     type="primary"
-    :disabled="isCountingDown"
+    :disabled="isCountingDown || disabled"
     @click="handleSendCode"
     :loading="isLoading"
-    :class="`${isCountingDown ? 'w-[138px]' : ''}`"
+    :class="`${isCountingDown ? 'w-[138px] ' : ''} ${disabled ? 'bg-gray-200' : ''}`"
   >
     <!-- 倒计时中显示剩余秒数，否则显示默认文字 -->
     {{ isCountingDown ? `${countdown} 秒后重新发送` : buttonText }}
