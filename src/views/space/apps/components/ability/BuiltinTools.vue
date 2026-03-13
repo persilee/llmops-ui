@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BASE_URL } from '@/config'
+import { BASE_ICON_URL } from '@/config'
 import type { Tool as DraftConfigTool } from '@/services/api/apps/types'
 import type { GetBuiltinToolsResp, Tool } from '@/services/api/builtin-tool/types'
 import { formatDate } from '@/utils/format-util'
@@ -28,7 +28,7 @@ const emit = defineEmits(['addTool'])
  * @returns string - 返回完整的图标URL路径
  */
 const getIcon = (provider: GetBuiltinToolsResp) => {
-  return `${BASE_URL}/builtin-tools/${provider.name}/icon`
+  return `${BASE_ICON_URL}/builtin-tools/${provider.name}/icon`
 }
 
 const getSelectedToolCount = (tool: Tool) => {

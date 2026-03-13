@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import IconEnd from '@/components/icons/IconEnd.vue'
 import IconLLM from '@/components/icons/IconLLM.vue'
-import { BASE_URL } from '@/config'
+import { BASE_ICON_URL } from '@/config'
 import { Message } from '@arco-design/web-vue'
 import { useVueFlow } from '@vue-flow/core'
 import { remove } from 'lodash-es'
@@ -328,7 +328,7 @@ const handleAddTool = (tool: any) => {
         id: tool.provider.name,
         name: tool.provider.name,
         label: tool.provider.label,
-        icon: `${BASE_URL}/builtin-tools/${tool.provider.name}/icon`,
+        icon: `${BASE_ICON_URL}/builtin-tools/${tool.provider.name}/icon`,
         description: tool.provider.description,
       },
       tool: {

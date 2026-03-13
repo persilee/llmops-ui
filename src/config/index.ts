@@ -1,6 +1,7 @@
 export const TIME_OUT = 100000
 
-export const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+export const BASE_API_URL = import.meta.env.VITE_API_URL
+export const BASE_ICON_URL = import.meta.env.VITE_ICON_BASE_URL
 
 export const DEFAULT_ICON =
   'https://llmops-dev-1253877543.cos.ap-guangzhou.myqcloud.com/2025/11/26/d2d64088-edc7-471d-b987-071398f68f1b.png'

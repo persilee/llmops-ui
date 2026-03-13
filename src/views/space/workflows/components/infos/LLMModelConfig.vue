@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BASE_URL } from '@/config'
+import { BASE_ICON_URL } from '@/config'
 import LLMModelApi from '@/services/api/llm-models'
 import type { GetLLMModelResp, GetLLMModelsResp } from '@/services/api/llm-models/types'
 import { llmTagMap } from '@/utils/util'
@@ -97,7 +97,7 @@ onMounted(async () => {
         <a-avatar
           :size="14"
           shape="square"
-          :image-url="`${BASE_URL}/llm-models/${model_config?.provider}/icon`"
+          :image-url="`${BASE_ICON_URL}/llm-models/${model_config?.provider}/icon`"
           style="background-color: transparent"
         />
         <div class="flex-1 text-gray-700">{{ form?.model }}</div>
@@ -129,7 +129,7 @@ onMounted(async () => {
                 <a-avatar
                   :size="40"
                   shape="square"
-                  :image-url="`${BASE_URL}/llm-models/${llmModel.name}/icon`"
+                  :image-url="`${BASE_ICON_URL}/llm-models/${llmModel.name}/icon`"
                   style="background-color: transparent"
                   class="flex-shrink-0"
                 />

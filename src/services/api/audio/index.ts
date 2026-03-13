@@ -1,4 +1,4 @@
-import { BASE_URL } from '@/config'
+import { BASE_API_URL } from '@/config'
 import { post, ssePost, upload } from '@/services/request'
 import { useCredentialStore } from '@/stores/credential'
 import type { AudioToTextResp, MessageToAudioResp } from './types'
@@ -51,7 +51,7 @@ class AudioApi {
   static async textToAudio(text: string, voice: number) {
     const store = useCredentialStore()
     const token = store.credential?.access_token
-    return await fetch(`${BASE_URL}/audio/tts/text`, {
+    return await fetch(`${BASE_API_URL}/audio/tts/text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

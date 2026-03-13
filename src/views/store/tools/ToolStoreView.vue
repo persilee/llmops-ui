@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BASE_URL } from '@/config'
+import { BASE_ICON_URL } from '@/config'
 import BuiltinToolApi from '@/services/api/builtin-tool'
 import type { GetBuiltinToolsResp, GetCategoriesResp } from '@/services/api/builtin-tool/types'
 import { formatDate } from '@/utils/format-util'
@@ -141,7 +141,7 @@ const handleCloseDrawer = () => {
  * @returns 返回工具图标的完整URL路径
  */
 const getIcon = (provider: GetBuiltinToolsResp) => {
-  return `${BASE_URL}/builtin-tools/${provider.name}/icon`
+  return `${BASE_ICON_URL}/builtin-tools/${provider.name}/icon`
 }
 
 /**

@@ -1,4 +1,4 @@
-import { BASE_URL, TIME_OUT } from '@/config'
+import { BASE_API_URL, TIME_OUT } from '@/config'
 import router from '@/router'
 import { useCredentialStore } from '@/stores/credential'
 import { Message } from '@arco-design/web-vue'
@@ -60,7 +60,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
   }
 
   // 构建完整的请求URL，确保以BASE_URL为前缀
-  let urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+  let urlWithPrefix = `${BASE_API_URL}${url.startsWith('/') ? url : `/${url}`}`
 
   // 解构请求配置中的方法、参数和请求体
   const { method, params, body } = options
@@ -209,7 +209,7 @@ export const ssePost = async (
     options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
   }
   // 处理URL，确保以BASE_URL为前缀
-  const urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+  const urlWithPrefix = `${BASE_API_URL}${url.startsWith('/') ? url : `/${url}`}`
 
   // 获取请求体
   const { body } = fetchOptions
@@ -331,7 +331,7 @@ const handleStream = (
  */
 export const upload = <T>(url: string, options: any) => {
   // 构建完整的请求URL，确保以BASE_URL为前缀
-  const urlWithPrefix = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+  const urlWithPrefix = `${BASE_API_URL}${url.startsWith('/') ? url : `/${url}`}`
 
   // 定义默认的上传配置
   const defaultOptions = {

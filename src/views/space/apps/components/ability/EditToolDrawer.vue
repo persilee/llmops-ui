@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BASE_URL, DEFAULT_ICON } from '@/config'
+import { BASE_ICON_URL, DEFAULT_ICON } from '@/config'
 import APIToolsApi from '@/services/api/api-tool'
 import type { GetAPIToolResp } from '@/services/api/api-tool/types'
 import type { Tool, ToolElement } from '@/services/api/apps/types'
@@ -115,7 +115,7 @@ const getIcon = () => {
   // URL格式为：BASE_URL/builtin-tools/{provider.name}/icon
   // 如果没有provider名称，则使用默认图标
   return builtinTool?.provider.name
-    ? `${BASE_URL}/builtin-tools/${builtinTool.provider.name}/icon`
+    ? `${BASE_ICON_URL}/builtin-tools/${builtinTool.provider.name}/icon`
     : DEFAULT_ICON
 }
 

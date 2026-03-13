@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import IconLLM from '@/components/icons/IconLLM.vue'
-import { BASE_URL } from '@/config'
+import { BASE_ICON_URL } from '@/config'
 import { type NodeProps, Position } from '@vue-flow/core'
 import { isEmpty } from 'lodash-es'
 import { onUnmounted, ref, watch } from 'vue'
@@ -89,7 +89,7 @@ onUnmounted(() => {
           <a-avatar
             :size="13"
             shape="square"
-            :image-url="`${BASE_URL}/llm-models/${props.data.language_model_config.provider}/icon`"
+            :image-url="`${BASE_ICON_URL}/llm-models/${props.data.language_model_config.provider}/icon`"
             style="background-color: transparent"
           />
           <!-- 右侧名称 -->
