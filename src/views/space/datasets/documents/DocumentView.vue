@@ -275,7 +275,7 @@ onMounted(async () => {
         <a-avatar
           :size="40"
           shape="square"
-          class="rounded-lg"
+          class="rounded-lg bg-transparent"
           :image-url="store.dataset?.icon"
         ></a-avatar>
         <div class="flex flex-col justify-between h-[40px]">

@@ -311,7 +311,7 @@ onMounted(() => {})
                       <a-avatar
                         :size="30"
                         shape="square"
-                        class="rounded flex-shrink-0"
+                        class="rounded flex-shrink-0 bg-transparent"
                         :image-url="workflow.icon"
                       />
                       <!-- 名称与描述信息 -->

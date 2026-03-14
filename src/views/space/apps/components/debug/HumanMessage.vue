@@ -53,7 +53,7 @@ const accountStore = useAccountStore()
         </div>
       </div>
       <!-- 人类头像 -->
-      <a-avatar class="shrink-0 bg-white" shape="square" :size="34">
+      <a-avatar class="shrink-0 bg-transparent" shape="square" :size="34">
         <img :src="accountStore.account.avatar" />
       </a-avatar>
     </div>

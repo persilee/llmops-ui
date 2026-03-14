@@ -30,4 +30,9 @@ const handleClose = () => {
   </a-drawer>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.md-editor-preview code) {
+  border-radius: 4px !important;
+  border: 1px solid #bedbff;
+}
+</style>

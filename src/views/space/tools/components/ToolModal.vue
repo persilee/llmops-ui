@@ -39,7 +39,7 @@ const defaultToolIcon =
 
 const formData = reactive<CreateAPIToolProviderReq>({
   fileList: <FileItem>[{ uid: '1', url: defaultToolIcon }],
-  icon: '',
+  icon: defaultToolIcon,
   name: '',
   openapi_schema: '',
   headers: [],

@@ -37,7 +37,7 @@ const formData = reactive<CreateDatasetReq>({
   /** 上传的文件列表 */
   fileList: <FileItem>[{ uid: '1', url: defaultDatasetIcon }],
   /** 知识库图标URL */
-  icon: '',
+  icon: defaultDatasetIcon,
   /** 知识库名称 */
   name: '',
   /** 知识库描述 */

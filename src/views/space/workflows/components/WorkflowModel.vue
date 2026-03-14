@@ -30,7 +30,7 @@ const defaultWorkflowIcon =
 const formData = ref<CreateWorkflowReq & { fileList: FileItem[] }>({
   fileList: <FileItem>[{ uid: '1', url: defaultWorkflowIcon }], // 文件列表，用于上传图标
   description: '', // 工作流描述
-  icon: '', // 工作流图标URL
+  icon: defaultWorkflowIcon, // 工作流图标URL
   name: '', // 工作流名称
   tool_call_name: '', // 工作流英文名称，用于大模型调用
 })

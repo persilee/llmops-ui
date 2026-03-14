@@ -33,7 +33,7 @@ const defaultAppsIcon =
 const formData = ref<CreateAppReq>({
   fileList: <FileItem>[{ uid: '1', url: defaultAppsIcon }],
   description: '',
-  icon: '',
+  icon: defaultAppsIcon,
   name: '',
 })
 
