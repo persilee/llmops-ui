@@ -217,7 +217,7 @@ onMounted(() => {
               {{ store.account.email }}
             </div>
             <div v-else class="text-xs text-gray-500">
-              {{ formatDate(store.account.last_login_at, 'MM月d HH:mm', 'zh') }}
+              {{ formatDate(store.account.last_login_at, 'MM月DD HH:mm', 'zh') }}
             </div>
           </div>
         </div>
