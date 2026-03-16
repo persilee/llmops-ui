@@ -263,8 +263,14 @@ const handleUpload = async (option: RequestOption) => {
 const getProgress = (document: GetDocumentsStatusResp) => {
   if (document.status == 'completed') return '100%'
   if (document.segment_count == 0) return '0.00%'
+  if (document.status == 'parsing') return '25.00%'
+  if (document.status == 'splitting') return '50.00%'
+  if (document.status == 'indexing') return '75.00%'
 
-  return ((document.completed_segment_count / document.segment_count) * 100).toFixed(2) + '%'
+  // 计算剩余 25% 的进度（基于已完成的分段比例）
+  const remainingProgress = (document.completed_segment_count / document.segment_count) * 25
+  const totalProgress = 75 + remainingProgress // 基础进度 75% + 剩余进度
+  return `${totalProgress.toFixed(2)}%`
 }
 
 /**
