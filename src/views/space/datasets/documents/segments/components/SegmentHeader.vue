@@ -38,7 +38,7 @@ const handleBackClick = () => {
     <HeaderSkeleton :loading="loading" />
     <div v-if="!loading" class="flex items-center gap-3">
       <div class="bg-white border border-gray-300 rounded-lg">
-        <img :src="getFileIcon({ filename: document?.name })" class="w-[36px] h-auto mt-[2px]" />
+        <img :src="getFileIcon({ filename: document?.name })" class="w-[36px] h-auto" />
       </div>
       <div class="flex flex-col justify-between h-[40px]">
         <div class="text-gray-700">文档 / {{ document?.name }}</div>
