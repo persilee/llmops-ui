@@ -16,7 +16,6 @@ onMounted(async () => {
       route.params?.providerName as string, // 从路由参数中获取第三方提供商名称
       route.query?.code as string, // 从查询参数中获取授权码
     )
-    console.log('aaaaaaaaaaaaaaaa', resp.data)
     // 更新凭证存储中的用户信息
     store.update(resp.data)
     // 如果是新用户，则重定向到登录页面
