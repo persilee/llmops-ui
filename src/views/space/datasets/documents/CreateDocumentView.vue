@@ -46,6 +46,8 @@ const customRuleFormRef = useTemplateRef('custom-rule-form')
 const createDocumentLoading = ref(false)
 // 文档处理状态列表
 const documents = ref<GetDocumentsStatusResp[]>([])
+const documentStatus = ref('等待处理...')
+const progress = ref('0.00%')
 
 /**
  * 处理创建文档流程中的下一步操作
@@ -186,12 +188,15 @@ const fetchDocumentsStatus = async () => {
     // 检查是否超过最大获取次数（66次）
     if (fetchCount > 66) stopTimer()
 
-    // 检查所有文档是否处理完成
-    const isCompleted = documents.value.every(
-      (document) => document.status === 'completed' || document.status === 'error',
-    )
-    // 如果所有文档处理完成，停止轮询
-    if (isCompleted) stopTimer()
+    documents.value.forEach((document) => {
+      // 检查所有文档是否处理完成
+      if (document.status === 'completed' || document.status === 'error') {
+        // 如果所有文档处理完成，停止轮询
+        stopTimer()
+      }
+      documentStatus.value = getStatus(document)
+      progress.value = getProgress(document)
+    })
   } catch (error) {
     // 发生错误时停止轮询
     stopTimer()
@@ -296,6 +301,8 @@ const getStatus = (document: GetDocumentsStatusResp) => {
   if (document.status == 'completed')
     return `处理完成（${document.completed_segment_count}/${document.segment_count}）`
   if (document.status == 'error') return '处理出错'
+
+  return '等待处理...'
 }
 
 /**
@@ -450,10 +457,7 @@ onUnmounted(() => {
             class="bg-white rounded-lg border border-blue-600 relative"
           >
             <!-- 进度 -->
-            <div
-              class="flex progress-bar rounded-lg"
-              :style="{ width: getProgress(document) }"
-            ></div>
+            <div class="flex progress-bar rounded-lg" :style="{ width: progress }"></div>
             <!-- 数据处理内容 -->
             <div class="flex items-center justify-between px-4 py-3 z-10 relative">
               <div class="flex items-center gap-2.5">
@@ -462,12 +466,12 @@ onUnmounted(() => {
                   <div class="text-gray-700 mb-1.5">{{ document.name }}</div>
                   <div class="flex items-center text-gray-500 text-xs gap-2">
                     {{ (document.size / 1024).toFixed(2) }} KB
-                    <div class="text-gray-500 text-xs">{{ getStatus(document) }}</div>
+                    <div class="text-gray-500 text-xs">{{ documentStatus }}</div>
                   </div>
                 </div>
               </div>
               <div class="flex flex-col gap-1">
-                <div class="text-gray-500 text-xl">{{ getProgress(document) }}</div>
+                <div class="text-gray-500 text-xl">{{ progress }}</div>
               </div>
             </div>
           </div>
