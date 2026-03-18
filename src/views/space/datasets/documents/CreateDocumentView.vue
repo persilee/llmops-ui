@@ -266,11 +266,10 @@ const handleUpload = async (option: RequestOption) => {
  * - 否则根据已完成的分段数和总分段数计算进度百分比，保留两位小数
  */
 const getProgress = (document: GetDocumentsStatusResp) => {
-  if (document.status == 'completed') return '100%'
-  if (document.segment_count == 0) return '0.00%'
   if (document.status == 'parsing') return '25.00%'
   if (document.status == 'splitting') return '50.00%'
   if (document.status == 'indexing') return '75.00%'
+  if (document.status == 'completed') return '100%'
 
   // 计算剩余 25% 的进度（基于已完成的分段比例）
   const remainingProgress = (document.completed_segment_count / document.segment_count) * 25
