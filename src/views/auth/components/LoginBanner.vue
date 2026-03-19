@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import imageBanner1 from '@/assets/images/image-banner1.png'
 import imageBanner2 from '@/assets/images/image-banner2.png'
+import { useLoginStore } from '../LoginView.store'
+import AnimatedBanner from './AnimatedBanner.vue'
 const carousels = [
   {
     slogan: '开箱即用的高质量AI编排模板',
@@ -13,14 +15,22 @@ const carousels = [
     image: imageBanner2,
   },
 ]
+const store = useLoginStore()
 </script>
 
 <template>
   <div
-    class="w-[30%] min-w-[560px] flex items-center justify-center bg-gradient-to-tl from-[#00308F] to-[#1D2139]"
+    class="w-[30%] min-w-[600px] flex items-center justify-center bg-gradient-to-tl from-[#00308F] to-[#1D2139]"
   >
     <div class="flex-1 h-full">
-      <a-carousel animation-name="fade" class="h-full">
+      <a-carousel animation-name="fade" show-arrow="hover" class="h-full">
+        <a-carousel-item class="h-full">
+          <AnimatedBanner
+            :is-typing="store.isTyping"
+            :is-password="store.isPassword"
+            :show-password="store.showPassword"
+          />
+        </a-carousel-item>
         <a-carousel-item v-for="carousel in carousels" :key="carousel.slogan">
           <div class="flex flex-col items-center justify-center h-full">
             <div class="text-2xl leading-7 font-bold text-gray-100">

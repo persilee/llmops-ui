@@ -664,8 +664,6 @@ const handleAutoLineChange = () => {
 
   if (!hiddenSpanRef.value) return
   const textWidth = hiddenSpanRef.value.offsetWidth
-  console.log('textWidth', textWidth)
-  console.log('textareaWidth', textareaWidth.value)
 
   if (textWidth > textareaWidth.value - 25) {
     isWrapLine.value = true
@@ -676,7 +674,6 @@ const handleAutoLineChange = () => {
 
 const getTextareaWidth = () => {
   const textarea = document.querySelector('.textarea-container textarea')
-  console.log(textarea)
 
   if (textarea) {
     return parseInt(getComputedStyle(textarea).width)

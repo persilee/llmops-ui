@@ -4,8 +4,9 @@ import type { PasswordLoginReq } from '@/services/api/account/types'
 import { useCredentialStore } from '@/stores/credential'
 import CountdownButton from '@/views/components/CountdownButton.vue'
 import { Message, type ValidatedError } from '@arco-design/web-vue'
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLoginStore } from '../LoginView.store'
 import BindAccountPane from './BindAccountPane.vue'
 import LoginWechat from './LoginWechat.vue'
 
@@ -22,6 +23,7 @@ const loginForm = reactive<PasswordLoginReq>({
 const formData = ref({ phoneNumber: '', code: '' })
 // 用户凭证状态管理
 const store = useCredentialStore()
+const loginStore = useLoginStore()
 // 路由实例
 const router = useRouter()
 const activatedTab = ref('phone')
@@ -33,6 +35,7 @@ const isNewUser = computed({
 })
 const selectedAction = ref('')
 const isNext = ref(false)
+const hiedPassword = ref(true)
 
 /**
  * 处理GitHub第三方登录
@@ -51,6 +54,9 @@ const handleGithubLogin = async () => {
   } finally {
     // 重置加载状态
     githubLoading.value = false
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
   }
 }
 
@@ -87,6 +93,9 @@ const handleLogin = async ({
   } finally {
     // 无论成功失败，都重置加载状态
     loginLoading.value = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+    loginStore.isTyping = false
   }
 }
 
@@ -108,6 +117,9 @@ const handlePhoneSubmit = async () => {
   } finally {
     // 无论成功失败，都重置加载状态
     loginLoading.value = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+    loginStore.isTyping = false
   }
 }
 
@@ -138,9 +150,72 @@ const handleNext = async () => {
     } catch (error) {
     } finally {
       nextLoading.value = false
+      loginStore.isTyping = false
+      loginStore.isPassword = false
+      loginStore.showPassword = false
     }
   }
 }
+
+const handleTabClick = (key: string) => {
+  activatedTab.value = key
+
+  loginStore.isTyping = false
+  loginStore.isPassword = false
+  loginStore.showPassword = false
+}
+
+const handleInput = () => {
+  if (formData.value.code) {
+    loginStore.isTyping = false
+    loginStore.isPassword = true
+    loginStore.showPassword = true
+  } else {
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  }
+}
+
+const handlePasswordInput = () => {
+  if (loginForm.password && hiedPassword.value) {
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  } else if (hiedPassword.value == false && loginForm.password) {
+    loginStore.isTyping = false
+    loginStore.isPassword = true
+    loginStore.showPassword = true
+  } else {
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  }
+}
+
+const stop = watch(
+  () => hiedPassword.value,
+  (newVal) => {
+    if (newVal) {
+      loginStore.isTyping = false
+      loginStore.isPassword = false
+      loginStore.showPassword = false
+    } else {
+      loginStore.isTyping = true
+      loginStore.isPassword = true
+      loginStore.showPassword = true
+    }
+  },
+)
+
+onMounted(() => {
+  loginStore.isPassword = false
+  loginStore.showPassword = false
+  loginStore.isTyping = false
+})
+
+onUnmounted(() => {
+  stop()
+})
 </script>
 
 <template>
@@ -199,6 +274,7 @@ const handleNext = async () => {
         v-model:active-key="activatedTab"
         :header-padding="false"
         class="flex flex-col w-full mt-12"
+        @tab-click="handleTabClick"
       >
         <a-tab-pane key="phone" title="手机号登录" class="">
           <a-form
@@ -214,7 +290,13 @@ const handleNext = async () => {
               hide-label
               :rules="[{ required: true, message: '手机号不能为空', trigger: ['blur'] }]"
             >
-              <a-input v-model="formData.phoneNumber" allow-clear placeholder="请输入手机号">
+              <a-input
+                v-model="formData.phoneNumber"
+                allow-clear
+                placeholder="请输入手机号"
+                @focus="loginStore.isTyping = true"
+                @blur="loginStore.isTyping = false"
+              >
                 <template #prefix><icon-mobile /></template>
               </a-input>
             </a-form-item>
@@ -233,6 +315,7 @@ const handleNext = async () => {
                   :length="6"
                   style="width: 260px"
                   placeholder="请输入验证码"
+                  @input="handleInput()"
                 />
                 <CountdownButton
                   @click="handleSendCode"
@@ -254,6 +337,7 @@ const handleNext = async () => {
         </a-tab-pane>
         <a-tab-pane key="account" title="账号登录" class="">
           <a-form
+            v-if="activatedTab === 'account'"
             :model="loginForm"
             layout="vertical"
             size="large"
@@ -271,6 +355,8 @@ const handleNext = async () => {
                 size="large"
                 placeholder="手机号 / 邮箱"
                 allow-clear
+                @focus="loginStore.isTyping = true"
+                @blur="loginStore.isTyping = false"
               >
                 <template #prefix><icon-user /></template>
               </a-input>
@@ -283,9 +369,12 @@ const handleNext = async () => {
             >
               <a-input-password
                 v-model="loginForm.password"
+                v-model:visibility="hiedPassword"
                 size="large"
                 placeholder="账号密码"
                 allow-clear
+                @input="handlePasswordInput"
+                @blur="loginStore.isTyping = false"
                 ><template #prefix><icon-lock /></template
               ></a-input-password>
             </a-form-item>

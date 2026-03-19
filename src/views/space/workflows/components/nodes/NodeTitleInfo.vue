@@ -67,7 +67,6 @@ const handleDebugNode = async () => {
         req: { inputs: props.node.data.inputs, node_id: props.node.id },
         onData: async (event_response) => {
           const data = event_response?.data
-          console.log('event_response', data)
 
           if (props.node.type == 'code') {
             store.codeNodeResult = data

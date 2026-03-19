@@ -4,8 +4,9 @@ import type { PasswordLoginReq } from '@/services/api/account/types'
 import { useCredentialStore } from '@/stores/credential'
 import CountdownButton from '@/views/components/CountdownButton.vue'
 import { Message } from '@arco-design/web-vue'
-import { reactive, ref } from 'vue'
+import { onUnmounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLoginStore } from '../LoginView.store'
 
 const activatedTab = ref('phone')
 const formData = ref({ phoneNumber: '', code: '' })
@@ -16,7 +17,9 @@ const loginForm = reactive<PasswordLoginReq>({
 })
 const loginLoading = ref(false)
 const store = useCredentialStore()
+const loginStore = useLoginStore()
 const router = useRouter()
+const hiedPassword = ref(true)
 
 const handlePhoneBind = async () => {
   try {
@@ -37,6 +40,9 @@ const handlePhoneBind = async () => {
   } finally {
     // 无论成功失败，都重置加载状态
     loginLoading.value = false
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
   }
 }
 
@@ -59,6 +65,9 @@ const handleAccountBind = async () => {
   } finally {
     // 无论成功失败，都重置加载状态
     loginLoading.value = false
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
   }
 }
 
@@ -70,6 +79,60 @@ const handleSendCode = async () => {
     }
   } catch (error) {}
 }
+
+const handleTabClick = (key: string) => {
+  activatedTab.value = key
+
+  loginStore.isTyping = false
+  loginStore.isPassword = false
+  loginStore.showPassword = false
+}
+
+const handleInput = () => {
+  if (formData.value.code) {
+    loginStore.isTyping = false
+    loginStore.isPassword = true
+    loginStore.showPassword = true
+  } else {
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  }
+}
+
+const handlePasswordInput = () => {
+  if (loginForm.password && hiedPassword.value) {
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  } else if (hiedPassword.value == false && loginForm.password) {
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = true
+  } else {
+    loginStore.isTyping = false
+    loginStore.isPassword = false
+    loginStore.showPassword = false
+  }
+}
+
+const stop = watch(
+  () => hiedPassword.value,
+  (newVal) => {
+    if (newVal) {
+      loginStore.isTyping = false
+      loginStore.isPassword = false
+      loginStore.showPassword = false
+    } else {
+      loginStore.isTyping = true
+      loginStore.isPassword = true
+      loginStore.showPassword = true
+    }
+  },
+)
+
+onUnmounted(() => {
+  stop()
+})
 </script>
 
 <template>
@@ -77,6 +140,7 @@ const handleSendCode = async () => {
     v-model:active-key="activatedTab"
     :header-padding="false"
     class="flex flex-col w-full mt-12"
+    @tab-click="handleTabClick"
   >
     <a-tab-pane key="phone" title="通过验证手机号绑定" class="">
       <a-form
@@ -92,7 +156,13 @@ const handleSendCode = async () => {
           hide-label
           :rules="[{ required: true, message: '手机号不能为空', trigger: ['blur'] }]"
         >
-          <a-input v-model="formData.phoneNumber" allow-clear placeholder="请输入手机号">
+          <a-input
+            v-model="formData.phoneNumber"
+            allow-clear
+            placeholder="请输入手机号"
+            @focus="loginStore.isTyping = true"
+            @blur="loginStore.isTyping = false"
+          >
             <template #prefix><icon-mobile /></template>
           </a-input>
         </a-form-item>
@@ -111,6 +181,7 @@ const handleSendCode = async () => {
               :length="6"
               style="width: 260px"
               placeholder="请输入验证码"
+              @input="handleInput()"
             />
             <CountdownButton
               @click="handleSendCode"
@@ -132,6 +203,7 @@ const handleSendCode = async () => {
     </a-tab-pane>
     <a-tab-pane key="account" title="通过验证账号密码绑定" class="">
       <a-form
+        v-if="activatedTab === 'account'"
         :model="loginForm"
         layout="vertical"
         size="large"
@@ -159,6 +231,8 @@ const handleSendCode = async () => {
             size="large"
             placeholder="账号密码"
             allow-clear
+            @input="handlePasswordInput()"
+            @blur="loginStore.isTyping = false"
             ><template #prefix><icon-lock /></template
           ></a-input-password>
         </a-form-item>

@@ -32,7 +32,6 @@ const onSubmit = async () => {
         req: { inputs: form.value, node_id: store.runNode.id },
         onData: async (event_response) => {
           const data = event_response?.data
-          console.log('event_response', data)
 
           if (store.runNode.type == 'code') {
             store.codeNodeResult = data
