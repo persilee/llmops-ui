@@ -174,10 +174,10 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="w-full h-full flex items-center justify-center bg-gradient-to-tl from-[#00308F] to-[#1D2139]"
+    class="w-full h-full min-w-[600px] flex items-center justify-center bg-gradient-to-tl from-[#00308F] to-[#1D2139]"
   >
     <div class="flex-1 h-full flex items-center justify-center">
-      <div class="relative w-[min(500px,30vw)] h-[620px]">
+      <div class="relative w-[480px] h-[620px]">
         <!-- 紫色高矩形角色 -->
         <div
           ref="purpleRef"
