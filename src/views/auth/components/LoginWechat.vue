@@ -40,6 +40,7 @@ onMounted(() => {
         scrolling="no"
         frameborder="0"
         allowtransparency="true"
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
       ></iframe>
     </a-spin>
     <a-button
