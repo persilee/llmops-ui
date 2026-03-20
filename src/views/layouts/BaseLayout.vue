@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import PageSider from '../components/PageSider.vue'
+
+defineOptions({
+  name: 'BaseLayout',
+})
 </script>
 
 <template>

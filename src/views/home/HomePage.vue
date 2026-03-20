@@ -741,6 +741,7 @@ const stop = watch(() => inputValue.value, handleAutoLineChange)
  * @returns {Promise<void>}
  */
 onMounted(async () => {
+  Message.clear()
   // 获取初始消息数据
   await fetchMessagesData()
   // 等待DOM更新完成

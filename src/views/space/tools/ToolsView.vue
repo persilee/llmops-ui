@@ -230,7 +230,7 @@ onUnmounted(() => {
         background="#ffffff"
         :name="selectedProvider.name"
         @update:visible="handleCloseDrawer"
-        @update-tool-provider="store.openCreateToolModal()"
+        @update-tool-provider="store.openEditToolModal()"
       />
       <!-- 工具模态框 -->
       <ToolModal

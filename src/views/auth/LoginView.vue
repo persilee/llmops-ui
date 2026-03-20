@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import CopyrightInfo from './components/CopyrightInfo.vue'
 import LoginBanner from './components/LoginBanner.vue'
 import LoginForm from './components/LoginForm.vue'
+
+onMounted(() => {
+  // 预加载 BaseLayout 和首页组件（仅预加载不渲染）
+  import('@/views/layouts/BaseLayout.vue')
+  import('@/views/home/HomePage.vue')
+})
 </script>
 
 <template>

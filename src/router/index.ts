@@ -17,7 +17,7 @@ const router = createRouter({
         {
           path: 'home',
           name: 'home-page',
-          component: () => import('@/views/home/HomePage.vue'),
+          component: () => import(/* webpackChunkName: "home"*/ '@/views/home/HomePage.vue'),
           meta: { title: '首页 - 虎子' },
         },
         {
