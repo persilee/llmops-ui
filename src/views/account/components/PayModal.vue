@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PayApi from '@/services/api/pay'
-import { onMounted, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 
 const props = defineProps<{
   payChannel: string
@@ -27,8 +27,17 @@ const fetchData = async () => {
   }
 }
 
-onMounted(() => {
-  fetchData()
+const stop = watch(
+  () => visible.value,
+  (newVal) => {
+    if (newVal) {
+      fetchData()
+    }
+  },
+)
+
+onUnmounted(() => {
+  stop()
 })
 </script>
 
