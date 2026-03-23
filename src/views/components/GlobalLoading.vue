@@ -8,150 +8,148 @@ const props = defineProps({
 </script>
 
 <template>
-  <teleport to="body">
-    <div v-if="visible" class="loading-container">
-      <div class="main-box">
-        <!-- 紫色柱子 -->
-        <div
-          class="pillar"
-          style="
-            left: 20px;
-            width: 56px;
-            height: 110px;
-            background-color: rgb(108, 63, 245);
-            border-radius: 10px 10px 0px 0px;
-            z-index: 1;
-          "
-        >
-          <div class="eye-group" style="left: 12px; top: 16px; gap: 12px">
-            <div class="eye-white" style="width: 12px; height: 12px; background-color: white">
-              <div
-                class="eye-black"
-                style="
-                  width: 4px;
-                  height: 4px;
-                  background-color: rgb(45, 45, 45);
-                  transform: translate(4.96499px, 0.590676px);
-                "
-              ></div>
-            </div>
-            <div class="eye-white" style="width: 12px; height: 12px; background-color: white">
-              <div
-                class="eye-black"
-                style="
-                  width: 4px;
-                  height: 4px;
-                  background-color: rgb(45, 45, 45);
-                  transform: translate(4.96259px, 0.610452px);
-                "
-              ></div>
-            </div>
-          </div>
-        </div>
-        <!-- 黑色柱子 -->
-        <div
-          class="pillar"
-          style="
-            left: 52px;
-            width: 42px;
-            height: 72px;
-            background-color: rgb(45, 45, 45);
-            border-radius: 8px 8px 0px 0px;
-            z-index: 2;
-          "
-        >
-          <div class="eye-group" style="left: 8px; top: 12px; gap: 8px">
-            <div class="eye-white" style="width: 10px; height: 10px; background-color: white">
-              <div
-                class="eye-black"
-                style="
-                  width: 4px;
-                  height: 4px;
-                  background-color: rgb(45, 45, 45);
-                  transform: translate(4.96259px, 0.610452px);
-                "
-              ></div>
-            </div>
-            <div class="eye-white" style="width: 10px; height: 10px; background-color: white">
-              <div
-                class="eye-black"
-                style="
-                  width: 4px;
-                  height: 4px;
-                  background-color: rgb(45, 45, 45);
-                  transform: translate(4.96259px, 0.610452px);
-                "
-              ></div>
-            </div>
-          </div>
-        </div>
-        <!-- 橙色柱子 -->
-        <div
-          class="pillar"
-          style="
-            left: 0px;
-            width: 60px;
-            height: 56px;
-            z-index: 3;
-            background-color: rgb(255, 155, 107);
-            border-radius: 120px 120px 0px 0px;
-          "
-        >
-          <div class="eye-group eye-group-orange" style="left: 12px; top: 22px; gap: 22px">
-            <div
-              class="eye-black"
-              style="
-                width: 6px;
-                height: 6px;
-                background-color: rgb(45, 45, 45);
-                transform: translate(0px, 0px);
-              "
-            ></div>
-            <div
-              class="eye-black"
-              style="width: 6px; height: 6px; background-color: rgb(45, 45, 45)"
-            ></div>
-          </div>
-        </div>
-        <!-- 黄色柱子 -->
-        <div
-          class="pillar"
-          style="
-            left: 78px;
-            width: 30px;
-            height: 36px;
-            background-color: rgb(232, 215, 84);
-            border-radius: 30px 30px 0px 0px;
-            z-index: 4;
-          "
-        >
-          <div class="eye-group eye-group-yellow" style="left: 6px; top: 14px; gap: 10px">
+  <div v-if="visible" class="loading-container">
+    <div class="main-box">
+      <!-- 紫色柱子 -->
+      <div
+        class="pillar"
+        style="
+          left: 20px;
+          width: 56px;
+          height: 110px;
+          background-color: rgb(108, 63, 245);
+          border-radius: 10px 10px 0px 0px;
+          z-index: 1;
+        "
+      >
+        <div class="eye-group" style="left: 12px; top: 16px; gap: 12px">
+          <div class="eye-white" style="width: 12px; height: 12px; background-color: white">
             <div
               class="eye-black"
               style="
                 width: 4px;
                 height: 4px;
                 background-color: rgb(45, 45, 45);
-                transform: translate(0px, 0px);
+                transform: translate(4.96499px, 0.590676px);
               "
             ></div>
+          </div>
+          <div class="eye-white" style="width: 12px; height: 12px; background-color: white">
             <div
               class="eye-black"
               style="
                 width: 4px;
                 height: 4px;
                 background-color: rgb(45, 45, 45);
-                transform: translate(0px, 0px);
+                transform: translate(4.96259px, 0.610452px);
               "
             ></div>
           </div>
-          <div class="mouth" style="left: 7px; top: 26px"></div>
         </div>
       </div>
-      <div class="" style="margin-top: 6px; font-size: 12px; padding: 2px 10px">加载中...</div>
-      <div class="shimmer-base loading-box"></div>
+      <!-- 黑色柱子 -->
+      <div
+        class="pillar"
+        style="
+          left: 52px;
+          width: 42px;
+          height: 72px;
+          background-color: rgb(45, 45, 45);
+          border-radius: 8px 8px 0px 0px;
+          z-index: 2;
+        "
+      >
+        <div class="eye-group" style="left: 8px; top: 12px; gap: 8px">
+          <div class="eye-white" style="width: 10px; height: 10px; background-color: white">
+            <div
+              class="eye-black"
+              style="
+                width: 4px;
+                height: 4px;
+                background-color: rgb(45, 45, 45);
+                transform: translate(4.96259px, 0.610452px);
+              "
+            ></div>
+          </div>
+          <div class="eye-white" style="width: 10px; height: 10px; background-color: white">
+            <div
+              class="eye-black"
+              style="
+                width: 4px;
+                height: 4px;
+                background-color: rgb(45, 45, 45);
+                transform: translate(4.96259px, 0.610452px);
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+      <!-- 橙色柱子 -->
+      <div
+        class="pillar"
+        style="
+          left: 0px;
+          width: 60px;
+          height: 56px;
+          z-index: 3;
+          background-color: rgb(255, 155, 107);
+          border-radius: 120px 120px 0px 0px;
+        "
+      >
+        <div class="eye-group eye-group-orange" style="left: 12px; top: 22px; gap: 22px">
+          <div
+            class="eye-black"
+            style="
+              width: 6px;
+              height: 6px;
+              background-color: rgb(45, 45, 45);
+              transform: translate(0px, 0px);
+            "
+          ></div>
+          <div
+            class="eye-black"
+            style="width: 6px; height: 6px; background-color: rgb(45, 45, 45)"
+          ></div>
+        </div>
+      </div>
+      <!-- 黄色柱子 -->
+      <div
+        class="pillar"
+        style="
+          left: 78px;
+          width: 30px;
+          height: 36px;
+          background-color: rgb(232, 215, 84);
+          border-radius: 30px 30px 0px 0px;
+          z-index: 4;
+        "
+      >
+        <div class="eye-group eye-group-yellow" style="left: 6px; top: 14px; gap: 10px">
+          <div
+            class="eye-black"
+            style="
+              width: 4px;
+              height: 4px;
+              background-color: rgb(45, 45, 45);
+              transform: translate(0px, 0px);
+            "
+          ></div>
+          <div
+            class="eye-black"
+            style="
+              width: 4px;
+              height: 4px;
+              background-color: rgb(45, 45, 45);
+              transform: translate(0px, 0px);
+            "
+          ></div>
+        </div>
+        <div class="mouth" style="left: 7px; top: 26px"></div>
+      </div>
     </div>
-  </teleport>
+    <div class="" style="margin-top: 6px; font-size: 12px; padding: 2px 10px">加载中...</div>
+    <div class="shimmer-base loading-box"></div>
+  </div>
 </template>
 
 <style scoped>

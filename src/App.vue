@@ -30,8 +30,8 @@ router.onError(() => {
 </script>
 
 <template>
-  <GlobalLoading :visible="isLoading" />
-  <router-view />
+  <GlobalLoading v-if="isLoading" :visible="isLoading" />
+  <router-view v-else />
 </template>
 
 <style scoped></style>
