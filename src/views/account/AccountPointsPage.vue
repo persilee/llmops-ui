@@ -199,7 +199,22 @@ onUnmounted(() => {
                 body-cell-class="bg-transparent"
               >
                 <template #cell="{ record }">
-                  <div class="flex items-center gap-2">
+                  <div
+                    v-if="record.deduct_from == 'points_recharge'"
+                    class="flex items-center gap-2"
+                  >
+                    <icon-wechatpay
+                      v-if="record.transaction_meta.pay_channel == 'wxpay'"
+                      class="w-[28px] h-auto text-green-500"
+                    />
+                    <icon-alipay-circle v-else class="w-6 h-auto text-green-500" />
+                    <div class="line-clamp-1">
+                      {{
+                        record.transaction_meta.pay_channel == 'wxpay' ? '微信充值' : '支付宝充值'
+                      }}
+                    </div>
+                  </div>
+                  <div v-else class="flex items-center gap-2">
                     <a-avatar
                       :size="28"
                       shape="square"
@@ -230,7 +245,13 @@ onUnmounted(() => {
                 body-cell-class="bg-transparent"
               >
                 <template #cell="{ record }">
-                  <div class="font-semibold text-amber-500">{{ record.points_amount }}</div>
+                  <div
+                    v-if="record.deduct_from == 'points_recharge'"
+                    class="font-semibold text-green-500"
+                  >
+                    +{{ record.points_amount }}
+                  </div>
+                  <div v-else class="font-semibold text-amber-500">{{ record.points_amount }}</div>
                 </template>
               </a-table-column>
               <a-table-column

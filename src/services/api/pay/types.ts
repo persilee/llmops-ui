@@ -3,6 +3,10 @@ export interface WechatPayReq {
 }
 
 export interface WechatPayResp {
-  wechat_pay_url: string;
+  trade_no: string
+  wechat_pay_url: string
 }
 
+export interface GetPayStatusResp {
+  pay_status: string
+}

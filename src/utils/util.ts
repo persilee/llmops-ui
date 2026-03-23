@@ -47,6 +47,7 @@ export enum DeductFrom {
   OPTIMIZE = 'optimize',
   GENERATE_CONVERSATION = 'generate_conversation',
   WEB_APP = 'web_app',
+  POINTS_RECHARGE = 'points_recharge',
 }
 
 export const DeductFromText = {
@@ -56,6 +57,7 @@ export const DeductFromText = {
     [DeductFrom.OPTIMIZE]: '提示词优化',
     [DeductFrom.GENERATE_CONVERSATION]: '会话名称生成',
     [DeductFrom.WEB_APP]: 'WEB应用消息',
+    [DeductFrom.POINTS_RECHARGE]: '积分充值',
   } as const,
 }
 
