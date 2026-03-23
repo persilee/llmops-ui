@@ -108,6 +108,7 @@ const router = createRouter({
           path: 'account/points',
           name: 'account-points',
           component: () => import('@/views/account/AccountPointsPage.vue'),
+          meta: { title: '积分充值 - 虎子' },
         },
       ],
     },

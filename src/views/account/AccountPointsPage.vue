@@ -5,7 +5,8 @@ import { useAccountStore } from '@/stores/account'
 import { formatDate } from '@/utils/format-util'
 import { DeductFromText, formatNumberWithCommas } from '@/utils/util'
 import moment from 'moment'
-import { onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import PayConfirmModal from './components/PayConfirmModal.vue'
 
 const activatedTab = ref('recharge')
 const payChannel = ref('wechat')
@@ -18,6 +19,8 @@ const now = moment()
 const startDate = now.startOf('month').format('YYYY-MM-DD')
 const endDate = now.endOf('month').format('YYYY-MM-DD')
 const dateRange = ref([startDate, endDate])
+const formRef = useTemplateRef('formRef')
+const payConfirmVisible = ref(false)
 
 const getRechargeAccount = () => {
   if (store.account.phone_number) {
@@ -32,6 +35,10 @@ const getRechargeAccount = () => {
 const handleTabClick = async (key: string) => {
   if (key == 'pointsRecord') {
     await handleRecharge()
+    document.title = '积分记录 - 虎子'
+  }
+  if (key == 'recharge') {
+    document.title = '积分充值 - 虎子'
   }
 }
 
@@ -52,6 +59,13 @@ const handleRecharge = async () => {
 
 const onChange = (dateString: string, date: Date) => {
   handleRecharge()
+}
+
+const handlePay = async () => {
+  const errors = await formRef.value.validate()
+  if (errors) return
+
+  payConfirmVisible.value = true
 }
 
 const stop = watch(
@@ -91,7 +105,7 @@ onUnmounted(() => {
           <div class="flex items-start py-4">
             <div class="text-gray-800 font-semibold w-[100px] leading-[34px]">充值金额</div>
             <div class="flex items-start">
-              <a-form :model="formData" :style="{ width: '600px' }">
+              <a-form ref="formRef" :model="formData" :style="{ width: '600px' }">
                 <a-form-item
                   field="amount"
                   hide-label
@@ -141,20 +155,21 @@ onUnmounted(() => {
                 <icon-wechatpay class="w-6 h-auto text-green-500" />
                 <div class="text-gray-600">微信支付</div>
               </div>
-              <div
-                :class="`flex items-center gap-2 border rounded-sm px-3 py-2 cursor-pointer w-[116px] ${payChannel == 'alipay' ? 'border-blue-600' : 'border-gray-200'}`"
-                @click="payChannel = 'alipay'"
-              >
-                <icon-alipay-circle class="w-6 h-auto text-blue-500" />
-                <div class="text-gray-600">支付宝</div>
-              </div>
+              <a-tooltip content="暂不支持支付宝支付">
+                <div
+                  :class="`flex items-center gap-2 border rounded-sm px-3 py-2 cursor-not-allowed w-[116px] ${payChannel == 'alipay' ? 'border-blue-600' : 'border-gray-200'} bg-gray-200`"
+                >
+                  <icon-alipay-circle class="w-6 h-auto text-gray-500" />
+                  <div class="text-gray-600">支付宝</div>
+                </div>
+              </a-tooltip>
             </div>
           </div>
           <div class="text-gray-400 pl-[100px] py-3">
             网上银行交易限额的问题，请前往相应的网上银行进行调整。目前不支持信用卡支付。
           </div>
           <div class="pl-[100px] mt-12">
-            <a-button type="primary" class="rounded-md">立即充值</a-button>
+            <a-button type="primary" class="rounded-md" @click="handlePay">立即充值</a-button>
           </div>
         </div>
       </a-tab-pane>
@@ -243,6 +258,12 @@ onUnmounted(() => {
         </div>
       </a-tab-pane>
     </a-tabs>
+    <PayConfirmModal
+      v-model:visible="payConfirmVisible"
+      :pay-channel="payChannel"
+      :amount="formData.amount"
+      :recharge-points="rechargePoints"
+    />
   </div>
 </template>
 
