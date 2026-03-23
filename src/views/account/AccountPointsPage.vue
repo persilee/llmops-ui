@@ -155,7 +155,7 @@ onUnmounted(() => {
                 <icon-wechatpay class="w-6 h-auto text-green-500" />
                 <div class="text-gray-600">微信支付</div>
               </div>
-              <a-tooltip content="暂不支持支付宝支付">
+              <a-tooltip content="暂不支持支付宝">
                 <div
                   :class="`flex items-center gap-2 border rounded-sm px-3 py-2 cursor-not-allowed w-[116px] ${payChannel == 'alipay' ? 'border-blue-600' : 'border-gray-200'} bg-gray-200`"
                 >

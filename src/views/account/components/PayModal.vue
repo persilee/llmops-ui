@@ -63,18 +63,13 @@ onUnmounted(() => {
       <a-divider class="w-full my-4" />
       <div class="pl-[180px] mb-20">
         <div class="flex items-center gap-1">
-          <div class="flex flex-col items-center mt-1">
-            <a-image
-              :src="payQrcodeUrl"
-              :show-loader="true"
-              :preview="false"
-              width="240"
-              height="240"
-            />
+          <a-spin :loading="loading" class="flex flex-col items-center mt-1">
+            <div v-if="!payQrcodeUrl" class="w-[240px] h-[240px]"></div>
+            <a-image v-else :src="payQrcodeUrl" :preview="false" width="240" height="240" />
             <div class="text-xs text-white bg-green-500 rounded-xs w-[206px] py-1.5 text-center">
               请打开手机微信，扫一扫完成支付
             </div>
-          </div>
+          </a-spin>
           <img src="@/assets/images/image-wxpay.png" class="w-[190px] translate-y-3" />
         </div>
       </div>
