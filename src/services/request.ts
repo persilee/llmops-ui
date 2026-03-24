@@ -55,6 +55,7 @@ const baseFetch = <T>(url: string, fetchOptions: FetchOptionType): Promise<BaseR
 
   // 检查请求头是否为空且存在有效的访问令牌
   const token = store.credential?.access_token
+  options.headers.delete('Authorization')
   if (token && options.headers instanceof Headers && !options.headers.get('Authorization')) {
     options.headers.set('Authorization', `Bearer ${token}`)
   }
@@ -206,7 +207,7 @@ export const ssePost = async (
   const store = useCredentialStore()
   const token = store.credential?.access_token
   if (token && options.headers instanceof Headers && !options.headers.get('Authorization')) {
-    options.headers.set('Authorization', `Bearer ${store.credential.access_token}`)
+    options.headers.set('Authorization', `Bearer ${store.credential?.access_token}`)
   }
   // 处理URL，确保以BASE_URL为前缀
   const urlWithPrefix = `${BASE_API_URL}${url.startsWith('/') ? url : `/${url}`}`

@@ -78,7 +78,7 @@ export const useSpaceStore = defineStore(
     const workflowModal = getModalState('workflow')
 
     // 重置状态
-    const $reset = () => {
+    const reset = () => {
       searchWord.value = ''
       closeAllModals()
     }
@@ -114,7 +114,7 @@ export const useSpaceStore = defineStore(
       getModalState,
 
       // 重置方法
-      $reset,
+      reset,
     }
   },
   {

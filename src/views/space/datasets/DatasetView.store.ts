@@ -10,10 +10,17 @@ export const useDatasetStore = defineStore(
     const document = ref<GetDocumentsWithPage>()
     const currentStep = ref<number>(1)
 
+    const reset = () => {
+      dataset.value = undefined
+      document.value = undefined
+      currentStep.value = 1
+    }
+
     return {
       dataset,
       document,
       currentStep,
+      reset,
     }
   },
   {

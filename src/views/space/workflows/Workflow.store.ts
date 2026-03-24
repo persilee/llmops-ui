@@ -434,6 +434,14 @@ export const useWorkflowStore = defineStore(
       },
     }
 
+    const reset = () => {
+      resetNodeResult()
+      workflow.value = {}
+      mode.value = 'mouse'
+      draftGraph.value = { nodes: <any[]>[], edges: <any[]>[] }
+      showedAddNode.value = ''
+    }
+
     return {
       NODE_DATA_MAP,
       NOTE_TYPES,
@@ -466,6 +474,7 @@ export const useWorkflowStore = defineStore(
       getPredecessorsByNodeId,
       getReferencedVariables,
       resetNodeResult,
+      reset,
     }
   },
   {

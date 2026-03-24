@@ -30,8 +30,12 @@ const activatedTab = ref('phone')
 const weChatLoading = ref(false)
 const wechatVisible = ref(false)
 const isNewUser = computed({
-  get: () => store.credential.is_new_user && store.credential.provider_info,
-  set: (val) => (store.credential.is_new_user = val),
+  get: () => store.credential?.is_new_user && store.credential.provider_info,
+  set: (val) => {
+    if (store.credential) {
+      store.credential.is_new_user = val
+    }
+  },
 })
 const selectedAction = ref('')
 const isNext = ref(false)
@@ -139,7 +143,7 @@ const handleNext = async () => {
     try {
       nextLoading.value = true
       const resp = await AccountApi.authLoginCreate({
-        oauth_info: { ...store.credential.provider_info },
+        oauth_info: { ...store.credential?.provider_info },
       })
       // 显示登录成功提示
       Message.success('登录成功')
@@ -238,7 +242,7 @@ onUnmounted(() => {
             <div class="text-gray-700 font-bold text-lg">绑定已有账号</div>
             <div class="text-gray-500 text-sm">
               绑定已有的账号，绑定成功后，可以通过此{{
-                store.credential.provider_info?.provider == 'wxmp' ? '微信' : 'Github'
+                store.credential?.provider_info?.provider == 'wxmp' ? '微信' : 'Github'
               }}号快速登录
             </div>
           </div>
@@ -249,7 +253,7 @@ onUnmounted(() => {
             <div class="text-gray-700 font-bold text-lg">没有账号，注册新账号</div>
             <div class="text-gray-500 text-sm">
               用此{{
-                store.credential.provider_info?.provider == 'wxmp' ? '微信' : 'Github'
+                store.credential?.provider_info?.provider == 'wxmp' ? '微信' : 'Github'
               }}号注册一个全新的账号
             </div>
           </div>

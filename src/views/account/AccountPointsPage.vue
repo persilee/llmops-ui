@@ -23,12 +23,12 @@ const formRef = useTemplateRef('formRef')
 const payConfirmVisible = ref(false)
 
 const getRechargeAccount = () => {
-  if (store.account.phone_number) {
+  if (store.account?.phone_number) {
     return store.account.phone_number
-  } else if (store.account.email) {
+  } else if (store?.account?.email) {
     return store.account.email
   } else {
-    return store.account.name
+    return store.account?.name
   }
 }
 

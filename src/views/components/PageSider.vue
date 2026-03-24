@@ -12,6 +12,7 @@ import IconToolFull from '@/components/icons/IconToolFull.vue'
 import AccountApi from '@/services/api/account'
 import { useAccountStore } from '@/stores/account'
 import { formatDate } from '@/utils/format-util'
+import { clearAllPiniaStores } from '@/utils/pinia-helper'
 import * as Storage from '@/utils/storage'
 import { formatNumberWithCommas } from '@/utils/util'
 import PageRouterLink from '@/views/components/PageRouterLink.vue'
@@ -37,6 +38,7 @@ const collapsed = ref(false)
 
 // 处理用户退出登录
 const handleLogout = () => {
+  clearAllPiniaStores()
   Storage.clear()
   router.push({ name: 'auth-login' })
 }
@@ -78,9 +80,9 @@ const goToAccountPoints = () => {
 }
 
 // 组件挂载时获取用户账户信息
-onMounted(() => {
-  getPoints()
-  store.getAccount()
+onMounted(async () => {
+  await store.getAccount()
+  await getPoints()
 })
 </script>
 
@@ -150,10 +152,10 @@ onMounted(() => {
             label="个人空间"
             is-sider
             :collapsed="collapsed"
-            :is-active="route.path.startsWith('/space')"
+            :is-active="route.path?.startsWith('/space')"
           >
             <template #icon>
-              <IconSpaceFull v-if="route.path.startsWith('/space')" /> <IconSpace v-else />
+              <IconSpaceFull v-if="route.path?.startsWith('/space')" /> <IconSpace v-else />
             </template>
           </PageRouterLink>
           <!-- 探索分组标题 -->
@@ -161,14 +163,14 @@ onMounted(() => {
           <!-- 应用市场导航 -->
           <PageRouterLink to="/store/apps" label="应用市场" is-sider :collapsed="collapsed">
             <template #icon>
-              <IconAppFull v-if="route.path.startsWith('/store/apps')" />
+              <IconAppFull v-if="route.path?.startsWith('/store/apps')" />
               <IconApp v-else />
             </template>
           </PageRouterLink>
           <!-- 插件广场导航 -->
           <PageRouterLink to="/store/tools" label="插件广场" is-sider :collapsed="collapsed">
             <template #icon>
-              <IconToolFull v-if="route.path.startsWith('/store/tools')" />
+              <IconToolFull v-if="route.path?.startsWith('/store/tools')" />
               <IconTool v-else />
             </template>
           </PageRouterLink>
@@ -178,10 +180,10 @@ onMounted(() => {
             label="开发 API"
             is-sider
             :collapsed="collapsed"
-            :is-active="route.path.startsWith('/openapi')"
+            :is-active="route.path?.startsWith('/openapi')"
           >
             <template #icon>
-              <IconOpenApiFull v-if="route.path.startsWith('/openapi')" />
+              <IconOpenApiFull v-if="route.path?.startsWith('/openapi')" />
               <IconOpenApi v-else />
             </template>
           </PageRouterLink>

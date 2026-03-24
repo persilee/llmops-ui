@@ -166,7 +166,7 @@ const handleModalSuccess = () => {
  * 2. 调用fetchData(true)初始化加载第一页数据
  */
 onMounted(() => {
-  store.$reset()
+  store.reset()
   fetchData(true)
 })
 
@@ -178,7 +178,7 @@ onMounted(() => {
  */
 onUnmounted(() => {
   stop()
-  store.$reset()
+  store.reset()
 })
 </script>
 

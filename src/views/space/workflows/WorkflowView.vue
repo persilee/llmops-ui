@@ -239,7 +239,7 @@ const handleScroll = (e: Event) => {
 
 // 挂载后执行，初始化数据
 onMounted(() => {
-  store.$reset()
+  store.reset()
   // 组件挂载后执行，初始化数据
   fetchData()
 })

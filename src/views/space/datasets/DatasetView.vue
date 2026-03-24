@@ -210,7 +210,7 @@ onMounted(() => {
  */
 onUnmounted(() => {
   stop() // 停止watch监听，避免内存泄漏
-  store.$reset() // 重置store状态，清除组件相关的数据
+  store.reset() // 重置store状态，清除组件相关的数据
 })
 </script>
 

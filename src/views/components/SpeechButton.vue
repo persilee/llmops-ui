@@ -48,8 +48,6 @@ const fetchAudioStream = async (): Promise<string | undefined> => {
     }
   } catch (error) {
     onAudioPause()
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.log(`音频流获取失败: ${errorMessage}`)
     return undefined
   }
 }

@@ -17,7 +17,7 @@ const accountStore = useAccountStore()
       <div class="w-full flex flex-col gap-2 items-end pl-[42px]">
         <!-- 人类名称 -->
         <div class="font-semibold text-gray-700">
-          {{ accountStore.account.name }}
+          {{ accountStore.account?.name }}
         </div>
         <div
           v-if="imageUrls && imageUrls.length > 0"
@@ -54,7 +54,7 @@ const accountStore = useAccountStore()
       </div>
       <!-- 人类头像 -->
       <a-avatar class="shrink-0 bg-transparent" shape="square" :size="34">
-        <img :src="accountStore.account.avatar" />
+        <img :src="accountStore.account?.avatar" />
       </a-avatar>
     </div>
   </div>
