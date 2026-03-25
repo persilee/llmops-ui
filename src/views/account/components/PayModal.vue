@@ -15,6 +15,9 @@ let pollTimer: number | null = null
 
 const handleCloseModal = () => {
   visible.value = false
+  payQrcodeUrl.value = ''
+  isPaySuccess.value = false
+  isTimeout.value = false
 }
 
 const fetchData = async () => {
