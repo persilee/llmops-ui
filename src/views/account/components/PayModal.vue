@@ -18,6 +18,9 @@ const handleCloseModal = () => {
   payQrcodeUrl.value = ''
   isPaySuccess.value = false
   isTimeout.value = false
+  if (pollTimer) {
+    clearInterval(pollTimer)
+  }
 }
 
 const fetchData = async () => {
