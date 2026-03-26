@@ -94,15 +94,21 @@ const router = createRouter({
               path: 'start',
               name: 'quick-start',
               component: () => import('@/views/openapi/start/QuickStartView.vue'),
-              meta: { title: '快速开始 - 开发API - 虎子' },
+              meta: { title: '快速开始 - 开放API - 虎子' },
             },
             {
               path: 'key',
               name: 'openapi-key',
               component: () => import('@/views/openapi/key/KeyView.vue'),
-              meta: { title: '密钥 - 开发API - 虎子' },
+              meta: { title: '密钥 - 开放API - 虎子' },
             },
           ],
+        },
+        {
+          path: 'doc-api',
+          name: 'doc-api',
+          component: () => import('@/views/api-doc/ApiDoc.vue'),
+          meta: { title: 'API文档 - 虎子' },
         },
         {
           path: 'account/points',

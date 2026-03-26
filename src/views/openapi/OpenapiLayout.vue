@@ -12,7 +12,7 @@ const store = useOpenapiStore()
       <a-avatar :size="32" shape="square" class="bg-blue-700">
         <IconOpenApi class="text-4.5" />
       </a-avatar>
-      <div class="ml-2 text-lg font-medium text-gray-700">开发API</div>
+      <div class="ml-2 text-lg font-medium text-gray-700">开放API</div>
       <div class="ml-2 text-gray-500">利用开放 API 快速与企业现有业务对接</div>
     </div>
     <!-- 导航 -->

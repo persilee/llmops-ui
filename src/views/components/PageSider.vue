@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import IconApi from '@/components/icons/IconApi.vue'
+import IconApiFull from '@/components/icons/IconApiFull.vue'
 import IconApp from '@/components/icons/IconApp.vue'
 import IconAppFull from '@/components/icons/IconAppFull.vue'
 import IconHome from '@/components/icons/IconHome.vue'
@@ -174,10 +176,10 @@ onMounted(async () => {
               <IconTool v-else />
             </template>
           </PageRouterLink>
-          <!-- 开发API导航 -->
+          <!-- 开放API导航 -->
           <PageRouterLink
             to="/openapi/start"
-            label="开发 API"
+            label="开放 API"
             is-sider
             :collapsed="collapsed"
             :is-active="route.path?.startsWith('/openapi')"
@@ -185,6 +187,19 @@ onMounted(async () => {
             <template #icon>
               <IconOpenApiFull v-if="route.path?.startsWith('/openapi')" />
               <IconOpenApi v-else />
+            </template>
+          </PageRouterLink>
+          <!-- API 文档 -->
+          <PageRouterLink
+            to="/doc-api"
+            label="API 文档"
+            is-sider
+            :collapsed="collapsed"
+            :is-active="route.path?.startsWith('/doc-api')"
+          >
+            <template #icon>
+              <IconApiFull v-if="route.path?.startsWith('/doc-api')" />
+              <IconApi v-else />
             </template>
           </PageRouterLink>
         </div>

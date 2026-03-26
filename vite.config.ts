@@ -19,9 +19,6 @@ export default defineConfig({
     tailwindcss(),
     monacoEditorPlugin({}),
   ],
-  // optimizeDeps: {
-  //   include: ['vue', 'vue-router', '@arco-design/web-vue'],
-  // },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -37,14 +34,4 @@ export default defineConfig({
       },
     },
   },
-  // build: {
-  //   rollupOptions: {
-  //     output: {
-  //       manualChunks: {
-  //         vendor: ['vue', 'vue-router'],
-  //         layout: ['@/views/layouts/BaseLayout.vue', '@/views/layouts/BlankLayout.vue'],
-  //       },
-  //     },
-  //   },
-  // },
 })
