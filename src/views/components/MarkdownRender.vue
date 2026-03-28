@@ -240,7 +240,8 @@ watch(
 }
 
 .markdown-body table {
-  width: auto;
+  width: 100%;
+  display: table !important;
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 0 0 8px 8px;
